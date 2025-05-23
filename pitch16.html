@@ -1,0 +1,1230 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cymatics Visualizer (A4 = 432 Hz)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #canvas { width: 100vw; height: 100vh; }
+        #ui { position: absolute; top: 20px; left: 20px; }
+        #note-display { 
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+            font-size: 1.5rem; 
+            color: white; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
+            font-family: Arial, sans-serif;
+        }
+        #settings-menu { 
+            position: absolute; 
+            top: 140px; 
+            left: 20px; 
+            background: rgba(31, 41, 55, 0.9); 
+            padding: 1rem; 
+            border-radius: 0.5rem; 
+            color: white; 
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+    <div id="ui" class="text-white">
+        <label for="tonic" class="text-lg">Select Tonic:</label>
+        <select id="tonic" class="bg-gray-800 text-white p-2 rounded">
+            <option value="C" selected>C</option>
+            <option value="C#">C#</option>
+            <option value="D">D</option>
+            <option value="D#">D#</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="F#">F#</option>
+            <option value="G">G</option>
+            <option value="G#">G#</option>
+            <option value="A">A</option>
+            <option value="A#">A#</option>
+            <option value="B">B</option>
+        </select>
+        <label for="auto-tonic" class="block mt-2">Auto Tonic Detection: <input type="checkbox" id="auto-tonic" checked></label>
+        <label for="viz-type" class="block mt-2 text-lg">Visualization Type:</label>
+        <select id="viz-type" class="bg-gray-800 text-white p-2 rounded">
+            <option value="radial" selected>Radial Wave</option>
+            <option value="toroidal">Toroidal Flow</option>
+            <option value="swarm">Particle Swarm</option>
+            <option value="spherical">Spherical Harmonic</option>
+            <option value="vortex">Vortex Spiral</option>
+            <option value="lattice">Lattice Grid</option>
+            <option value="fractal">Fractal Tree</option>
+            <option value="chladni">Chladni Plate</option>
+            <option value="kaleidoscope">Kaleidoscope Rings</option>
+            <option value="wavefront">Wavefront Cascade</option>
+            <option value="helical">Helical Ribbon</option>
+            <option value="tesseract">Tesseract Field</option>
+            <option value="moebius">Moebius Strip</option>
+            <option value="crystal">Crystal Lattice</option>
+            <option value="string">Vibrating String</option>
+            <option value="aurora">Polar Aurora</option>
+            <option value="lissajous">Lissajous Cloud</option>
+        </select>
+        <button id="start-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">
+            Start Microphone
+        </button>
+        <button id="toggle-menu" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-2">
+            Show Settings
+        </button>
+    </div>
+    <div id="settings-menu">
+        <h2 class="text-lg font-bold mb-2">Settings</h2>
+        <div class="mb-4">
+            <label for="pulse-speed" class="block">Pulse Speed: <span id="pulse-speed-value">0.1</span></label>
+            <input type="range" id="pulse-speed" min="0.05" max="1.0" step="0.01" value="0.1" class="w-full">
+            <label for="auto-pulse" class="block mt-2">Auto BPM Pulse: <input type="checkbox" id="auto-pulse" checked></label>
+            <div id="bpm-display" class="mt-2">Detected BPM: --</div>
+        </div>
+        <div class="mb-4">
+            <label for="pulse-amplitude" class="block">Pulse Amplitude: <span id="pulse-amplitude-value">0.1</span></label>
+            <input type="range" id="pulse-amplitude" min="0.05" max="0.4" step="0.01" value="0.1" class="w-full">
+        </div>
+        <div class="mb-4">
+            <label for="particle-density" class="block">Particle Density: <span id="particle-density-value">50</span></label>
+            <input type="range" id="particle-density" min="10" max="200" step="1" value="50" class="w-full">
+        </div>
+        <div class="mb-4">
+            <label for="trail-enabled" class="block">Enable Trail: <input type="checkbox" id="trail-enabled" checked></label>
+        </div>
+        <div class="mb-4">
+            <label for="trail-duration" class="block">Trail Fade-Out (s): <span id="trail-duration-value">3</span></label>
+            <input type="range" id="trail-duration" min="1" max="10" step="0.1" value="3" class="w-full">
+        </div>
+        <div class="mb-4">
+            <label for="viz-size" class="block">Visualization Size: <span id="viz-size-value">1.0</span></label>
+            <input type="range" id="viz-size" min="0.5" max="3.0" step="0.1" value="1.0" class="w-full">
+        </div>
+        <div class="mb-4">
+            <label for="wobble-intensity" class="block">Wobble Intensity: <span id="wobble-intensity-value">0.2</span></label>
+            <input type="range" id="wobble-intensity" min="0.0" max="0.5" step="0.01" value="0.2" class="w-full">
+        </div>
+        <div class="mb-4">
+            <label for="color-speed" class="block">Color Transition Speed: <span id="color-speed-value">0.1</span></label>
+            <input type="range" id="color-speed" min="0.01" max="0.2" step="0.01" value="0.1" class="w-full">
+        </div>
+        <div class="mb-4">
+            <label for="random-rotation" class="block">Random Rotation: <input type="checkbox" id="random-rotation"></label>
+        </div>
+    </div>
+    <div id="note-display">Note: -- | Interval: -- | Freq: -- Hz</div>
+    <div id="canvas"></div>
+
+    <script>
+        // Notes Table
+        const notesTable = [
+            { tone: "C", shape: "circle", interval: 0, rgb: "114,0,255" },
+            { tone: "C#", shape: "triangle", interval: 1, rgb: "0,78,255" },
+            { tone: "D", shape: "circle", interval: 2, rgb: "0,255,0" },
+            { tone: "D#", shape: "triangle", interval: 3, rgb: "255,255,0" },
+            { tone: "E", shape: "circle", interval: 4, rgb: "255,96,0" },
+            { tone: "F", shape: "circle", interval: 5, rgb: "255,0,0" },
+            { tone: "F#", shape: "triangle", interval: 6, rgb: "114,0,255" },
+            { tone: "G", shape: "circle", interval: 7, rgb: "0,78,255" },
+            { tone: "G#", shape: "triangle", interval: 8, rgb: "0,255,0" },
+            { tone: "A", shape: "circle", interval: 9, rgb: "255,255,0" },
+            { tone: "A#", shape: "triangle", interval: 10, rgb: "255,96,0" },
+            { tone: "B", shape: "circle", interval: 11, rgb: "255,0,192" }
+        ];
+
+        // Web Audio API Setup
+        let audioContext;
+        let analyser;
+        let microphone;
+        let isRunning = false;
+
+        // Three.js Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('canvas').appendChild(renderer.domElement);
+
+        // Orbit Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.enableZoom = false;
+
+        // Visualization Setup
+        let currentVizType = 'radial';
+        let mainGeometry, mainMesh, particleSystem;
+        const mainMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 100, transparent: true, opacity: 1.0 });
+        const particleMaterial = new THREE.PointsMaterial({ size: 0.05, color: 0xffffff, transparent: true, opacity: 0.8 });
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1.0 });
+
+        // Trail System
+        const trailMeshes = [];
+        let trailEnabled = true;
+        let trailDuration = 3;
+        const trailMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 100, transparent: true, opacity: 0.5 });
+        const trailLineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        camera.position.z = 5;
+
+        // State
+        let currentTonic = 'C';
+        let pulseSpeed = 0.1;
+        let pulseAmplitude = 0.1;
+        let vizSize = 1.0;
+        let wobbleIntensity = 0.2;
+        let colorSpeed = 0.1;
+        let particleCount = 50;
+        let lastNote = null;
+        let lastShape = 'circle';
+        let lastColor = '255,255,255';
+        let currentColor = '255,255,255';
+        let targetOpacity = 1.0;
+        let currentOpacity = 1.0;
+        let autoPulse = true;
+        let autoTonic = true;
+        let randomRotation = false;
+        let rotationVelocity = { x: 0, y: 0, z: 0 };
+        let lastFreq = 432;
+        let pulsePhase = 0;
+        let detectedBPM = 120;
+        let lastPulseSpeed = pulseSpeed;
+
+        // Tonic Detection State
+        const tonicWindow = 600;
+        let noteHistory = [];
+        let frameCount = 0;
+
+        // BPM Detection State
+        let lastPeakTime = 0;
+        let beatIntervals = [];
+        const maxIntervals = 30;
+        let energyHistory = [];
+        const energyWindow = 100;
+
+        // Note-to-frequency mapping (A4 = 432 Hz)
+        const notes = notesTable.map(entry => entry.tone);
+        const A4 = 432;
+        const frequencies = {};
+        notes.forEach((note, i) => {
+            for (let octave = 0; octave < 8; octave++) {
+                const noteIndex = i + octave * 12;
+                const noteName = `${note}${octave}`;
+                frequencies[noteName] = A4 * Math.pow(2, (noteIndex - 69) / 12);
+            }
+        });
+
+        // Helper Functions
+        function createFractalTree(depth, maxDepth, length, angle, parentPositions) {
+            if (depth > maxDepth) return;
+            const positions = parentPositions || [];
+            const start = positions.length ? [positions[positions.length - 3], positions[positions.length - 2], positions[positions.length - 1]] : [0, -2, 0];
+            const end = [
+                start[0] + length * Math.sin(angle),
+                start[1] + length * Math.cos(angle),
+                start[2]
+            ];
+            positions.push(...start, ...end);
+            if (depth < maxDepth) {
+                createFractalTree(depth + 1, maxDepth, length * 0.7, angle + Math.PI / 4, positions);
+                createFractalTree(depth + 1, maxDepth, length * 0.7, angle - Math.PI / 4, positions);
+            }
+            return positions;
+        }
+
+        function createMoebiusStrip(segs, radius, width) {
+            const positions = [];
+            for (let i = 0; i <= segs; i++) {
+                const theta = (i / segs) * Math.PI * 2;
+                for (let u = -width; u <= width; u += width / 10) {
+                    const x = (radius + u * Math.cos(theta / 2)) * Math.cos(theta);
+                    const y = (radius + u * Math.cos(theta / 2)) * Math.sin(theta);
+                    const z = u * Math.sin(theta / 2);
+                    positions.push(x, y, z);
+                }
+            }
+            return new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+        }
+
+        // Initialize Visualization
+        function initVisualization(type) {
+            if (mainMesh) scene.remove(mainMesh);
+            if (particleSystem) scene.remove(particleSystem);
+
+            if (type === 'radial') {
+                mainGeometry = new THREE.PlaneGeometry(4, 4, 64, 64);
+                mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+            } else if (type === 'toroidal') {
+                mainGeometry = new THREE.TorusGeometry(2, 0.5, lastShape === 'circle' ? 32 : 16, 64);
+                mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+            } else if (type === 'swarm') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                const velocities = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos(2 * Math.random() - 1);
+                    const r = 2 * vizSize;
+                    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                    positions[i * 3 + 2] = r * Math.cos(phi);
+                    velocities[i * 3] = (Math.random() - 0.5) * 0.1;
+                    velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.1;
+                    velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                mainGeometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+                particleSystem = new THREE.Points(mainGeometry, particleMaterial);
+                scene.add(particleSystem);
+                return;
+            } else if (type === 'spherical') {
+                mainGeometry = new THREE.SphereGeometry(2, 64, 64);
+                mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+            } else if (type === 'vortex') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    const t = (i / particleCount) * Math.PI * 4;
+                    positions[i * 3] = Math.cos(t);
+                    positions[i * 3 + 1] = t * 0.2;
+                    positions[i * 3 + 2] = Math.sin(t);
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                particleSystem = new THREE.Points(mainGeometry, particleMaterial);
+                scene.add(particleSystem);
+                return;
+            } else if (type === 'lattice') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = [];
+                const size = 10;
+                const step = 4 / size;
+                for (let x = -2; x <= 2; x += step) {
+                    for (let y = -2; y <= 2; y += step) {
+                        for (let z = -2; z <= 2; z += step) {
+                            positions.push(x, y, z);
+                        }
+                    }
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                particleSystem = new THREE.Points(mainGeometry, particleMaterial);
+                scene.add(particleSystem);
+                return;
+            } else if (type === 'fractal') {
+                const positions = createFractalTree(0, 4, 2, Math.PI / 2, []);
+                mainGeometry = new THREE.BufferGeometry();
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                mainMesh = new THREE.LineSegments(mainGeometry, lineMaterial);
+            } else if (type === 'chladni') {
+                mainGeometry = new THREE.PlaneGeometry(4, 4, 64, 64);
+                mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+            } else if (type === 'kaleidoscope') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    const ring = Math.floor(i / (particleCount / 5));
+                    const theta = (i % (particleCount / 5)) * Math.PI * 2 / (particleCount / 5);
+                    positions[i * 3] = (1 + ring * 0.5) * Math.cos(theta);
+                    positions[i * 3 + 1] = (1 + ring * 0.5) * Math.sin(theta);
+                    positions[i * 3 + 2] = 0;
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                particleSystem = new THREE.Points(mainGeometry, particleMaterial);
+                scene.add(particleSystem);
+                return;
+            } else if (type === 'wavefront') {
+                mainGeometry = new THREE.PlaneGeometry(4, 4, 64, 64);
+                mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+            } else if (type === 'helical') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = [];
+                for (let t = 0; t <= Math.PI * 4; t += 0.1) {
+                    for (let u = -0.5; u <= 0.5; u += 0.1) {
+                        positions.push(Math.cos(t) + u * Math.sin(t), t * 0.2, Math.sin(t) - u * Math.cos(t));
+                    }
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+            } else if (type === 'tesseract') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 4;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 4;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 4;
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                particleSystem = new THREE.Points(mainGeometry, particleMaterial);
+                scene.add(particleSystem);
+                return;
+            } else if (type === 'moebius') {
+                mainGeometry = createMoebiusStrip(64, 2, 0.5);
+                mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+            } else if (type === 'crystal') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = [];
+                const size = 8;
+                const step = 4 / size;
+                for (let x = -2; x <= 2; x += step) {
+                    for (let y = -2; y <= 2; y += step) {
+                        for (let z = -2; z <= 2; z += step) {
+                            if (Math.abs(x) === 2 || Math.abs(y) === 2 || Math.abs(z) === 2) {
+                                positions.push(x, y, z);
+                                if (Math.abs(x + step) <= 2) positions.push(x + step, y, z);
+                                if (Math.abs(y + step) <= 2) positions.push(x, y + step, z);
+                                if (Math.abs(z + step) <= 2) positions.push(x, y, z + step);
+                            }
+                        }
+                    }
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                mainMesh = new THREE.LineSegments(mainGeometry, lineMaterial);
+            } else if (type === 'string') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = [];
+                for (let i = 0; i < 5; i++) {
+                    for (let x = -2; x <= 2; x += 0.1) {
+                        positions.push(x, i * 0.5 - 1, 0);
+                    }
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                mainMesh = new THREE.LineSegments(mainGeometry, lineMaterial);
+            } else if (type === 'aurora') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    const theta = Math.random() * Math.PI;
+                    const phi = Math.random() * Math.PI * 2;
+                    positions[i * 3] = 2 * Math.sin(theta) * Math.cos(phi);
+                    positions[i * 3 + 1] = 2 * Math.cos(theta);
+                    positions[i * 3 + 2] = 2 * Math.sin(theta) * Math.sin(phi);
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                particleSystem = new THREE.Points(mainGeometry, particleMaterial);
+                scene.add(particleSystem);
+                return;
+            } else if (type === 'lissajous') {
+                mainGeometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    const t = (i / particleCount) * Math.PI * 2;
+                    positions[i * 3] = Math.sin(t);
+                    positions[i * 3 + 1] = Math.sin(t * 2);
+                    positions[i * 3 + 2] = Math.sin(t * 3);
+                }
+                mainGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                particleSystem = new THREE.Points(mainGeometry, particleMaterial);
+                scene.add(particleSystem);
+                return;
+            }
+            scene.add(mainMesh);
+        }
+        initVisualization(currentVizType);
+
+        // Pitch Detection
+        function getPitch(data) {
+            const sampleRate = audioContext.sampleRate;
+            const bufferSize = data.length;
+            let bestOffset = -1;
+            let bestCorrelation = 0;
+            let rms = 0;
+
+            for (let i = 0; i < bufferSize; i++) {
+                rms += data[i] * data[i];
+            }
+            rms = Math.sqrt(rms / bufferSize);
+
+            if (rms < 0.01) return { freq: -1, rms: 0 };
+
+            for (let offset = 20; offset < bufferSize / 2; offset++) {
+                let correlation = 0;
+                for (let i = 0; i < bufferSize - offset; i++) {
+                    correlation += Math.abs(data[i] - data[i + offset]);
+                }
+                correlation = 1 - correlation / (bufferSize - offset);
+                if (correlation > bestCorrelation) {
+                    bestCorrelation = correlation;
+                    bestOffset = offset;
+                }
+            }
+
+            if (bestCorrelation > 0.1) {
+                return { freq: sampleRate / bestOffset, rms };
+            }
+            return { freq: -1, rms };
+        }
+
+        // BPM Detection
+        function detectBPM(data) {
+            let energy = 0;
+            for (let i = 0; i < data.length; i++) {
+                energy += data[i] * data[i];
+            }
+            energy = Math.sqrt(energy / data.length);
+
+            energyHistory.push(energy);
+            if (energyHistory.length > energyWindow) energyHistory.shift();
+            const avgEnergy = energyHistory.reduce((sum, val) => sum + val, 0) / energyHistory.length;
+            const threshold = avgEnergy * 1.5;
+
+            const freqData = new Float32Array(analyser.frequencyBinCount);
+            analyser.getFloatFrequencyData(freqData);
+            let bassEnergy = 0;
+            const bassRange = Math.floor(200 / (audioContext.sampleRate / analyser.fftSize));
+            for (let i = 0; i < bassRange; i++) {
+                bassEnergy += freqData[i] > -100 ? Math.pow(10, freqData[i] / 20) : 0;
+            }
+
+            const currentTime = performance.now() / 1000;
+            if (energy > threshold && bassEnergy > avgEnergy * 2 && currentTime - lastPeakTime > 0.25) {
+                const interval = currentTime - lastPeakTime;
+                if (interval > 0.25 && interval < 1) {
+                    beatIntervals.push(interval);
+                    lastPeakTime = currentTime;
+                    if (beatIntervals.length > maxIntervals) beatIntervals.shift();
+                    const alpha = 0.1;
+                    let avgInterval = beatIntervals[0];
+                    for (let i = 1; i < beatIntervals.length; i++) {
+                        avgInterval = alpha * beatIntervals[i] + (1 - alpha) * avgInterval;
+                    }
+                    detectedBPM = 60 / avgInterval;
+                    detectedBPM = Math.max(60, Math.min(240, detectedBPM));
+                }
+            }
+        }
+
+        // Map BPM to Pulse Speed
+        function bpmToPulseSpeed(bpm) {
+            const minBPM = 60;
+            const maxBPM = 240;
+            const minPulse = 0.05;
+            const maxPulse = 1.0;
+            const normalized = (bpm - minBPM) / (maxBPM - minBPM);
+            return minPulse + normalized * (maxPulse - minPulse);
+        }
+
+        // Detect Tonic
+        function detectTonic(note) {
+            if (note === '--' || !autoTonic) return;
+
+            noteHistory.push(note.slice(0, -1));
+            if (noteHistory.length > tonicWindow) noteHistory.shift();
+
+            frameCount++;
+            if (frameCount >= tonicWindow) {
+                const noteCounts = {};
+                noteHistory.forEach(n => {
+                    if (n !== '--') noteCounts[n] = (noteCounts[n] || 0) + 1;
+                });
+
+                let maxCount = 0;
+                let detectedTonic = currentTonic;
+                Object.keys(noteCounts).forEach(note => {
+                    if (noteCounts[note] > maxCount) {
+                        maxCount = noteCounts[note];
+                        detectedTonic = note;
+                    } else if (noteCounts[note] === maxCount) {
+                        const priority = { 'C': 3, 'G': 2, 'A': 1 };
+                        if ((priority[note] || 0) > (priority[detectedTonic] || 0)) {
+                            detectedTonic = note;
+                        }
+                    }
+                });
+
+                if (maxCount >= 10 && notes.includes(detectedTonic)) {
+                    currentTonic = detectedTonic;
+                    document.getElementById('tonic').value = detectedTonic;
+                }
+
+                frameCount = 0;
+            }
+        }
+
+        // Map Frequency to Note
+        function getNoteFromFrequency(freq, tonic) {
+            if (freq <= 0) return { tone: '--', interval: '--', shape: lastShape, rgb: lastColor };
+
+            let closestNote = '';
+            let closestDiff = Infinity;
+            let closestOctave = 0;
+            Object.keys(frequencies).forEach(note => {
+                const diff = Math.abs(frequencies[note] - freq);
+                if (diff < closestDiff) {
+                    closestDiff = diff;
+                    closestNote = note;
+                    closestOctave = parseInt(note.slice(-1));
+                }
+            });
+
+            const baseNote = closestNote.slice(0, -1);
+            const noteEntry = notesTable.find(entry => entry.tone === baseNote);
+            if (!noteEntry) return { tone: '--', interval: '--', shape: lastShape, rgb: lastColor };
+
+            const tonicEntry = notesTable.find(entry => entry.tone === tonic);
+            const tonicInterval = tonicEntry.interval;
+            let adjustedInterval = (noteEntry.interval - tonicInterval + 12) % 12;
+
+            return {
+                tone: `${baseNote}${closestOctave}`,
+                interval: adjustedInterval,
+                shape: noteEntry.shape,
+                rgb: noteEntry.rgb
+            };
+        }
+
+        // Color Interpolation
+        function interpolateColor(startColor, endColor, factor) {
+            const [r1, g1, b1] = startColor.split(',').map(Number);
+            const [r2, g2, b2] = endColor.split(',').map(Number);
+            const r = Math.round(r1 + (r2 - r1) * factor);
+            const g = Math.round(g1 + (g2 - g1) * factor);
+            const b = Math.round(b1 + (b2 - b1) * factor);
+            return `${r},${g},${b}`;
+        }
+
+        // Update Trails
+        function updateTrail(pulseScale) {
+            if (!trailEnabled) {
+                trailMeshes.forEach(trailMesh => scene.remove(trailMesh.mesh));
+                trailMeshes.length = 0;
+                return;
+            }
+
+            if (Math.random() < 0.1) {
+                const isLine = ['fractal', 'crystal', 'string'].includes(currentVizType);
+                const trailMesh = isLine
+                    ? new THREE.LineSegments(mainGeometry.clone(), trailLineMaterial.clone())
+                    : ['swarm', 'vortex', 'lattice', 'kaleidoscope', 'tesseract', 'aurora', 'lissajous'].includes(currentVizType)
+                    ? new THREE.Points(mainGeometry.clone(), particleMaterial.clone())
+                    : new THREE.Mesh(mainGeometry.clone(), trailMaterial.clone());
+                trailMesh.position.copy(mainMesh ? mainMesh.position : particleSystem.position);
+                trailMesh.rotation.copy(mainMesh ? mainMesh.rotation : particleSystem.rotation);
+                trailMesh.scale.set(pulseScale * vizSize, pulseScale * vizSize, pulseScale * vizSize);
+                trailMesh.material.color.copy(mainMaterial.color);
+                trailMesh.material.opacity = 0.5 * currentOpacity;
+                trailMeshes.push({ mesh: trailMesh, lifetime: trailDuration });
+                scene.add(trailMesh);
+            }
+
+            for (let i = trailMeshes.length - 1; i >= 0; i--) {
+                const trailMesh = trailMeshes[i];
+                trailMesh.lifetime -= 0.016;
+                trailMesh.mesh.material.opacity = 0.5 * (trailMesh.lifetime / trailDuration) * currentOpacity;
+                trailMesh.mesh.scale.set(pulseScale * vizSize, pulseScale * vizSize, pulseScale * vizSize);
+                if (randomRotation) {
+                    trailMesh.mesh.rotation.x += rotationVelocity.x;
+                    trailMesh.mesh.rotation.y += rotationVelocity.y;
+                    trailMesh.mesh.rotation.z += rotationVelocity.z;
+                }
+                if (trailMesh.lifetime <= 0) {
+                    scene.remove(trailMesh.mesh);
+                    trailMeshes.splice(i, 1);
+                }
+            }
+        }
+
+        // Animation
+        let pulseScale = 1.0;
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+            if (isRunning) {
+                const data = new Float32Array(analyser.fftSize);
+                analyser.getFloatTimeDomainData(data);
+                const { freq, rms } = getPitch(data);
+                const noteInfo = getNoteFromFrequency(freq, currentTonic);
+
+                if (freq > 0) lastFreq = freq;
+                detectTonic(noteInfo.tone);
+
+                // Signal-driven pulsing
+                if (noteInfo.tone !== '--') {
+                    pulsePhase += pulseSpeed * 0.016;
+                    const amplitude = Math.min(rms * 5, 1) * pulseAmplitude;
+                    pulseScale = 1 + amplitude * Math.sin(pulsePhase);
+                } else {
+                    pulseScale = 1.0;
+                    pulsePhase = 0;
+                }
+
+                // Update BPM
+                if (autoPulse && noteInfo.tone !== '--') {
+                    detectBPM(data);
+                    const targetPulseSpeed = bpmToPulseSpeed(detectedBPM);
+                    pulseSpeed = lastPulseSpeed + (targetPulseSpeed - lastPulseSpeed) * 0.03;
+                    lastPulseSpeed = pulseSpeed;
+                    document.getElementById('pulse-speed').value = pulseSpeed;
+                    document.getElementById('pulse-speed-value').textContent = pulseSpeed.toFixed(2);
+                    document.getElementById('bpm-display').textContent = `Detected BPM: ${detectedBPM.toFixed(1)}`;
+                } else {
+                    document.getElementById('bpm-display').textContent = `Detected BPM: --`;
+                }
+
+                // Update UI
+                document.getElementById('note-display').textContent = 
+                    `Note: ${noteInfo.tone} | Interval: ${noteInfo.interval} | Freq: ${freq > 0 ? freq.toFixed(2) : '--'} Hz`;
+
+                // Update shape and color
+                if (noteInfo.tone !== '--' && noteInfo.tone !== lastNote) {
+                    lastShape = noteInfo.shape;
+                    lastNote = noteInfo.tone;
+                    lastColor = noteInfo.rgb;
+                    targetOpacity = 1.0;
+                    if (currentVizType === 'toroidal') {
+                        scene.remove(mainMesh);
+                        mainGeometry = new THREE.TorusGeometry(2, 0.5, noteInfo.shape === 'circle' ? 32 : 16, 64);
+                        mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+                        scene.add(mainMesh);
+                    } else if (currentVizType === 'helical') {
+                        scene.remove(mainMesh);
+                        mainGeometry = new THREE.BufferGeometry();
+                        const positions = [];
+                        for (let t = 0; t <= Math.PI * 4; t += 0.1) {
+                            for (let u = -0.5; u <= 0.5; u += noteInfo.shape === 'circle' ? 0.1 : 0.2) {
+                                positions.push(Math.cos(t) + u * Math.sin(t), t * 0.2, Math.sin(t) - u * Math.cos(t));
+                            }
+                        }
+                        mainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                        mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+                        scene.add(mainMesh);
+                    }
+                } else if (noteInfo.tone === '--') {
+                    targetOpacity = 0.5;
+                }
+
+                // Color transition
+                if (noteInfo.tone !== '--' && noteInfo.rgb !== currentColor) {
+                    currentColor = interpolateColor(currentColor, noteInfo.rgb, colorSpeed);
+                    const [r, g, b] = currentColor.split(',').map(Number);
+                    mainMaterial.color.setRGB(r / 255, g / 255, b / 255);
+                    particleMaterial.color.setRGB(r / 255, g / 255, b / 255);
+                    lineMaterial.color.setRGB(r / 255, g / 255, b / 255);
+                }
+
+                // Update visualization
+                if (currentVizType === 'radial') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        const x = positions[i];
+                        const y = positions[i + 1];
+                        const r = Math.sqrt(x * x + y * y);
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const disp = freqScale * Math.sin(r * lastFreq * 0.05 + time) * (lastShape === 'circle' ? 1 : 1.5);
+                        const wobble = wobbleIntensity * Math.sin(time + x + y) * (Math.random() - 0.5);
+                        positions[i + 2] = disp + wobble;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                    mainGeometry.computeVertexNormals();
+                } else if (currentVizType === 'toroidal') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        const x = positions[i];
+                        const y = positions[i + 1];
+                        const z = positions[i + 2];
+                        const r = Math.sqrt(x * x + y * y + z * z);
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const disp = freqScale * Math.sin(r * lastFreq * 0.05 + time);
+                        const wobble = wobbleIntensity * Math.sin(time + x + y + z) * (Math.random() - 0.5);
+                        const scale = 1 + disp + wobble;
+                        positions[i] *= scale;
+                        positions[i + 1] *= scale;
+                        positions[i + 2] *= scale;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                    mainGeometry.computeVertexNormals();
+                } else if (currentVizType === 'swarm') {
+                    const positions = mainGeometry.attributes.position.array;
+                    const velocities = mainGeometry.attributes.velocity.array;
+                    for (let i = 0; i < particleCount; i++) {
+                        const x = positions[i * 3];
+                        const y = positions[i * 3 + 1];
+                        const z = positions[i * 3 + 2];
+                        const r = Math.sqrt(x * x + y * y + z * z);
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const orbit = lastShape === 'circle' 
+                            ? 2 * Math.sin(time * 0.5 + i)
+                            : 2 * Math.sin(time * 0.5 + i) * (Math.cos(time * 0.5 + i) > 0 ? 1 : -1);
+                        const disp = freqScale * Math.sin(r * lastFreq * 0.05 + time);
+                        const wobble = wobbleIntensity * Math.sin(time + x + y + z) * (Math.random() - 0.5);
+                        positions[i * 3] += velocities[i * 3] + disp * Math.cos(time);
+                        positions[i * 3 + 1] += velocities[i * 3 + 1] + disp * Math.sin(time);
+                        positions[i * 3 + 2] += velocities[i * 3 + 2] + wobble;
+                        const newR = Math.sqrt(positions[i * 3] ** 2 + positions[i * 3 + 1] ** 2 + positions[i * 3 + 2] ** 2);
+                        const scale = (2 + orbit) / newR;
+                        positions[i * 3] *= scale;
+                        positions[i * 3 + 1] *= scale;
+                        positions[i * 3 + 2] *= scale;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                } else if (currentVizType === 'spherical') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        const x = positions[i];
+                        const y = positions[i + 1];
+                        const z = positions[i + 2];
+                        const r = Math.sqrt(x * x + y * y + z * z);
+                        const theta = Math.acos(z / r);
+                        const phi = Math.atan2(y, x);
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const disp = freqScale * Math.sin(4 * theta) * Math.cos(4 * phi + time) * (lastShape === 'circle' ? 1 : 1.5);
+                        const wobble = wobbleIntensity * Math.sin(time + x + y + z) * (Math.random() - 0.5);
+                        const scale = 1 + disp + wobble;
+                        positions[i] *= scale;
+                        positions[i + 1] *= scale;
+                        positions[i + 2] *= scale;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                    mainGeometry.computeVertexNormals();
+                } else if (currentVizType === 'vortex') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < particleCount; i++) {
+                        const t = (i / particleCount) * Math.PI * 4;
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const r = 1 + freqScale * Math.sin(lastFreq * 0.05 * t + time);
+                        const shapeFactor = lastShape === 'circle' ? Math.cos(t) : Math.abs(Math.cos(t)) * Math.sign(Math.cos(t));
+                        positions[i * 3] = r * shapeFactor;
+                        positions[i * 3 + 1] = t * 0.2;
+                        positions[i * 3 + 2] = r * Math.sin(t);
+                        const wobble = wobbleIntensity * Math.sin(time + t) * (Math.random() - 0.5);
+                        positions[i * 3] += wobble;
+                        positions[i * 3 + 2] += wobble;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                } else if (currentVizType === 'lattice') {
+                    const positions = mainGeometry.attributes.position.array;
+                    const size = 10;
+                    const step = 4 / size;
+                    let idx = 0;
+                    for (let x = -2; x <= 2; x += step) {
+                        for (let y = -2; y <= 2; y += step) {
+                            for (let z = -2; z <= 2; z += step) {
+                                const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                                const disp = freqScale * (lastShape === 'circle'
+                                    ? Math.sin(lastFreq * 0.05 * (x + y + z) + time)
+                                    : Math.abs(Math.sin(lastFreq * 0.05 * (x + y + z) + time)) * Math.sign(Math.sin(lastFreq * 0.05 * (x + y + z) + time)));
+                                const wobble = wobbleIntensity * Math.sin(time + x + y + z) * (Math.random() - 0.5);
+                                positions[idx * 3] = x;
+                                positions[idx * 3 + 1] = y;
+                                positions[idx * 3 + 2] = z + disp + wobble;
+                                idx++;
+                            }
+                        }
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                } else if (currentVizType === 'fractal') {
+                    const positions = createFractalTree(0, 4, 2, Math.PI / 2, []);
+                    const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                    for (let i = 0; i < positions.length; i += 6) {
+                        const x1 = positions[i];
+                        const y1 = positions[i + 1];
+                        const z1 = positions[i + 2];
+                        const x2 = positions[i + 3];
+                        const y2 = positions[i + 4];
+                        const z2 = positions[i + 5];
+                        const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2);
+                        const disp = freqScale * Math.sin(lastFreq * 0.05 * length + time);
+                        const angle = lastShape === 'circle' ? Math.PI / 4 : Math.PI / 3;
+                        const wobble = wobbleIntensity * Math.sin(time + x1 + y1 + z1) * (Math.random() - 0.5);
+                        positions[i + 3] = x1 + (x2 - x1) * (1 + disp) + wobble;
+                        positions[i + 4] = y1 + (y2 - y1) * (1 + disp) + wobble;
+                        positions[i + 5] = z1 + (z2 - z1) * (1 + disp) + wobble;
+                    }
+                    mainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                    mainGeometry.attributes.position.needsUpdate = true;
+                } else if (currentVizType === 'chladni') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        const x = positions[i];
+                        const y = positions[i + 1];
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const disp = freqScale * Math.sin(lastFreq * 0.05 * x + time) * Math.sin(lastFreq * 0.05 * y + time) * (lastShape === 'circle' ? 1 : 1.5);
+                        const wobble = wobbleIntensity * Math.sin(time + x + y) * (Math.random() - 0.5);
+                        positions[i + 2] = disp + wobble;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                    mainGeometry.computeVertexNormals();
+                } else if (currentVizType === 'kaleidoscope') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < particleCount; i++) {
+                        const ring = Math.floor(i / (particleCount / 5));
+                        const theta = (i % (particleCount / 5)) * Math.PI * 2 / (particleCount / 5);
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const r = (1 + ring * 0.5) + freqScale * Math.sin(lastFreq * 0.05 * theta + time);
+                        const shapeFactor = lastShape === 'circle' ? 1 : Math.abs(Math.cos(theta)) * Math.sign(Math.cos(theta));
+                        positions[i * 3] = r * Math.cos(theta) * shapeFactor;
+                        positions[i * 3 + 1] = r * Math.sin(theta);
+                        positions[i * 3 + 2] = freqScale * Math.sin(theta + time);
+                        const wobble = wobbleIntensity * Math.sin(time + theta) * (Math.random() - 0.5);
+                        positions[i * 3] += wobble;
+                        positions[i * 3 + 1] += wobble;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                } else if (currentVizType === 'wavefront') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        const x = positions[i];
+                        const y = positions[i + 1];
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const disp = freqScale * (lastShape === 'circle'
+                            ? Math.sin(lastFreq * 0.05 * (x + y) + time)
+                            : Math.abs(Math.sin(lastFreq * 0.05 * (x + y) + time)) * Math.sign(Math.sin(lastFreq * 0.05 * (x + y) + time)));
+                        const wobble = wobbleIntensity * Math.sin(time + x + y) * (Math.random() - 0.5);
+                        positions[i + 2] = disp + wobble + y * 0.5;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                    mainGeometry.computeVertexNormals();
+                } else if (currentVizType === 'helical') {
+                    const positions = mainGeometry.attributes.position.array;
+                    let idx = 0;
+                    for (let t = 0; t <= Math.PI * 4; t += 0.1) {
+                        for (let u = -0.5; u <= 0.5; u += lastShape === 'circle' ? 0.1 : 0.2) {
+                            const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                            const r = 1 + freqScale * Math.sin(lastFreq * 0.05 * t + time);
+                            const wobble = wobbleIntensity * Math.sin(time + t) * (Math.random() - 0.5);
+                            positions[idx++] = (Math.cos(t) + u * Math.sin(t)) * r + wobble;
+                            positions[idx++] = t * 0.2;
+                            positions[idx++] = (Math.sin(t) - u * Math.cos(t)) * r + wobble;
+                        }
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                    mainGeometry.computeVertexNormals();
+                } else if (currentVizType === 'tesseract') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < particleCount; i++) {
+                        const x = positions[i * 3];
+                        const y = positions[i * 3 + 1];
+                        const z = positions[i * 3 + 2];
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const disp = freqScale * (lastShape === 'circle'
+                            ? Math.sin(lastFreq * 0.05 * (x + y + z) + time)
+                            : Math.abs(Math.sin(lastFreq * 0.05 * (x + y + z) + time)) * Math.sign(Math.sin(lastFreq * 0.05 * (x + y + z) + time)));
+                        const wobble = wobbleIntensity * Math.sin(time + x + y + z) * (Math.random() - 0.5);
+                        positions[i * 3] += disp + wobble;
+                        positions[i * 3 + 1] += disp + wobble;
+                        positions[i * 3 + 2] += disp + wobble;
+                        const r = Math.sqrt(positions[i * 3] ** 2 + positions[i * 3 + 1] ** 2 + positions[i * 3 + 2] ** 2);
+                        const scale = 2 / Math.max(r, 0.1);
+                        positions[i * 3] *= scale;
+                        positions[i * 3 + 1] *= scale;
+                        positions[i * 3 + 2] *= scale;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                } else if (currentVizType === 'moebius') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        const x = positions[i];
+                        const y = positions[i + 1];
+                        const z = positions[i + 2];
+                        const r = Math.sqrt(x * x + y * y + z * z);
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const disp = freqScale * Math.sin(lastFreq * 0.05 * r + time) * (lastShape === 'circle' ? 1 : 1.5);
+                        const wobble = wobbleIntensity * Math.sin(time + x + y + z) * (Math.random() - 0.5);
+                        const scale = 1 + disp + wobble;
+                        positions[i] *= scale;
+                        positions[i + 1] *= scale;
+                        positions[i + 2] *= scale;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                    mainGeometry.computeVertexNormals();
+                } else if (currentVizType === 'crystal') {
+                    const positions = mainGeometry.attributes.position.array;
+                    const size = 8;
+                    const step = 4 / size;
+                    let idx = 0;
+                    for (let x = -2; x <= 2; x += step) {
+                        for (let y = -2; y <= 2; y += step) {
+                            for (let z = -2; z <= 2; z += step) {
+                                if (Math.abs(x) === 2 || Math.abs(y) === 2 || Math.abs(z) === 2) {
+                                    const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                                    const disp = freqScale * Math.sin(lastFreq * 0.05 * (x + y + z) + time);
+                                    const wobble = wobbleIntensity * Math.sin(time + x + y + z) * (lastShape === 'circle' ? Math.random() - 0.5 : Math.sign(Math.random() - 0.5));
+                                    positions[idx++] = x + disp + wobble;
+                                    positions[idx++] = y + disp + wobble;
+                                    positions[idx++] = z + disp + wobble;
+                                    if (Math.abs(x + step) <= 2) {
+                                        positions[idx++] = x + step + disp + wobble;
+                                        positions[idx++] = y + disp + wobble;
+                                        positions[idx++] = z + disp + wobble;
+                                    }
+                                    if (Math.abs(y + step) <= 2) {
+                                        positions[idx++] = x + disp + wobble;
+                                        positions[idx++] = y + step + disp + wobble;
+                                        positions[idx++] = z + disp + wobble;
+                                    }
+                                    if (Math.abs(z + step) <= 2) {
+                                        positions[idx++] = x + disp + wobble;
+                                        positions[idx++] = y + disp + wobble;
+                                        positions[idx++] = z + step + disp + wobble;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    mainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                    mainGeometry.attributes.position.needsUpdate = true;
+                } else if (currentVizType === 'string') {
+                    const positions = mainGeometry.attributes.position.array;
+                    let idx = 0;
+                    for (let i = 0; i < 5; i++) {
+                        for (let x = -2; x <= 2; x += 0.1) {
+                            const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                            const disp = freqScale * Math.sin(lastFreq * 0.05 * x + time) * Math.sin(Math.PI * (i + 1) * (x + 2) / 4) * (lastShape === 'circle' ? 1 : 1.5);
+                            const wobble = wobbleIntensity * Math.sin(time + x + i) * (Math.random() - 0.5);
+                            positions[idx++] = x;
+                            positions[idx++] = i * 0.5 - 1;
+                            positions[idx++] = disp + wobble;
+                        }
+                    }
+                    mainGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                    mainGeometry.attributes.position.needsUpdate = true;
+                } else if (currentVizType === 'aurora') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < particleCount; i++) {
+                        const theta = (i / particleCount) * Math.PI;
+                        const phi = (i / particleCount) * Math.PI * 2;
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const r = 2 + freqScale * Math.sin(lastFreq * 0.05 * theta + time);
+                        const shapeFactor = lastShape === 'circle' ? 1 : Math.abs(Math.cos(theta)) * Math.sign(Math.cos(theta));
+                        positions[i * 3] = r * Math.sin(theta) * Math.cos(phi) * shapeFactor;
+                        positions[i * 3 + 1] = r * Math.cos(theta);
+                        positions[i * 3 + 2] = r * Math.sin(theta) * Math.sin(phi);
+                        const wobble = wobbleIntensity * Math.sin(time + theta + phi) * (Math.random() - 0.5);
+                        positions[i * 3] += wobble;
+                        positions[i * 3 + 2] += wobble;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                } else if (currentVizType === 'lissajous') {
+                    const positions = mainGeometry.attributes.position.array;
+                    for (let i = 0; i < particleCount; i++) {
+                        const t = (i / particleCount) * Math.PI * 2;
+                        const freqScale = lastFreq > 0 ? 0.5 / (lastFreq / 432) : 0.5;
+                        const ratioX = lastShape === 'circle' ? 2 : 5;
+                        const ratioY = lastShape === 'circle' ? 3 : 7;
+                        const ratioZ = lastShape === 'circle' ? 4 : 6;
+                        positions[i * 3] = Math.sin(t * ratioX + freqScale * Math.sin(lastFreq * 0.05 + time));
+                        positions[i * 3 + 1] = Math.sin(t * ratioY + freqScale * Math.sin(lastFreq * 0.05 + time));
+                        positions[i * 3 + 2] = Math.sin(t * ratioZ + freqScale * Math.sin(lastFreq * 0.05 + time));
+                        const wobble = wobbleIntensity * Math.sin(time + t) * (Math.random() - 0.5);
+                        positions[i * 3] += wobble;
+                        positions[i * 3 + 1] += wobble;
+                        positions[i * 3 + 2] += wobble;
+                    }
+                    mainGeometry.attributes.position.needsUpdate = true;
+                }
+            }
+
+            // Apply scale and rotation
+            if (mainMesh) mainMesh.scale.set(pulseScale * vizSize, pulseScale * vizSize, pulseScale * vizSize);
+            if (particleSystem) particleSystem.scale.set(pulseScale * vizSize, pulseScale * vizSize, pulseScale * vizSize);
+            if (randomRotation) {
+                if (mainMesh) {
+                    mainMesh.rotation.x += rotationVelocity.x;
+                    mainMesh.rotation.y += rotationVelocity.y;
+                    mainMesh.rotation.z += rotationVelocity.z;
+                }
+                if (particleSystem) {
+                    particleSystem.rotation.x += rotationVelocity.x;
+                    particleSystem.rotation.y += rotationVelocity.y;
+                    particleSystem.rotation.z += rotationVelocity.z;
+                }
+            }
+
+            // Update trails and opacity
+            updateTrail(pulseScale);
+            if (Math.abs(currentOpacity - targetOpacity) > 0.01) {
+                currentOpacity += (targetOpacity - currentOpacity) * 0.1;
+                mainMaterial.opacity = currentOpacity;
+                particleMaterial.opacity = 0.8 * currentOpacity;
+                lineMaterial.opacity = currentOpacity;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Event Listeners
+        if (window.location.protocol === 'file:') {
+            alert('This app must be served via a local server (e.g., run `python -m http.server 8000` and access http://localhost:8000).');
+        }
+
+        document.getElementById('start-btn').addEventListener('click', async () => {
+            if (!isRunning) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 2048;
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    microphone = audioContext.createMediaStreamSource(stream);
+                    microphone.connect(analyser);
+                    isRunning = true;
+                    document.getElementById('start-btn').textContent = 'Stop Microphone';
+                } catch (err) {
+                    let errorMessage = 'Failed to access microphone. ';
+                    if (err.name === 'NotAllowedError') {
+                        errorMessage += 'Please grant microphone permission. Ensure the page is served via http://localhost.';
+                    } else if (err.name === 'NotFoundError') {
+                        errorMessage += 'No microphone found.';
+                    } else {
+                        errorMessage += 'Error: ' + err.message;
+                    }
+                    alert(errorMessage);
+                }
+            } else {
+                microphone.disconnect();
+                audioContext.close();
+                isRunning = false;
+                document.getElementById('start-btn').textContent = 'Start Microphone';
+            }
+        });
+
+        document.getElementById('tonic').addEventListener('change', (e) => {
+            if (!autoTonic) currentTonic = e.target.value;
+        });
+
+        document.getElementById('auto-tonic').addEventListener('change', (e) => {
+            autoTonic = e.target.checked;
+            if (!autoTonic) {
+                currentTonic = document.getElementById('tonic').value;
+                noteHistory = [];
+                frameCount = 0;
+            }
+        });
+
+        document.getElementById('viz-type').addEventListener('change', (e) => {
+            currentVizType = e.target.value;
+            initVisualization(currentVizType);
+        });
+
+        const settingsMenu = document.getElementById('settings-menu');
+        document.getElementById('toggle-menu').addEventListener('click', () => {
+            settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
+            document.getElementById('toggle-menu').textContent = settingsMenu.style.display === 'none' ? 'Show Settings' : 'Hide Settings';
+        });
+
+        let uiVisible = true;
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'h') {
+                uiVisible = !uiVisible;
+                document.getElementById('ui').style.display = uiVisible ? 'block' : 'none';
+                settingsMenu.style.display = uiVisible && settingsMenu.style.display !== 'none' ? 'block' : 'none';
+            }
+        });
+
+        document.getElementById('pulse-speed').addEventListener('input', (e) => {
+            if (!autoPulse) {
+                pulseSpeed = parseFloat(e.target.value);
+                lastPulseSpeed = pulseSpeed;
+                document.getElementById('pulse-speed-value').textContent = pulseSpeed.toFixed(2);
+            }
+        });
+        document.getElementById('auto-pulse').addEventListener('change', (e) => {
+            autoPulse = e.target.checked;
+            if (!autoPulse) {
+                pulseSpeed = parseFloat(document.getElementById('pulse-speed').value);
+                lastPulseSpeed = pulseSpeed;
+                document.getElementById('bpm-display').textContent = `Detected BPM: --`;
+            }
+        });
+        document.getElementById('pulse-amplitude').addEventListener('input', (e) => {
+            pulseAmplitude = parseFloat(e.target.value);
+            document.getElementById('pulse-amplitude-value').textContent = pulseAmplitude.toFixed(2);
+        });
+        document.getElementById('particle-density').addEventListener('input', (e) => {
+            particleCount = parseInt(e.target.value);
+            document.getElementById('particle-density-value').textContent = particleCount;
+            if (['swarm', 'vortex', 'lattice', 'kaleidoscope', 'tesseract', 'aurora', 'lissajous'].includes(currentVizType)) {
+                initVisualization(currentVizType);
+            }
+        });
+        document.getElementById('trail-enabled').addEventListener('change', (e) => {
+            trailEnabled = e.target.checked;
+        });
+        document.getElementById('trail-duration').addEventListener('input', (e) => {
+            trailDuration = parseFloat(e.target.value);
+            document.getElementById('trail-duration-value').textContent = trailDuration.toFixed(1);
+        });
+        document.getElementById('viz-size').addEventListener('input', (e) => {
+            vizSize = parseFloat(e.target.value);
+            document.getElementById('viz-size-value').textContent = vizSize.toFixed(1);
+        });
+        document.getElementById('wobble-intensity').addEventListener('input', (e) => {
+            wobbleIntensity = parseFloat(e.target.value);
+            document.getElementById('wobble-intensity-value').textContent = wobbleIntensity.toFixed(2);
+        });
+        document.getElementById('color-speed').addEventListener('input', (e) => {
+            colorSpeed = parseFloat(e.target.value);
+            document.getElementById('color-speed-value').textContent = colorSpeed.toFixed(2);
+        });
+        document.getElementById('random-rotation').addEventListener('change', (e) => {
+            randomRotation = e.target.checked;
+            if (randomRotation) {
+                rotationVelocity.x = (Math.random() - 0.5) * 0.02;
+                rotationVelocity.y = (Math.random() - 0.5) * 0.02;
+                rotationVelocity.z = (Math.random() - 0.5) * 0.02;
+                controls.enabled = false;
+            } else {
+                rotationVelocity = { x: 0, y: 0, z: 0 };
+                controls.enabled = true;
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
