@@ -117,13 +117,25 @@
   #panel-left, #hud, #topbar, #bottom { transition: opacity .35s; }
   .scroll-y { overflow-y: auto; scrollbar-width: thin; }
   #hud-body.collapsed { display: none; }
-  @media (max-width: 900px) {
-    #panel-left { width: calc(100vw - 32px) !important; top: auto !important; bottom: 150px; max-height: 42vh; }
-    #panel-left.collapsed .panel-body { display: none; }
-    #hud { width: calc(100vw - 32px) !important; top: 64px !important; right: 16px !important; }
-    #hud-body { max-height: 30vh; }
-    .seg button { padding: .45rem .55rem; font-size: .72rem; }
-    #brand .sub { display: none; }
+  @media (max-width: 1100px) { #brand .sub { display: none; } }
+  @media (max-width: 767px) {
+    #topbar { flex-wrap: wrap; row-gap: 10px; top: 12px; left: 12px; right: 12px; }
+    #mode-seg { order: 3; width: 100%; }
+    #mode-seg button { flex: 1; padding: .45rem .3rem; font-size: .7rem; }
+    #brand .title-font { font-size: 1rem; }
+    #hud { width: auto !important; left: 12px; right: 12px !important; top: 112px !important; padding: .75rem; }
+    #hud-body { max-height: 32vh !important; }
+    #panel-left { width: auto !important; left: 12px !important; right: 12px; top: auto !important; bottom: calc(var(--bottom-h, 110px) + 22px); max-height: 45vh !important; padding: .75rem; }
+    #panel-left.collapsed .panel-extra { display: none; }
+    #input-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    #btn-demo { grid-column: auto; }
+    #input-grid .btn { font-size: .68rem; padding: .45rem .3rem; flex-direction: column; gap: .25rem; text-align: center; line-height: 1.15; }
+    #bottom { bottom: 12px; }
+    #keyboard { height: 66px; }
+    #keyboard .white { height: 66px; }
+    #keyboard .black { height: 40px; }
+    #keyboard .nm, .kb-legend { display: none; }
+    .swatch { width: 44px; height: 44px; }
   }
 </style>
 </head>
@@ -166,7 +178,7 @@
     <button class="text-xs text-[color:var(--muted)] md:hidden" id="panel-collapse">recolher</button>
   </div>
   <div class="panel-body">
-    <div class="grid grid-cols-2 gap-2">
+    <div class="grid grid-cols-2 gap-2" id="input-grid">
       <button class="btn" id="btn-mic">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
         <span>Ativar Microfone</span>
@@ -181,6 +193,7 @@
       </button>
     </div>
     <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" class="hidden">
+    <div class="panel-extra">
     <p class="text-[11px] text-[color:var(--muted)] mt-2 leading-relaxed">Ou arraste um arquivo .mp3 / .wav / .m4a / .ogg para a tela.</p>
 
     <div class="mt-4">
@@ -199,6 +212,7 @@
     <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-[color:var(--muted)] leading-relaxed">
       <div class="label mb-1">Atalhos</div>
       <span class="text-white/80">1 2 3</span> modos · <span class="text-white/80">Espaço</span> play/pause · <span class="text-white/80">H</span> ocultar interface · <span class="text-white/80">F</span> tela cheia · arraste para orbitar
+    </div>
     </div>
   </div>
 </aside>
@@ -238,11 +252,18 @@
       <div class="flex justify-between text-[10px] text-[color:var(--muted)] mt-1"><span>Terra · Menor · denso</span><span>Ar · Maior · sublimado</span></div>
     </div>
     <div class="mt-3">
-      <div class="flex justify-between items-baseline"><span class="label">Polaridade Sentirama</span><span id="pol-text" class="text-xs font-semibold">—</span></div>
-      <div class="meter mt-2" style="background: linear-gradient(90deg,#8f4fd0,#2f9fe6 30%,#43c24a 50%,#f7902f 70%,#f7dc2f)">
+      <div class="flex justify-between items-baseline"><span class="label">Plano Físico</span><span id="pol-text" class="text-xs font-semibold">—</span></div>
+      <div class="meter mt-2" style="background: linear-gradient(90deg,#2f9fe6,#3fb59a 35%,#43c24a 50%,#9fd23a 65%,#f7dc2f)">
         <div class="needle" id="pol-needle" style="left:50%"></div>
       </div>
-      <div class="flex justify-between text-[10px] text-[color:var(--muted)] mt-1"><span>Negativo · Físico (Lua)</span><span>Positivo · Espiritual (Sol)</span></div>
+      <div class="flex justify-between text-[10px] text-[color:var(--muted)] mt-1"><span>− Azul · frio · introspectivo</span><span>+ Amarelo · quente · extrovertido</span></div>
+    </div>
+    <div class="mt-3">
+      <div class="flex justify-between items-baseline"><span class="label">Plano Espiritual</span><span id="spi-text" class="text-xs font-semibold">—</span></div>
+      <div class="meter mt-2" style="background: linear-gradient(90deg,#e8402c,#ec6a6a 40%,#f0a0bf 60%,#f27bb8)">
+        <div class="needle" id="spi-needle" style="left:50%"></div>
+      </div>
+      <div class="flex justify-between text-[10px] text-[color:var(--muted)] mt-1"><span>Vermelho · denso · matéria</span><span>Rosa · sutil · leveza</span></div>
     </div>
     <div class="mt-3">
       <div class="flex justify-between items-baseline"><span class="label">Tensão Fá ↔ Si (torção em S)</span><span id="tension-text" class="text-xs stat">0%</span></div>
@@ -275,7 +296,7 @@
     </div>
   </div>
   <div class="glass px-3 pt-2 pb-3">
-    <div class="flex justify-between items-baseline mb-1.5 px-1"><span class="label">Cromagrama · Teclado Croma-Sônico</span><span class="text-[10px] text-[color:var(--muted)]">● naturais · ▲ ultravioletas</span></div>
+    <div class="flex justify-between items-baseline mb-1.5 px-1"><span class="label">Cromagrama · Teclado Croma-Sônico</span><span class="kb-legend text-[10px] text-[color:var(--muted)]">● naturais · ▲ ultravioletas</span></div>
     <div id="keyboard"></div>
   </div>
 </div>
@@ -298,7 +319,7 @@
 
     <div class="grid md:grid-cols-[1fr_260px] gap-6 mt-4">
       <div>
-        <p>O método <strong>Croma-Sônica</strong> une som e cor numa mesma esfera de relações. Os 12 semitons da escala cromática são dispostos num círculo de 12 cores, tendo como centro de equilíbrio a nota <strong>Ré (D) = Verde 0</strong>. As <strong>sete naturais</strong> (teclas brancas: Ré, Mi, Fá, Sol, Lá, Si, Dó) são representadas por círculos; as <strong>cinco ultravioletas</strong> (teclas pretas) por triângulos.</p>
+        <p>O método <strong>Croma-Sônica</strong> une som e cor numa mesma esfera de relações. Os 12 semitons da escala cromática são dispostos num círculo de 12 cores, tendo como centro de equilíbrio a nota <strong>Ré (D) = Verde 0</strong>. As <strong>sete naturais</strong> (teclas brancas: Ré, Mi, Fá, Sol, Lá, Si, Dó) são representadas por círculos; as <strong>cinco ultravioletas</strong> (teclas pretas) por triângulos. Cada ultravioleta tem a mesma cor de uma natural — <em>Yellow[1] = Yeluv[1], Violet[4] = Viluv[4], Green[6] = Gruv[6], Orange[8] = Oruv[8], Blue[11] = Bluv[11]</em> —, de modo que o ciclo das cores dá duas voltas ao longo dos 12 tons.</p>
         <p class="mt-2">Este visualizador escuta o áudio em tempo real, extrai o <em>cromagrama</em> (energia de cada classe de nota, afinação A4 = 440 Hz), identifica a nota dominante e seus harmônicos, e traduz tudo em cor, forma e movimento.</p>
       </div>
       <img src="assets/mandala-croma-sonica.webp" alt="Mandala Croma-Sônica de 12 pétalas" class="ref-img w-full">
@@ -315,28 +336,36 @@
           <li><strong style="color:#e8402c">Modo Terra (Menor)</strong> — graves, tons densos e tonalidades menores. Vermelho/Azul: maior densidade, distorção de malha e opacidade.</li>
         </ul>
         <p class="mt-2 text-[13px] text-[color:var(--muted)]">O índice Ar/Terra combina: correlação maior × menor do perfil tonal (Krumhansl), centroide espectral (brilho) e BPM.</p>
-        <h3>Polaridade Sentirama</h3>
-        <ul class="list-disc pl-5 space-y-1">
-          <li><strong style="color:#f7dc2f">Direita · Positivo · Espiritual</strong> — Amarelo / Laranja (Sol, Fogo).</li>
-          <li><strong style="color:#2f9fe6">Esquerda · Negativo · Físico</strong> — Azul / Violeta (Lua, Água).</li>
-          <li>Eixo vertical: <strong style="color:#f27bb8">Ar (Rosa 9, topo)</strong> ↔ <strong style="color:#e8402c">Terra (Vermelho 3, base)</strong>.</li>
+        <h3>O Sentirama</h3>
+        <p>Como a cruz astrológica (símbolo da Terra), o Sentirama é a interseção de dois planos — e nós estamos no ponto de cruzamento, entendido como a <strong>frequência base, a “tônica”</strong> da nossa harmonia pessoal.</p>
+        <ul class="list-disc pl-5 space-y-1 mt-2">
+          <li><strong>Plano Físico (horizontal)</strong> — o plano da matéria e das condições da vida, entre o frio e o calor. À esquerda o <strong style="color:#2f9fe6">Azul (−)</strong>: frio, introspectivo, racional, lento; traz paz, serenidade e amplitude de visão. À direita o <strong style="color:#f7dc2f">Amarelo (+)</strong>: quente, extrovertido, alegre, veloz, intuitivo, maleável — às vezes excessivo. Para Kandinsky o azul recua para dentro da tela e o amarelo avança em direção ao observador.</li>
+          <li><strong>Plano Espiritual (vertical)</strong> — da densidade à sutileza, do peso à leveza. Embaixo o <strong style="color:#e8402c">Vermelho</strong>: sentimentos ligados à matéria, densos, viscerais (paixões, raiva, luta pela sobrevivência). Em cima o <strong style="color:#f27bb8">Rosa</strong>, o “vermelho claro”: sutil e leve. O vermelho é a primeira cor que distinguimos na natureza; o rosa, uma das últimas (Berlin &amp; Kay).</li>
         </ul>
+        <div class="grid grid-cols-[1fr_70px] gap-2 mt-3 items-center">
+          <img src="assets/plano-fisico.png" alt="O Plano Físico" class="ref-img w-full">
+          <img src="assets/plano-espiritual.png" alt="O Plano Espiritual" class="ref-img w-full h-40 object-contain">
+        </div>
       </div>
       <div>
         <h3>Os três modos visuais</h3>
         <ul class="list-disc pl-5 space-y-1">
-          <li><strong>Cromasfera 3D</strong> — esfera orgânica envolta pela fita cromática de 12 nós. Em <em>Ré (Verde 0)</em> ela se aquieta em simetria perfeita; a tensão entre <em>Fá (Vermelho 3)</em> e <em>Si (Rosa 9)</em> torce a fita em “S”. Partículas de matéria (saindo) e antimatéria (entrando) pulsam com os ataques.</li>
+          <li><strong>Cromasfera 3D</strong> — esfera orgânica envolta pela fita cromática de 12 tons (Cap. 7), que corre sobre ela como a costura de uma bola de tênis: de lado forma um “S”, de cima dois arcos. Em <em>Ré (Verde 0)</em> a fita se aplaina num anel e a esfera se aquieta em simetria perfeita; a tensão entre <em>Fá (Vermelho 3)</em> e <em>Si (Rosa 9)</em> aprofunda a torção em “S”. Partículas de matéria (saindo, na cor do tom) e antimatéria (entrando, na cor complementar) pulsam com os ataques.</li>
           <li><strong>Flor Croma-Sônica</strong> — mandala de 12 pétalas; cada pétala se ilumina com a intensidade da sua nota. Acordes consonantes acendem as conexões das <em>Sete Naturais</em>.</li>
-          <li><strong>Sentirama 3D</strong> — cruz de eixos de polaridade; um orbe de luz orbita conforme a predominância harmônica e emocional do som.</li>
+          <li><strong>Sentirama 3D</strong> — os dois planos em ampulheta cruzando-se na tônica; um orbe de luz orbita conforme a predominância harmônica e emocional do som. O Modo Ar o puxa para o quadrante Rosa/Amarelo; o Modo Terra para Vermelho/Azul.</li>
         </ul>
-        <div class="grid grid-cols-3 gap-2 mt-4">
+        <div class="grid grid-cols-2 gap-2 mt-4">
+          <img src="assets/fita-cromatica-12-tons.webp" alt="A fita cromática de 12 tons" class="ref-img w-full h-48 object-contain">
+          <img src="assets/berlin-kay-ordem-das-cores.png" alt="A ordem das cores segundo Berlin e Kay" class="ref-img w-full h-48 object-contain">
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-2">
           <img src="assets/teclado-cromatico.webp" alt="Teclado cromático" class="ref-img w-full h-32 object-cover object-top">
           <img src="assets/elementos.png" alt="Os elementos básicos" class="ref-img w-full h-32 object-contain">
           <img src="assets/sol-e-lua.png" alt="O Sol e a Lua" class="ref-img w-full h-32 object-contain">
         </div>
       </div>
     </div>
-    <p class="mt-6 text-[12px] text-[color:var(--muted)]">Nota: o microfone exige contexto seguro — abra a página via <code>https://</code> ou <code>http://localhost</code> (ex.: <code>python3 -m http.server</code>). As posições 3D das tonalidades ultravioletas no Sentirama são uma interpretação visual deste aplicativo.</p>
+    <p class="mt-6 text-[12px] text-[color:var(--muted)]">Nota: o microfone exige contexto seguro — abra a página via <code>https://</code> ou <code>http://localhost</code> (ex.: <code>python3 -m http.server</code>). As posições 3D intermediárias no Sentirama (laranjas, violetas e o tom espelho de cada nota em torno da tônica) e a fórmula do índice Ar/Terra são interpretações visuais deste aplicativo.</p>
   </div>
 </div>
 
@@ -348,17 +377,17 @@
 const TAU = Math.PI * 2;
 const TONES = [
   { t: 0,  en: 'D',  pt: 'Ré',   name: 'Verde',       code: 'Green 0',   hex: '#43c24a', uv: false, role: 'Ponto de Equilíbrio Central' },
-  { t: 1,  en: 'D#', pt: 'Ré#',  name: 'Amarelo-UV',  code: 'Yeluv 1',   hex: '#dcf04a', uv: true,  role: 'Ultravioleta' },
+  { t: 1,  en: 'D#', pt: 'Ré#',  name: 'Amarelo-UV',  code: 'Yeluv 1',   hex: '#f7dc2f', uv: true,  role: 'Yellow[1] = Yeluv[1]' },
   { t: 2,  en: 'E',  pt: 'Mi',   name: 'Laranja',     code: 'Orange 2',  hex: '#f7902f', uv: false, role: 'Natural' },
-  { t: 3,  en: 'F',  pt: 'Fá',   name: 'Vermelho',    code: 'Red 3',     hex: '#e8402c', uv: false, role: 'Tensão Solar · Terra · Denso' },
-  { t: 4,  en: 'F#', pt: 'Fá#',  name: 'Violeta-UV',  code: 'Viluv 4',   hex: '#b47cf0', uv: true,  role: 'Ultravioleta' },
-  { t: 5,  en: 'G',  pt: 'Sol',  name: 'Azul',        code: 'Blue 5',    hex: '#2f9fe6', uv: false, role: 'Natural' },
-  { t: 6,  en: 'G#', pt: 'Sol#', name: 'Verde-UV',    code: 'Gruv 6',    hex: '#86f07c', uv: true,  role: 'Oposto ao Verde 0' },
-  { t: 7,  en: 'A',  pt: 'Lá',   name: 'Amarelo',     code: 'Yellow 7',  hex: '#f7dc2f', uv: false, role: 'Reagrupamento Harmônico' },
-  { t: 8,  en: 'A#', pt: 'Lá#',  name: 'Laranja-UV',  code: 'Oruv 8',    hex: '#ffb062', uv: true,  role: 'Ultravioleta' },
-  { t: 9,  en: 'B',  pt: 'Si',   name: 'Rosa',        code: 'Pink 9',    hex: '#f27bb8', uv: false, role: 'Tensão Lunar · Ar · Sublimado' },
+  { t: 3,  en: 'F',  pt: 'Fá',   name: 'Vermelho',    code: 'Red 3',     hex: '#e8402c', uv: false, role: 'Plano Espiritual · denso · Terra' },
+  { t: 4,  en: 'F#', pt: 'Fá#',  name: 'Violeta-UV',  code: 'Viluv 4',   hex: '#8f4fd0', uv: true,  role: 'Violet[4] = Viluv[4]' },
+  { t: 5,  en: 'G',  pt: 'Sol',  name: 'Azul',        code: 'Blue 5',    hex: '#2f9fe6', uv: false, role: 'Plano Físico · frio (−)' },
+  { t: 6,  en: 'G#', pt: 'Sol#', name: 'Verde-UV',    code: 'Gruv 6',    hex: '#43c24a', uv: true,  role: 'Green[6] = Gruv[6] · Oposto ao Verde 0' },
+  { t: 7,  en: 'A',  pt: 'Lá',   name: 'Amarelo',     code: 'Yellow 7',  hex: '#f7dc2f', uv: false, role: 'Plano Físico · quente (+) · Reagrupamento Harmônico' },
+  { t: 8,  en: 'A#', pt: 'Lá#',  name: 'Laranja-UV',  code: 'Oruv 8',    hex: '#f7902f', uv: true,  role: 'Orange[8] = Oruv[8]' },
+  { t: 9,  en: 'B',  pt: 'Si',   name: 'Rosa',        code: 'Pink 9',    hex: '#f27bb8', uv: false, role: 'Plano Espiritual · sutil · Ar' },
   { t: 10, en: 'C',  pt: 'Dó',   name: 'Violeta',     code: 'Violet 10', hex: '#8f4fd0', uv: false, role: 'Natural' },
-  { t: 11, en: 'C#', pt: 'Dó#',  name: 'Azul-UV',     code: 'Bluv 11',   hex: '#5fd2f7', uv: true,  role: 'Ultravioleta' },
+  { t: 11, en: 'C#', pt: 'Dó#',  name: 'Azul-UV',     code: 'Bluv 11',   hex: '#2f9fe6', uv: true,  role: 'Blue[11] = Bluv[11]' },
 ];
 TONES.forEach(o => { o.color = new THREE.Color(o.hex); });
 // classe de altura padrão (C=0) → tom Croma (D=0)
@@ -366,27 +395,43 @@ const pcToTone = pc => (pc + 10) % 12;
 const toneToPc = t => (t + 2) % 12;
 const NATURALS = [0, 2, 3, 5, 7, 9, 10];
 const toneLabel = t => `${TONES[t].en} (${TONES[t].pt})`;
+// espelho em torno da tônica (Verde 0): k ↔ −k. Liga cores complementares do Sentirama:
+// Amarelo 1 ↔ Azul 11, Laranja 2 ↔ Violeta 10, Vermelho 3 ↔ Rosa 9, Violeta 4 ↔ Laranja 8, Azul 5 ↔ Amarelo 7.
+const mirrorTone = t => (12 - t) % 12;
 
-// Direções dos 12 tons na Cromasfera: os 12 vértices do icosaedro.
-// Pares antipodais = trítonos (Verde 0 ↔ Verde-UV 6, Vermelho 3 ↔ Rosa 9).
-// Rosa 9 (Ar) no topo, Vermelho 3 (Terra) na base; naturais no hemisfério superior, UV no inferior.
+// Direções dos 12 tons na Cromasfera: os 12 vértices do icosaedro, orientados como o Sentirama.
+// Pares antipodais = pares espelho (cores complementares): Rosa 9 no topo ↔ Vermelho 3 na base,
+// amarelos à direita ↔ azuis à esquerda, violetas em cima à esquerda ↔ laranjas embaixo à direita,
+// Verde 0 à frente ↔ Verde 6 atrás.
 const ICO_DIRS = (() => {
   const d = new Array(12), y = 1 / Math.sqrt(5), r = 2 / Math.sqrt(5);
   d[9] = new THREE.Vector3(0, 1, 0); d[3] = new THREE.Vector3(0, -1, 0);
-  const upper = { 7: 18, 0: 90, 5: 162, 10: 234, 2: 306 };
+  const upper = { 7: 18, 0: 90, 10: 162, 4: 234, 1: 306 };
+  const opposite = { 7: 5, 0: 6, 10: 2, 4: 8, 1: 11 };
   for (const k in upper) {
     const a = upper[k] * Math.PI / 180, t = +k;
     d[t] = new THREE.Vector3(r * Math.cos(a), y, r * Math.sin(a));
-    d[(t + 6) % 12] = new THREE.Vector3(-r * Math.cos(a), -y, -r * Math.sin(a));
+    d[opposite[t]] = new THREE.Vector3(-r * Math.cos(a), -y, -r * Math.sin(a));
   }
   return d;
 })();
 
-// Posições no Sentirama: x = polaridade (+ Sol/Amarelo, − Lua/Azul), y = Ar(Rosa) ↔ Terra(Vermelho), z = Verde 0 ↔ Verde-UV 6
-const SENT_POS = [
-  [0, 0, 1], [0.6, 0.55, -0.55], [0.8, -0.55, 0.2], [0, -1, 0], [-0.55, -0.6, -0.55], [-1, 0, 0.15],
-  [0, 0, -1], [1, 0.15, 0.15], [0.55, -0.6, -0.55], [0, 1, 0], [-0.75, 0.55, 0.2], [-0.55, 0.5, -0.55],
-].map(p => new THREE.Vector3(p[0], p[1], p[2]));
+// Posições no Sentirama (cruz de dois planos que se cortam na tônica = Verde 0):
+//  x = Plano Físico: Azul (−, frio, à esquerda) ↔ Amarelo (+, quente, à direita)
+//  y = Plano Espiritual: Vermelho (denso, embaixo) ↔ Rosa (sutil, em cima)
+//  z = Kandinsky: o amarelo avança em direção ao observador, o azul recua.
+// Simetria: o tom −k fica no ponto oposto ao tom k (cores complementares).
+const SENT_POS = (() => {
+  const half = { 1: [0.88, -0.14, 0.42], 2: [0.66, -0.66, 0.26], 3: [0, -1, 0], 4: [-0.56, 0.76, -0.2], 5: [-1, -0.14, -0.45] };
+  const p = new Array(12);
+  p[0] = new THREE.Vector3(0, 0, 0);
+  p[6] = new THREE.Vector3(0, 0, -0.32);
+  for (const k in half) {
+    p[+k] = new THREE.Vector3(...half[k]);
+    p[12 - k] = p[+k].clone().negate();
+  }
+  return p;
+})();
 
 /* =====================================================================
    2. MOTOR DE ÁUDIO (Web Audio API)
@@ -977,6 +1022,10 @@ const bgMat = new THREE.ShaderMaterial({
 });
 scene.add(new THREE.Mesh(new THREE.SphereGeometry(80, 48, 32), bgMat));
 
+const INK = 0x0b0710;
+scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+const keyLight = new THREE.DirectionalLight(0xffffff, 0.7); keyLight.position.set(3, 5, 4); scene.add(keyLight);
+
 /* ---------------------------------------------------------------------
    MODO 1 — A CROMASFERA 3D (onda-partícula)
    --------------------------------------------------------------------- */
@@ -1046,80 +1095,100 @@ const outlineMesh = new THREE.Mesh(sphereGeo, outlineMat);
 M1.add(outlineMesh, sphereMesh);
 const coreGlow = glowSprite(0xffffff, 5.5, 0.1); M1.add(coreGlow);
 
-// Fita cromática de 12 nós (meia-torção à la Möbius + torção em S sob tensão Fá↔Si)
-const RIB_N = 600;
-const ribbon = new THREE.Group(); ribbon.rotation.set(0.38, 0, 0.16); M1.add(ribbon);
-const ribPos = new Float32Array((RIB_N + 1) * 2 * 3), ribCol = new Float32Array((RIB_N + 1) * 2 * 3);
+// Fita cromática de 12 tons (Cap. 7): um tubo contínuo com 12 contas ovais. Como os ultravioletas
+// repetem as cores das naturais, o ciclo de cores dá duas voltas (verde→amarelo→laranja→vermelho→
+// violeta→azul→verde→amarelo→laranja→rosa→violeta→azul). A fita corre sobre a esfera como a costura
+// de uma bola de tênis: vista de lado forma um “S”, de cima dois arcos. Em Ré (Verde 0) ela se aplaina
+// num anel simétrico; a tensão Fá ↔ Si aprofunda a torção em S.
+const RIB_N = 480, RIB_M = 10;
+const ribbon = new THREE.Group(); ribbon.rotation.set(0.42, 0, 0.18); M1.add(ribbon);
+const ribPos = new Float32Array(RIB_N * RIB_M * 3), ribNrm = new Float32Array(RIB_N * RIB_M * 3);
+const ribCol = new Float32Array(RIB_N * RIB_M * 3), ribInk = new Float32Array(RIB_N * RIB_M * 3);
+const ribIdx = [];
+for (let i = 0; i < RIB_N; i++) for (let j = 0; j < RIB_M; j++) {
+  const i1 = (i + 1) % RIB_N, j1 = (j + 1) % RIB_M;
+  const a = i * RIB_M + j, b = i1 * RIB_M + j, c = i1 * RIB_M + j1, d = i * RIB_M + j1;
+  ribIdx.push(a, d, b, b, d, c);
+}
 const ribGeo = new THREE.BufferGeometry();
 ribGeo.setAttribute('position', new THREE.BufferAttribute(ribPos, 3));
+ribGeo.setAttribute('normal', new THREE.BufferAttribute(ribNrm, 3));
 ribGeo.setAttribute('color', new THREE.BufferAttribute(ribCol, 3));
-{
-  const idx = [];
-  for (let i = 0; i < RIB_N; i++) { const a = i * 2, b = a + 1, c = a + 2, d = a + 3; idx.push(a, b, c, b, d, c); }
-  ribGeo.setIndex(idx);
-}
-const ribMesh = new THREE.Mesh(ribGeo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.92, map: PAPER }));
-ribbon.add(ribMesh);
-{ // uv para a textura de papel
-  const uv = new Float32Array((RIB_N + 1) * 4);
-  for (let i = 0; i <= RIB_N; i++) { uv[i * 4] = i / RIB_N * 24; uv[i * 4 + 1] = 0; uv[i * 4 + 2] = i / RIB_N * 24; uv[i * 4 + 3] = 0.25; }
-  ribGeo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-}
-const edgeA = new Float32Array((RIB_N + 1) * 3), edgeB = new Float32Array((RIB_N + 1) * 3);
-const edgeMat = new THREE.LineBasicMaterial({ color: 0x0b0710, transparent: true, opacity: 0.9 });
-const edgeGeoA = new THREE.BufferGeometry(); edgeGeoA.setAttribute('position', new THREE.BufferAttribute(edgeA, 3));
-const edgeGeoB = new THREE.BufferGeometry(); edgeGeoB.setAttribute('position', new THREE.BufferAttribute(edgeB, 3));
-ribbon.add(new THREE.Line(edgeGeoA, edgeMat), new THREE.Line(edgeGeoB, edgeMat));
-// nós: círculos (naturais) e triângulos/tetraedros (ultravioletas)
+ribGeo.setIndex(ribIdx);
+const ribInkGeo = new THREE.BufferGeometry();
+ribInkGeo.setAttribute('position', new THREE.BufferAttribute(ribInk, 3));
+ribInkGeo.setIndex(ribIdx);
+const ribMesh = new THREE.Mesh(ribGeo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+const ribInkMesh = new THREE.Mesh(ribInkGeo, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide }));
+ribMesh.frustumCulled = ribInkMesh.frustumCulled = false;
+ribbon.add(ribInkMesh, ribMesh);
+// contas ovais (todas ovais, como no desenho; as ultravioletas um pouco menores)
+const beadGeo = new THREE.SphereGeometry(1, 24, 16);
 const ribNodes = TONES.map(o => {
-  const g = new THREE.Group();
-  const geo = o.uv ? new THREE.TetrahedronGeometry(0.12) : new THREE.SphereGeometry(0.095, 20, 14);
-  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: o.color.clone() }));
-  const ink = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x0b0710, side: THREE.BackSide }));
-  ink.scale.setScalar(1.25);
-  const glow = glowSprite(o.color, 0.6, 0.0);
-  g.add(ink, m, glow); g.userData = { m, glow };
+  const g = new THREE.Group(), body = new THREE.Group();
+  const m = new THREE.Mesh(beadGeo, new THREE.MeshLambertMaterial({ color: o.color.clone(), emissive: o.color.clone(), emissiveIntensity: 0.15 }));
+  const ink = new THREE.Mesh(beadGeo, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide }));
+  ink.scale.setScalar(1.2);
+  body.add(ink, m);
+  const glow = glowSprite(o.color, 0.7, 0);
+  g.add(body, glow);
+  g.userData = { body, m, glow };
   ribbon.add(g); return g;
 });
-const _P = new THREE.Vector3(), _W = new THREE.Vector3(), _R = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0);
-function updateRibbon(time) {
-  const R = 2.3, T = AN.tension, S = AN.stability, lvl = AN.level;
-  const hw = 0.1 + 0.07 * lvl + 0.03 * AN.pulse;
-  for (let i = 0; i <= RIB_N; i++) {
-    const s = i / RIB_N, th = s * TAU;
-    const calm = 1 - 0.8 * S;
-    const y = (0.12 * Math.sin(3 * th + time * 0.7) * calm) + T * 0.8 * Math.sin(2 * th - time * 2.0) + AN.pulse * 0.04 * Math.sin(12 * th);
-    const rr = R + 0.12 * Math.sin(6 * th + time * 0.5) * calm + T * 0.3 * Math.cos(2 * th - time * 2.0);
-    _P.set(rr * Math.cos(th), y, rr * Math.sin(th));
-    _R.set(Math.cos(th), 0, Math.sin(th));
-    const tw = 0.5 * th + T * 2.6 * Math.sin(2 * th - time * 2.0);
-    _W.copy(_Y).multiplyScalar(Math.cos(tw)).addScaledVector(_R, Math.sin(tw));
-    const o = i * 6;
-    ribPos[o] = _P.x + _W.x * hw; ribPos[o + 1] = _P.y + _W.y * hw; ribPos[o + 2] = _P.z + _W.z * hw;
-    ribPos[o + 3] = _P.x - _W.x * hw; ribPos[o + 4] = _P.y - _W.y * hw; ribPos[o + 5] = _P.z - _W.z * hw;
-    edgeA[i * 3] = ribPos[o]; edgeA[i * 3 + 1] = ribPos[o + 1]; edgeA[i * 3 + 2] = ribPos[o + 2];
-    edgeB[i * 3] = ribPos[o + 3]; edgeB[i * 3 + 1] = ribPos[o + 4]; edgeB[i * 3 + 2] = ribPos[o + 5];
+const COS_M = [], SIN_M = [];
+for (let j = 0; j < RIB_M; j++) { COS_M.push(Math.cos(j / RIB_M * TAU)); SIN_M.push(Math.sin(j / RIB_M * TAU)); }
+const _P = new THREE.Vector3(), _Pn = new THREE.Vector3(), _Pp = new THREE.Vector3();
+const _T = new THREE.Vector3(), _Nr = new THREE.Vector3(), _B = new THREE.Vector3(), _X = new THREE.Vector3(1, 0, 0);
+let seamB = 0.16;
+// curva da bola de tênis na esfera unitária (a + b = 1): b = 0 é o equador; b → 0,5 aprofunda o “S”
+function seamPoint(t, out, a, b, R, time) {
+  const h = 2 * Math.sqrt(a * b);
+  const r = R * (1 + 0.035 * Math.sin(6 * t + time * 1.4) * (1 - AN.stability) + 0.03 * AN.pulse * Math.sin(12 * t));
+  return out.set((a * Math.cos(t) + b * Math.cos(3 * t)) * r, h * Math.sin(2 * t) * r, (a * Math.sin(t) - b * Math.sin(3 * t)) * r);
+}
+function updateRibbon(dt, time) {
+  const bT = (0.15 + 0.25 * AN.tension) * (1 - 0.92 * AN.stability);
+  seamB += (bT - seamB) * smoothK(dt, 2.5);
+  const b = seamB, a = 1 - b, R = 1.95, step = TAU / RIB_N;
+  const rad = 0.045 + 0.022 * AN.level + 0.012 * AN.pulse, ink = 0.022;
+  for (let i = 0; i < RIB_N; i++) {
+    const s = i / RIB_N, t = s * TAU;
+    seamPoint(t, _P, a, b, R, time);
+    seamPoint(t + step * 0.5, _Pn, a, b, R, time);
+    seamPoint(t - step * 0.5, _Pp, a, b, R, time);
+    _T.subVectors(_Pn, _Pp).normalize();
+    _Nr.copy(_P).normalize(); _Nr.addScaledVector(_T, -_Nr.dot(_T)).normalize();
+    _B.crossVectors(_T, _Nr);
     const tf = s * 12, k0 = Math.floor(tf) % 12, k1 = (k0 + 1) % 12;
     let f = tf - Math.floor(tf); f = f * f * (3 - 2 * f);
     const c0 = TONES[k0].color, c1 = TONES[k1].color;
-    const br = 0.4 + 0.95 * (AN.vis[k0] * (1 - f) + AN.vis[k1] * f) + 0.15 * S;
-    const r = (c0.r + (c1.r - c0.r) * f) * br, g = (c0.g + (c1.g - c0.g) * f) * br, b = (c0.b + (c1.b - c0.b) * f) * br;
-    ribCol[o] = ribCol[o + 3] = r; ribCol[o + 1] = ribCol[o + 4] = g; ribCol[o + 2] = ribCol[o + 5] = b;
-    if (i % (RIB_N / 12) === 0 && i < RIB_N) {
-      const node = ribNodes[i / (RIB_N / 12)], v = AN.vis[i / (RIB_N / 12)];
+    const br = 0.55 + 0.75 * (AN.vis[k0] * (1 - f) + AN.vis[k1] * f) + 0.15 * AN.stability;
+    const cr = (c0.r + (c1.r - c0.r) * f) * br, cg = (c0.g + (c1.g - c0.g) * f) * br, cb = (c0.b + (c1.b - c0.b) * f) * br;
+    for (let j = 0; j < RIB_M; j++) {
+      const ox = COS_M[j] * _Nr.x + SIN_M[j] * _B.x, oy = COS_M[j] * _Nr.y + SIN_M[j] * _B.y, oz = COS_M[j] * _Nr.z + SIN_M[j] * _B.z;
+      const v = (i * RIB_M + j) * 3;
+      ribPos[v] = _P.x + ox * rad; ribPos[v + 1] = _P.y + oy * rad; ribPos[v + 2] = _P.z + oz * rad;
+      ribInk[v] = _P.x + ox * (rad + ink); ribInk[v + 1] = _P.y + oy * (rad + ink); ribInk[v + 2] = _P.z + oz * (rad + ink);
+      ribNrm[v] = ox; ribNrm[v + 1] = oy; ribNrm[v + 2] = oz;
+      ribCol[v] = cr; ribCol[v + 1] = cg; ribCol[v + 2] = cb;
+    }
+    if (i % (RIB_N / 12) === 0) {
+      const k = i / (RIB_N / 12), node = ribNodes[k], vk = AN.vis[k];
       node.position.copy(_P);
-      node.scale.setScalar(1 + v * 1.8 + AN.pulse * 0.3);
-      node.rotation.y = time * 0.8; node.rotation.x = time * 0.5;
-      node.userData.glow.material.opacity = 0.15 + v * 0.85;
+      node.userData.body.quaternion.setFromUnitVectors(_X, _T);
+      const sz = (TONES[k].uv ? 0.82 : 1) * (1 + vk * 0.9 + AN.pulse * 0.15);
+      node.userData.body.scale.set(0.17 * sz, 0.105 * sz, 0.105 * sz);
+      node.userData.m.material.emissiveIntensity = 0.12 + vk * 0.8;
+      node.userData.glow.material.opacity = 0.1 + vk * 0.8;
     }
   }
   ribGeo.attributes.position.needsUpdate = true;
+  ribGeo.attributes.normal.needsUpdate = true;
   ribGeo.attributes.color.needsUpdate = true;
-  edgeGeoA.attributes.position.needsUpdate = true;
-  edgeGeoB.attributes.position.needsUpdate = true;
+  ribInkGeo.attributes.position.needsUpdate = true;
 }
 
-// Partículas: matéria (espirala para fora, cor do tom) × antimatéria (espirala para dentro, tom oposto)
+// Partículas: matéria (espirala para fora, cor do tom) × antimatéria (espirala para dentro, cor do tom espelho)
 const PART_N = 5200;
 function makeParticles(rMin, rMax, flat) {
   const geo = new THREE.BufferGeometry();
@@ -1141,7 +1210,7 @@ function makeParticles(rMin, rMax, flat) {
       varying vec3 vCol; varying float vA;
       void main(){
         float c=0.0; vec3 col=vec3(1.0); vec3 anti=vec3(1.0);
-        float opp=mod(aTone+6.0,12.0);
+        float opp=mod(12.0-aTone,12.0);
         for(int k=0;k<12;k++){ float fk=float(k); if(fk==aTone){ c=uChroma[k]; col=uCol[k]; } if(fk==opp){ anti=uCol[k]; } }
         bool matter=aSeed.x<0.5;
         float sp=0.03*(1.0+1.8*max(uAir,0.0))*(0.6+aSeed.z);
@@ -1173,7 +1242,6 @@ const particles1 = makeParticles(1.7, 5.2, 0.6); M1.add(particles1);
    MODO 2 — A FLOR CROMA-SÔNICA (mandala de 12 pétalas)
    --------------------------------------------------------------------- */
 const M2 = new THREE.Group(); scene.add(M2);
-const INK = 0x0b0710;
 const inkMat = new THREE.LineBasicMaterial({ color: INK });
 const toneAngle = t => Math.PI / 2 - t * Math.PI / 6;   // tom 0 no topo, sentido horário
 const petalCenter = (t, r = 2.6) => new THREE.Vector3(Math.cos(toneAngle(t)) * r, Math.sin(toneAngle(t)) * r, 0.3);
@@ -1353,52 +1421,89 @@ function updateFlower(dt, time) {
    --------------------------------------------------------------------- */
 const M3 = new THREE.Group(); scene.add(M3);
 const AX_L = 3.2;
-function gradientAxis(axis, cNeg, cMid, cPos) {
-  const geo = new THREE.CylinderGeometry(0.045, 0.045, AX_L * 2, 16, 64, true);
+// Cruz astrológica = interseção de dois planos (ampulhetas de cones que se estreitam até o centro):
+//  Plano Físico (horizontal): Azul (−, frio) ↔ Amarelo (+, quente), mediados pelo verde.
+//  Plano Espiritual (vertical): Vermelho (denso, peso) ↔ Rosa (sutil, leveza).
+// O ponto de interseção é a tônica (Verde 0). Seguindo Kandinsky, o eixo físico é levemente
+// inclinado: o amarelo avança em direção ao observador e o azul recua.
+const PHYS_TILT = Math.atan2(0.42, 1);
+const crossG = new THREE.Group(); crossG.rotation.y = -PHYS_TILT; M3.add(crossG);
+function coneMaterial(opacity) {
+  return new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, side: THREE.DoubleSide, vertexColors: true,
+    uniforms: { uOpacity: { value: opacity }, uGlow: { value: 0 }, uPaper: { value: PAPER } },
+    vertexShader: `varying vec3 vC; varying vec3 vN; varying vec3 vV; varying vec2 vUv;
+      void main(){ vC=color; vUv=uv; vec4 mv=modelViewMatrix*vec4(position,1.0);
+        vN=normalize(normalMatrix*normal); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }`,
+    fragmentShader: `uniform float uOpacity,uGlow; uniform sampler2D uPaper; varying vec3 vC; varying vec3 vN; varying vec3 vV; varying vec2 vUv;
+      void main(){ float e=abs(dot(normalize(vN),normalize(vV))); float ink=smoothstep(0.2,0.05,e);
+        float paper=texture2D(uPaper,vUv*vec2(2.0,1.0)).r;
+        vec3 c=vC*(0.72+0.32*paper)*(1.0+0.6*uGlow);
+        gl_FragColor=vec4(mix(c,vec3(0.03,0.02,0.05),ink),mix(uOpacity*(0.75+0.25*paper)*(1.0+uGlow),0.95,ink)); }`,
+  });
+}
+function planeCone(dir, colTip, colEnd) {
+  const geo = new THREE.CylinderGeometry(0.44, 0.0, AX_L, 48, 16, true);
+  geo.translate(0, AX_L / 2, 0);
   const pos = geo.attributes.position, cols = new Float32Array(pos.count * 3);
-  const a = new THREE.Color(cNeg), m = new THREE.Color(cMid), b = new THREE.Color(cPos), tmp = new THREE.Color();
+  const c0 = new THREE.Color(colTip), c1 = new THREE.Color(colEnd), tmp = new THREE.Color();
   for (let i = 0; i < pos.count; i++) {
-    const t = pos.getY(i) / AX_L;
-    if (t < 0) tmp.copy(m).lerp(a, -t); else tmp.copy(m).lerp(b, t);
+    tmp.copy(c0).lerp(c1, Math.pow(pos.getY(i) / AX_L, 1.4));
     cols[i * 3] = tmp.r; cols[i * 3 + 1] = tmp.g; cols[i * 3 + 2] = tmp.b;
   }
   geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-  const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true }));
-  if (axis === 'x') mesh.rotation.z = -Math.PI / 2;
-  if (axis === 'z') mesh.rotation.x = Math.PI / 2;
-  return mesh;
+  const m = new THREE.Mesh(geo, coneMaterial(0.42));
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+  crossG.add(m); return m;
 }
-const axY = gradientAxis('y', '#e8402c', '#43c24a', '#f27bb8');
-const axX = gradientAxis('x', '#2f9fe6', '#43c24a', '#f7dc2f');
-const axZ = gradientAxis('z', '#86f07c', '#43c24a', '#43c24a'); axZ.material.transparent = true; axZ.material.opacity = 0.35;
-M3.add(axY, axX, axZ);
-// anéis (cruz astrológica)
+function inkSphere(color, r, pos) {
+  const g = new THREE.Group();
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 40, 28), new THREE.MeshLambertMaterial({ color, map: PAPER, emissive: new THREE.Color(color), emissiveIntensity: 0.12 }));
+  const ink = new THREE.Mesh(m.geometry, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide }));
+  ink.scale.setScalar(1.07);
+  g.add(ink, m); g.position.set(...pos); g.userData.m = m;
+  crossG.add(g); return g;
+}
+// pólos na ordem: Rosa (cima), Vermelho (baixo), Amarelo (direita), Azul (esquerda)
+const POLES = [
+  { dir: [0, 1, 0], tip: '#f6a9cf', col: '#f27bb8', icon: 'air', label: 'ROSA · SUTIL', ip: [0, AX_L + 0.85, 0], lp: [0, AX_L + 1.42, 0] },
+  { dir: [0, -1, 0], tip: '#ee7a5e', col: '#e8402c', icon: 'earth', label: 'VERMELHO · DENSO', ip: [0, -AX_L - 0.85, 0], lp: [0, -AX_L - 1.42, 0] },
+  { dir: [1, 0, 0], tip: '#7fcf4a', col: '#f7dc2f', icon: 'fire', label: '+ AMARELO · QUENTE', ip: [AX_L + 0.9, 0, 0], lp: [AX_L + 0.9, -0.72, 0] },
+  { dir: [-1, 0, 0], tip: '#3fb58a', col: '#2f9fe6', icon: 'water', label: '− AZUL · FRIO', ip: [-AX_L - 0.9, 0, 0], lp: [-AX_L - 0.9, -0.72, 0] },
+];
+const poleObjs = POLES.map(p => {
+  const d = new THREE.Vector3(...p.dir);
+  const cone = planeCone(d, p.tip, p.col);
+  const sphere = inkSphere(p.col, 0.46, d.clone().multiplyScalar(AX_L).toArray());
+  const glow = glowSprite(new THREE.Color(p.col), 2.0, 0.2); glow.position.copy(sphere.position); crossG.add(glow);
+  const icon = iconSprite(p.icon, 0.6); icon.position.set(...p.ip); crossG.add(icon);
+  return { cone, sphere, glow, icon };
+});
+// círculos intermediários do Plano Físico: azul-esverdeado e verde-amarelado
+inkSphere('#45b39a', 0.3, [-(AX_L - 0.66), 0, 0]);
+inkSphere('#a8d43a', 0.3, [AX_L - 0.66, 0, 0]);
+// interseção = tônica
+const tonicMark = new THREE.Group(); crossG.add(tonicMark);
+const tonicCore = inkSphere('#43c24a', 0.13, [0, 0, 0]); crossG.remove(tonicCore); tonicMark.add(tonicCore);
+const tonicGlow = glowSprite(TONES[0].color, 1.2, 0.3); tonicMark.add(tonicGlow);
+// a cruz dentro do círculo (símbolo astrológico da Terra)
 function ring(r, color, opacity, rotX = 0, rotY = 0) {
   const pts = []; for (let i = 0; i <= 160; i++) pts.push(new THREE.Vector3(Math.cos(i / 160 * TAU) * r, Math.sin(i / 160 * TAU) * r, 0));
   const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color, transparent: true, opacity }));
   l.rotation.set(rotX, rotY, 0); return l;
 }
-const sentRing = new THREE.Mesh(new THREE.TorusGeometry(AX_L, 0.02, 8, 160), new THREE.MeshBasicMaterial({ color: 0xd9c98a, transparent: true, opacity: 0.55 }));
-M3.add(sentRing, ring(AX_L, 0xffffff, 0.12, Math.PI / 2), ring(AX_L, 0xffffff, 0.12, 0, Math.PI / 2), ring(AX_L * 0.5, 0xffffff, 0.08));
-// pólos: elementos, sol e lua
-const poles = [
-  { icon: 'air', pos: [0, AX_L + 0.55, 0], label: 'AR · ROSA 9', col: '#f27bb8', lp: [0, AX_L + 1.05, 0] },
-  { icon: 'earth', pos: [0, -AX_L - 0.55, 0], label: 'TERRA · VERMELHO 3', col: '#e8402c', lp: [0, -AX_L - 1.05, 0] },
-  { icon: 'fire', pos: [AX_L + 0.55, 0, 0], label: 'POSITIVO · SOL', col: '#f7dc2f', lp: [AX_L + 0.55, -0.62, 0] },
-  { icon: 'water', pos: [-AX_L - 0.55, 0, 0], label: 'NEGATIVO · LUA', col: '#2f9fe6', lp: [-AX_L - 0.55, -0.62, 0] },
-];
+const sentRing = new THREE.Mesh(new THREE.TorusGeometry(AX_L, 0.018, 8, 160), new THREE.MeshBasicMaterial({ color: 0xd9c98a, transparent: true, opacity: 0.5 }));
+crossG.add(sentRing, ring(AX_L, 0xffffff, 0.1, Math.PI / 2), ring(AX_L, 0xffffff, 0.1, 0, Math.PI / 2));
+const sunS = iconSprite('sun', 0.5); sunS.position.set(AX_L + 0.9, 0.72, 0); crossG.add(sunS);
+const moonS = iconSprite('moon', 0.45); moonS.position.set(-AX_L - 0.9, 0.72, 0); crossG.add(moonS);
 const labelSprites = [];
-const poleSprites = poles.map(p => {
-  const s = iconSprite(p.icon, 0.7); s.position.set(...p.pos); M3.add(s);
-  const g = glowSprite(new THREE.Color(p.col), 1.6, 0.25); g.position.set(...p.pos); M3.add(g);
-  return { s, g };
-});
-const sunS = iconSprite('sun', 0.5); sunS.position.set(AX_L + 0.55, 0.55, 0); M3.add(sunS);
-const moonS = iconSprite('moon', 0.45); moonS.position.set(-AX_L - 0.55, 0.55, 0); M3.add(moonS);
 function buildLabels() {
-  labelSprites.forEach(s => M3.remove(s)); labelSprites.length = 0;
-  poles.forEach(p => { const s = makeTextSprite(p.label, p.col, 0.9); s.position.set(...p.lp); M3.add(s); labelSprites.push(s); });
-  const v = makeTextSprite('VERDE 0 · EQUILÍBRIO', '#43c24a', 0.75); v.position.set(0, -0.55, AX_L + 0.35); M3.add(v); labelSprites.push(v);
+  labelSprites.forEach(s => s.parent && s.parent.remove(s)); labelSprites.length = 0;
+  const add = (text, col, sc, pos) => { const s = makeTextSprite(text, col, sc); s.position.set(...pos); crossG.add(s); labelSprites.push(s); };
+  POLES.forEach(p => add(p.label, p.col, 0.9, p.lp));
+  add('PLANO FÍSICO', '#9fd8a8', 0.6, [AX_L * 0.5, 0.42, 0]);
+  add('PLANO ESPIRITUAL', '#f0a0bf', 0.6, [1.25, AX_L * 0.55, 0]);
+  add('TÔNICA · VERDE 0', '#43c24a', 0.6, [0, -0.42, 0]);
   labelSprites.forEach(s => s.visible = document.getElementById('opt-labels').checked);
 }
 // nós dos tons
@@ -1409,7 +1514,7 @@ const sentNodes = TONES.map(o => {
   const ink = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })); ink.scale.setScalar(1.25);
   const glow = glowSprite(o.color, 0.8, 0.1);
   g.add(ink, m, glow);
-  g.position.copy(SENT_POS[o.t]).multiplyScalar(AX_L * 0.82);
+  g.position.copy(SENT_POS[o.t]).multiplyScalar(AX_L * 0.78);
   const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), g.position.clone()]),
     new THREE.LineBasicMaterial({ color: o.color, transparent: true, opacity: 0.08, blending: THREE.AdditiveBlending, depthWrite: false }));
   M3.add(line, g);
@@ -1419,7 +1524,7 @@ const sentNodes = TONES.map(o => {
 // orbe de luz + rastro
 const orb = new THREE.Group(); M3.add(orb);
 const orbCore = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 20), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-const orbGlow = glowSprite(0xffffff, 2.0, 0.9);
+const orbGlow = glowSprite(0xffffff, 2.0, 0.65);
 const orbHalo = glowSprite(0xffffff, 4.2, 0.12);
 orb.add(orbHalo, orbGlow, orbCore);
 const TRAIL_N = 260;
@@ -1434,10 +1539,12 @@ const particles3 = makeParticles(2.0, 6.5, 1.0); M3.add(particles3);
 
 function updateSentirama(dt, time) {
   const R = AX_L * 0.85;
-  const yv = clamp(0.6 * AN.vertical + 0.45 * AN.air, -1, 1);
-  orbTarget.set(clamp(AN.polarity, -1, 1) * R, yv * R, clamp(AN.depth, -1, 1) * R * 0.8);
+  const px = clamp(AN.polarity, -1, 1), py = clamp(AN.vertical, -1, 1), pz = clamp(AN.depth, -1, 1);
+  // Modo Ar (Rosa/Amarelo) puxa o orbe para o quadrante sutil-quente; Modo Terra (Vermelho/Azul) para o denso-frio
+  const air = AN.air * 0.32;
+  orbTarget.set((px + air * 0.9) * R, (py + air) * R, (pz + air * 0.38) * R);
   // órbita: o orbe circula ao redor do seu ponto de atração; raio cresce com a energia
-  const orbitR = 0.25 + 0.6 * AN.level, sp = 1.1 + 1.6 * Math.max(AN.air, 0);
+  const orbitR = 0.2 + 0.55 * AN.level, sp = 1.1 + 1.6 * Math.max(AN.air, 0);
   orbTarget.x += Math.cos(time * sp) * orbitR; orbTarget.z += Math.sin(time * sp) * orbitR;
   orbTarget.y += Math.sin(time * sp * 0.5) * orbitR * 0.4;
   orbPos.lerp(orbTarget, smoothK(dt, 3));
@@ -1462,11 +1569,18 @@ function updateSentirama(dt, time) {
     g.userData.line.material.opacity = 0.06 + v * 0.6;
     g.rotation.y = time * 0.7;
   });
-  // pólos acendem com a polaridade/ar-terra
-  const pw = [Math.max(yv, 0), Math.max(-yv, 0), Math.max(AN.polarity, 0), Math.max(-AN.polarity, 0)];
-  poleSprites.forEach((p, i) => { p.g.material.opacity = 0.15 + pw[i] * 0.9; p.s.scale.setScalar(0.7 + pw[i] * 0.25); });
+  // pólos acendem conforme a posição nos dois planos
+  const pw = [Math.max(py, 0), Math.max(-py, 0), Math.max(px, 0), Math.max(-px, 0)];
+  poleObjs.forEach((p, i) => {
+    p.glow.material.opacity = 0.08 + pw[i] * 0.5;
+    p.sphere.userData.m.material.emissiveIntensity = 0.08 + pw[i] * 0.45;
+    p.cone.material.uniforms.uGlow.value = pw[i] * 0.5;
+    p.icon.scale.setScalar(0.6 + pw[i] * 0.2);
+  });
+  const t0 = Math.max(AN.vis[0], AN.stability);
+  tonicGlow.material.opacity = 0.15 + 0.4 * t0;
+  tonicMark.scale.setScalar(1 + 0.8 * t0 + 0.2 * AN.pulse);
   sunS.material.rotation = time * 0.2;
-  sentRing.rotation.z = time * 0.05;
   M3.rotation.y = Math.sin(time * 0.08) * 0.25;
 }
 
@@ -1476,14 +1590,16 @@ function updateSentirama(dt, time) {
 const MODES = [
   { group: M1, cam: new THREE.Vector3(0, 1.4, 8.6), bloom: 0.75, rotate: true },
   { group: M2, cam: new THREE.Vector3(0, -0.6, 11.2), bloom: 0.3, rotate: false },
-  { group: M3, cam: new THREE.Vector3(6.2, 3.4, 8.4), bloom: 0.7, rotate: true },
+  { group: M3, cam: new THREE.Vector3(6.4, 3.3, 11.6), bloom: 0.5, rotate: true },
 ];
 let mode = 0, camTween = null;
+// em telas em pé (celular) a câmera recua para a cena caber na largura
+const camFor = m => MODES[m].cam.clone().multiplyScalar(camera.aspect < 1 ? Math.min(1.9, 1 / Math.pow(camera.aspect, 0.55)) : 1);
 function setMode(m) {
   mode = m;
   MODES.forEach((o, i) => o.group.visible = i === m);
   document.querySelectorAll('#mode-seg button').forEach(b => b.classList.toggle('on', +b.dataset.mode === m));
-  camTween = { from: camera.position.clone(), to: MODES[m].cam.clone(), t: 0 };
+  camTween = { from: camera.position.clone(), to: camFor(m), t: 0 };
   controls.target.set(0, 0, 0);
   if (bloom) bloom.strength = MODES[m].bloom;
   applyRotate();
@@ -1515,7 +1631,7 @@ function frame() {
   }
   if (mode === 0) {
     M1.rotation.y += dt * (0.05 + 0.25 * Math.max(AN.air, 0)) * (1 - 0.7 * AN.stability);
-    updateRibbon(elapsed);
+    updateRibbon(dt, elapsed);
     coreGlow.material.color.copy(AN.color);
     coreGlow.material.opacity = 0.05 + 0.15 * AN.level + 0.2 * AN.stability;
   } else if (mode === 1) updateFlower(dt, elapsed);
@@ -1601,8 +1717,11 @@ function updateHUD() {
   $('mode-text').textContent = air > 0.08 ? 'Modo Ar (Maior)' : air < -0.08 ? 'Modo Terra (Menor)' : 'Equilíbrio (Verde 0)';
   $('mode-text').style.color = air > 0.08 ? '#f27bb8' : air < -0.08 ? '#e8402c' : '#43c24a';
   $('pol-needle').style.left = (50 + clamp(AN.polarity, -1, 1) * 46) + '%';
-  $('pol-text').textContent = AN.polarity > 0.1 ? 'Positivo · Espiritual' : AN.polarity < -0.1 ? 'Negativo · Físico' : 'Neutro';
-  $('pol-text').style.color = AN.polarity > 0.1 ? '#f7dc2f' : AN.polarity < -0.1 ? '#2f9fe6' : '#a39cb5';
+  $('pol-text').textContent = AN.polarity > 0.1 ? 'Positivo (+) · quente' : AN.polarity < -0.1 ? 'Negativo (−) · frio' : 'Centro · tônica';
+  $('pol-text').style.color = AN.polarity > 0.1 ? '#f7dc2f' : AN.polarity < -0.1 ? '#2f9fe6' : '#43c24a';
+  $('spi-needle').style.left = (50 + clamp(AN.vertical, -1, 1) * 46) + '%';
+  $('spi-text').textContent = AN.vertical > 0.1 ? 'Sutil · Rosa' : AN.vertical < -0.1 ? 'Denso · Vermelho' : 'Centro · tônica';
+  $('spi-text').style.color = AN.vertical > 0.1 ? '#f27bb8' : AN.vertical < -0.1 ? '#e8402c' : '#43c24a';
   $('tension-text').textContent = Math.round(AN.tension * 100) + '%';
   $('tension-bar').style.width = (AN.tension * 100) + '%';
   $('centroid').textContent = AN.active ? (AN.smoothCentroid >= 1000 ? (AN.smoothCentroid / 1000).toFixed(1) + 'k' : AN.smoothCentroid.toFixed(0)) : '—';
@@ -1667,7 +1786,7 @@ $('opt-rotate').addEventListener('change', applyRotate);
 $('opt-particles').addEventListener('change', e => { [particles1, particles2, particles3].forEach(p => p.visible = e.target.checked); });
 $('opt-labels').addEventListener('change', e => labelSprites.forEach(s => s.visible = e.target.checked));
 $('hud-collapse').addEventListener('click', () => { const b = $('hud-body'); b.classList.toggle('collapsed'); $('hud-collapse').textContent = b.classList.contains('collapsed') ? '+' : '–'; });
-$('panel-collapse').addEventListener('click', () => { const p = $('panel-left'); p.classList.toggle('collapsed'); $('panel-collapse').textContent = p.classList.contains('collapsed') ? 'expandir' : 'recolher'; });
+$('panel-collapse').addEventListener('click', () => { const p = $('panel-left'); p.classList.toggle('collapsed'); $('panel-collapse').textContent = p.classList.contains('collapsed') ? 'mais opções' : 'recolher'; });
 function toggleFull() { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
 $('btn-full').addEventListener('click', toggleFull);
 
@@ -1707,10 +1826,19 @@ window.addEventListener('resize', () => {
 });
 window.addEventListener('beforeunload', () => stopMic());
 
+// layout de celular: painéis recolhidos e painel de entrada logo acima do teclado
+if (window.matchMedia('(max-width: 767px)').matches) {
+  $('panel-left').classList.add('collapsed'); $('panel-collapse').textContent = 'mais opções';
+  $('hud-body').classList.add('collapsed'); $('hud-collapse').textContent = '+';
+}
+if (window.ResizeObserver) {
+  new ResizeObserver(() => document.documentElement.style.setProperty('--bottom-h', $('bottom').offsetHeight + 'px')).observe($('bottom'));
+}
+
 // iniciar
 (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(buildLabels);
 setMode(0);
-camera.position.copy(MODES[0].cam); camTween = null;
+camera.position.copy(camFor(0)); camTween = null;
 updateSourceUI();
 frame();
 </script>

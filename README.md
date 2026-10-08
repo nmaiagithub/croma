@@ -7,7 +7,8 @@ Web app de arquivo único (HTML + Tailwind + Three.js via CDN) que transforma á
 - **Entradas:** microfone, upload / arrastar-e-soltar (.mp3 .wav .m4a .ogg) com player, e uma demonstração sintetizada.
 - **DSP:** `AnalyserNode` com `fftSize = 4096`; cromagrama por picos espectrais (A4 = 440 Hz), nota dominante e secundárias, centroide espectral, RMS, BPM (autocorrelação do fluxo espectral), tonalidade (Krumhansl-Schmuckler), acordes.
 - **Mapa:** Ré (D) = Verde 0 → … → Dó# = Azul-UV 11; naturais = círculos, ultravioletas = triângulos.
-- **Modos:** Cromasfera 3D · Flor Croma-Sônica · Sentirama 3D.
+- **Mapa:** as ultravioletas têm a mesma cor das naturais (Yellow[1] = Yeluv[1], Violet[4] = Viluv[4], Green[6] = Gruv[6], Orange[8] = Oruv[8], Blue[11] = Bluv[11]).
+- **Modos:** Cromasfera 3D (esfera + fita de 12 tons em curva de “bola de tênis”) · Flor Croma-Sônica (mandala de 12 pétalas) · Sentirama 3D (Plano Físico azul ↔ amarelo × Plano Espiritual vermelho ↔ rosa, cruzando-se na tônica).
 
 Para usar o microfone, sirva a pasta por `http://localhost` ou `https://`:
 
