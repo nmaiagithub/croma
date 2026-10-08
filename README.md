@@ -40,17 +40,29 @@ Além do tempo real, o app gera um **laudo** do áudio inteiro:
 - **Gramática das cores:** matriz de transições (qual cor leva a qual, por linha), matriz de coocorrência (quais soam juntas), alternância 12 tons ⇄ 7 cores e perfil de intervalos harmônicos.
 - **Roda cromática:** o perfil como mandala de 12 pétalas (raio = energia, anel interno = tempo como nota dominante), nas duas leituras.
 - **Replay no Sentirama:** um ponto com rastro percorre a trajetória da música, sincronizado com o player.
-- **Melodia:** f0 por quadro (YIN via FFT, 50–1500 Hz), contorno no tempo, extensão, altura mediana, % do tempo com nota definida, desvio médio em cents e histograma de intervalos melódicos (±12 semitons).
+- **Melodia:** f0 por quadro (YIN via FFT, 55–1500 Hz), contorno no tempo, extensão, altura mediana, % do tempo com nota definida, desvio médio em cents e histograma de intervalos melódicos (±12 semitons).
 
 ### Afinador
 
 O botão **Afinador** na barra superior abre, acima do teclado, a nota com oitava, o ponteiro de −50 a +50 cents na cor do tom, a frequência e o contorno melódico dos últimos ~8 s. Segue a afinação e a referência escolhidas.
 
+### Guia de pesquisa
+
+**[docs/guia-de-pesquisa.md](docs/guia-de-pesquisa.md)** explica como conduzir e analisar cada pesquisa. O mesmo texto aparece no app (painel de entrada → Pesquisa → **Guia de pesquisa**, ou o botão **Guia** dentro de cada ferramenta), com versão para imprimir. Ele contém:
+
+- as hipóteses testáveis do modelo (validade técnica com a Bancada; validade perceptiva H1–H5 com o Experimento e os Pesos);
+- o passo a passo de cada ferramenta, com o que olhar e as armadilhas;
+- a estatística em linguagem simples, a tabela de tamanho de amostra e as **regras de decisão** que o app aplica no Veredito por hipótese;
+- exemplos resolvidos com números reais (bancada, laudo, A/B) e simulados (experimento, calibração);
+- o estado atual do modelo, um modelo de relatório e o apêndice metodológico (pré-registro, ética, dicionário de dados, análise em R e Python).
+
+Depois de editar o guia, rode `python3 tools/sync-guia.py` para copiá-lo para dentro de `cromasfera.html` (`--check` só confere).
+
 ### Ferramentas de pesquisa (painel de entrada → Pesquisa)
 
-- **Bancada:** 33 estímulos sintetizados offline (12 notas isoladas, tríades maiores/menores, Fá + Si, Ré sustentado, 7 modos, 60/120/180 BPM, progressão em 432 Hz, timbre suave × brilhante), cada um com a expectativa do modelo e o resultado aprovado/reprovado. Em cada linha: ouvir, laudo, WAV, usar no A/B, adicionar ao experimento. Resultado atual: 32 de 33; o Ré eólio (terça menor fraca sobre um bordão) é lido como Ré maior.
+- **Bancada:** 33 estímulos sintetizados offline (12 notas isoladas, tríades maiores/menores, Fá + Si, Ré sustentado, 7 modos, 60/120/180 BPM, progressão em 432 Hz, timbre suave × brilhante) e 7 comparações em pares. São 33 verificações com critério (26 estímulos + 7 pares); os outros 7 estímulos são informativos. Em cada linha: ouvir, laudo, WAV, usar no A/B, adicionar ao experimento. Resultado atual: 32 de 33; o Ré eólio (terça menor fraca sobre um bordão) é lido como Ré maior.
 - **Comparação A/B:** A e B podem ser um arquivo, um laudo JSON, um estímulo da bancada ou dois trechos do mesmo arquivo, sempre com a mesma calibração. Mostra a síntese das diferenças, a tabela A | B | Δ, perfis, rodas, paletas e o Sentirama com a seta A → B. Exporta CSV e JSON.
-- **Experimento de escuta (teste cego):** trechos de arquivos, do player ou da bancada (inteiros ou N s do meio), em ordem aleatória, com código anônimo do participante. A tela cobre o app e o áudio não passa pela análise. Para cada trecho: cor sentida (7 + nenhuma), clique no Sentirama, Ar ↔ Terra e se conhece a música; o tempo de resposta é registrado. O modelo analisa o mesmo trecho. Resultados: concordância de cor contra o acaso (1/7, binomial exato), correlações de x, y e Ar/Terra (p pela transformação z de Fisher), referência × relativa, por trecho e por participante, com aviso de amostra pequena. As sessões ficam no navegador; o CSV tem uma linha por resposta e o JSON pode ser importado em outro aparelho (mescla sem duplicar).
+- **Experimento de escuta (teste cego):** trechos de arquivos, do player ou da bancada (inteiros ou N s do meio), em ordem aleatória, com código anônimo do participante. A tela cobre o app e o áudio não passa pela análise. Para cada trecho: cor sentida (7 + nenhuma), clique no Sentirama, Ar ↔ Terra e se conhece a música; o tempo de resposta é registrado. O modelo analisa o mesmo trecho. Resultados: números descritivos por resposta e o **Veredito por hipótese** (Apoia / Contradiz / Inconclusivo), calculado por trecho e por participante, com IC 95%, correção de Holm, teste do sinal e McNemar para referência × relativa. As sessões ficam no navegador; há CSV por resposta, CSV por trecho e JSON para juntar aparelhos (mescla sem duplicar).
 - **Pesos Ar/Terra:** compara os pesos atuais (padrão 0,50 / 0,32 / 0,18) com os ajustados por mínimos quadrados às médias das pessoas por trecho, com validação cruzada deixando um trecho de fora e controles para testar à mão. *Aplicar estes pesos* passa a valer no tempo real e nos laudos novos (o laudo registra os pesos usados) e fica salvo no navegador; *Restaurar padrão* desfaz.
 
 Para usar o microfone, sirva a pasta por `http://localhost` ou `https://`:
