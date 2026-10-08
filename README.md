@@ -10,6 +10,16 @@ Web app de arquivo único (HTML + Tailwind + Three.js via CDN) que transforma á
 - **Mapa:** as ultravioletas têm a mesma cor das naturais (Yellow[1] = Yeluv[1], Violet[4] = Viluv[4], Green[6] = Gruv[6], Orange[8] = Oruv[8], Blue[11] = Bluv[11]).
 - **Modos:** Cromasfera 3D (esfera + fita de 12 tons em curva de “bola de tênis”) · Flor Croma-Sônica (mandala de 12 pétalas) · Sentirama 3D (Plano Físico azul ↔ amarelo × Plano Espiritual vermelho ↔ rosa, cruzando-se na tônica).
 
+### Laudo (análise completa)
+
+Além do tempo real, o app gera um **laudo** do áudio inteiro:
+
+- **Analisar música inteira** (ou **Laudo** no player): processa o arquivo carregado do começo ao fim.
+- **Gravar sessão**: com o microfone ativo, grava e analisa a gravação ao parar (a gravação pode ser baixada).
+- O laudo traz o enquadramento no modelo em duas leituras — **absoluta** (Ré = Verde 0) e **relativa** (tônica detectada = Verde 0) —, índice Ar/Terra com seus componentes, perfil cromático, paleta de cores, trajetória no Sentirama, tonalidade por trecho, acordes, tensão Fá ↔ Si, andamento, parâmetros e limitações do método.
+- **Baixar laudo (JSON)** exporta resumo + linha do tempo (~46 ms por quadro); **Abrir laudo salvo** reabre o JSON; **Imprimir / PDF** gera uma versão para papel.
+- A análise roda num Web Worker, a 44,1 kHz mono e FFT de 4096 pontos, com o mesmo núcleo DSP (`dspCore`) do tempo real — o mesmo arquivo gera o mesmo laudo em qualquer aparelho.
+
 Para usar o microfone, sirva a pasta por `http://localhost` ou `https://`:
 
 ```

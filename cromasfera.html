@@ -137,6 +137,84 @@
     #keyboard .black { height: 40px; }
     #keyboard .nm, .kb-legend { display: none; }
     .swatch { width: 44px; height: 44px; }
+    #player .vol { display: none; }
+  }
+
+  /* ---------- laudo ---------- */
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn.rec-on { border-color: #e8402c; color: #fff; background: rgba(232,64,44,.22); box-shadow: 0 0 0 1px #e8402c, 0 0 18px -4px #e8402c; animation: recpulse 1.4s ease-in-out infinite; }
+  @keyframes recpulse { 50% { background: rgba(232,64,44,.08); } }
+  @media (prefers-reduced-motion: reduce) { .btn.rec-on { animation: none; } }
+  #report {
+    --r-bg: #0c0a12; --r-card: rgba(255,255,255,.035); --r-line: rgba(255,255,255,.09);
+    --r-ink: #ece6f5; --r-ink2: #a39cb5; --r-grid: rgba(255,255,255,.09); --r-top: rgba(12,10,18,.9);
+    position: fixed; inset: 0; z-index: 75; display: none; overflow-y: auto; overscroll-behavior: contain;
+    background: var(--r-bg); color: var(--r-ink); font-size: 14px;
+  }
+  #report.show { display: block; }
+  body.printing #report {
+    --r-bg: #ffffff; --r-card: #f6f5f8; --r-line: rgba(0,0,0,.12);
+    --r-ink: #17121d; --r-ink2: #5b5468; --r-grid: rgba(0,0,0,.1); --r-top: #ffffff;
+  }
+  .r-top { position: sticky; top: 0; z-index: 2; background: var(--r-top); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--r-line); }
+  .r-top-in { max-width: 1120px; margin: 0 auto; padding: 12px 20px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .r-h1 { font-family: 'Cinzel', Georgia, serif; font-size: 1.15rem; letter-spacing: .05em; max-width: 60vw; }
+  .r-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  #r-progress { height: 3px; }
+  #r-bar { height: 100%; width: 0; opacity: 0; transition: width .2s, opacity .4s; background: linear-gradient(90deg,#43c24a,#f7dc2f,#f7902f,#e8402c,#8f4fd0,#2f9fe6,#f27bb8); }
+  .r-body { max-width: 1120px; margin: 0 auto; padding: 20px 20px 64px; display: grid; gap: 16px; }
+  .r-card { background: var(--r-card); border: 1px solid var(--r-line); border-radius: 16px; padding: 18px; min-width: 0; }
+  .r-card h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; letter-spacing: .07em; margin: 0 0 4px; text-wrap: balance; }
+  .r-card h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .12em; color: var(--r-ink2); margin: 0 0 6px; font-weight: 600; }
+  .r-card h3 span { text-transform: none; letter-spacing: 0; font-weight: 400; }
+  .r-sub { color: var(--r-ink2); font-size: .8rem; margin: 0 0 12px; line-height: 1.5; }
+  .r-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px; }
+  .r-two > * { min-width: 0; }
+  .r-verdict { font-size: 1.05rem; line-height: 1.55; margin: 4px 0 14px; text-wrap: balance; }
+  .r-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 10px; margin-bottom: 16px; }
+  .r-stat { border: 1px solid var(--r-line); border-radius: 12px; padding: 10px 12px; }
+  .r-stat .k { font-size: .66rem; text-transform: uppercase; letter-spacing: .14em; color: var(--r-ink2); }
+  .r-stat .v { font-size: 1.02rem; font-weight: 600; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .r-stat .d { font-size: .72rem; color: var(--r-ink2); margin-top: 2px; line-height: 1.4; }
+  .r-text p, p.r-text { font-size: .88rem; line-height: 1.65; max-width: 75ch; margin: 0 0 8px; }
+  .r-air { color: var(--r-ink2); font-size: .8rem !important; margin-top: 8px !important; }
+  .r-alerts { display: grid; gap: 6px; margin-top: 10px; }
+  .r-alert { border-left: 3px solid #f7902f; padding: 6px 10px; font-size: .8rem; color: var(--r-ink); background: rgba(247,144,47,.1); border-radius: 0 8px 8px 0; }
+  .r-lbl { font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; color: var(--r-ink2); margin: 12px 0 4px; }
+  .r-cw { position: relative; }
+  .r-x { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--r-ink); opacity: .55; display: none; pointer-events: none; }
+  canvas.r-chart { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
+  canvas.r-chart:focus-visible { outline: 2px solid var(--r-ink2); outline-offset: 2px; }
+  .r-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; box-shadow: 0 0 0 1.5px var(--r-bg); }
+  .r-scroll { overflow-x: auto; }
+  table.r-tab { width: 100%; border-collapse: collapse; font-size: .8rem; font-variant-numeric: tabular-nums; margin-top: 8px; }
+  table.r-tab th, table.r-tab td { padding: 6px 8px; border-bottom: 1px solid var(--r-line); text-align: left; white-space: nowrap; }
+  table.r-tab th { color: var(--r-ink2); font-weight: 500; }
+  table.r-kv th { width: 1%; }
+  table.r-kv td { white-space: normal; }
+  details.r-table summary { cursor: pointer; color: var(--r-ink2); font-size: .8rem; margin-top: 10px; }
+  .r-mut { color: var(--r-ink2); margin-left: 4px; }
+  .r-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .r-chip { display: inline-flex; align-items: center; font-size: .75rem; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--r-line); white-space: nowrap; }
+  .r-seek { cursor: pointer; }
+  .r-seek:hover { border-color: var(--r-ink2); }
+  .r-method ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; max-width: 90ch; }
+  .r-method li { font-size: .84rem; line-height: 1.6; color: var(--r-ink); }
+  #rtip { position: fixed; z-index: 95; pointer-events: none; display: none; max-width: 320px; background: #17131f; color: #ece6f5; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; padding: 6px 10px; font-size: .78rem; line-height: 1.45; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+  @media (max-width: 767px) {
+    .r-top-in { padding: 10px 12px; }
+    .r-body { padding: 14px 12px 48px; }
+    .r-card { padding: 14px; }
+    .r-actions .btn { padding: .45rem .6rem; font-size: .75rem; }
+  }
+  @media print {
+    html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
+    body > *:not(#report) { display: none !important; }
+    #report { position: static; display: block !important; overflow: visible; }
+    .r-top { position: static; backdrop-filter: none; }
+    .r-actions, #r-progress { display: none !important; }
+    .r-card { break-inside: avoid; }
+    details.r-table > *:not(summary) { display: block; }
   }
 </style>
 </head>
@@ -193,8 +271,20 @@
         <span>Demonstração (sintetizador)</span>
       </button>
     </div>
+    <div class="grid grid-cols-2 gap-2 mt-2" id="laudo-grid">
+      <button class="btn" id="btn-analyze" disabled title="Gera o laudo da música inteira carregada no player">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 17v-3M12 17v-6M16 17v-2"/></svg>
+        <span>Analisar música inteira</span>
+      </button>
+      <button class="btn" id="btn-record" disabled title="Grava o microfone e gera o laudo da sessão ao parar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
+        <span>Gravar sessão</span>
+      </button>
+    </div>
     <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" class="hidden">
+    <input type="file" id="json-input" accept=".json,application/json" class="hidden">
     <div class="panel-extra">
+    <button class="text-[11px] text-[color:var(--muted)] underline underline-offset-2 mt-2 hover:text-white" id="btn-open-json">Abrir laudo salvo (.json)</button>
     <p class="text-[11px] text-[color:var(--muted)] mt-2 leading-relaxed">Ou arraste um arquivo .mp3 / .wav / .m4a / .ogg para a tela.</p>
 
     <div class="mt-4">
@@ -291,10 +381,11 @@
       <div class="flex justify-between text-[11px] text-[color:var(--muted)]"><span id="track-name" class="truncate max-w-[60%]">—</span><span class="stat" id="track-time">0:00 / 0:00</span></div>
       <input type="range" id="seek" min="0" max="1000" value="0" class="mt-1.5" aria-label="Linha do tempo">
     </div>
-    <div class="flex items-center gap-1.5 w-[90px]">
+    <div class="vol flex items-center gap-1.5 w-[90px]">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="text-[color:var(--muted)] flex-none"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7"/></svg>
       <input type="range" id="volume" min="0" max="100" value="85" aria-label="Volume">
     </div>
+    <button class="btn !py-1.5 !px-2.5 text-xs" id="btn-analyze2" title="Gerar o laudo desta música">Laudo</button>
   </div>
   <div class="glass px-3 pt-2 pb-3">
     <div class="flex justify-between items-baseline mb-1.5 px-1"><span class="label">Cromagrama · Teclado Croma-Sônico</span><span class="kb-legend text-[10px] text-[color:var(--muted)]">● naturais · ▲ ultravioletas</span></div>
@@ -303,6 +394,27 @@
 </div>
 
 <audio id="audio-el" preload="auto"></audio>
+
+<!-- ============ LAUDO (análise completa) ============ -->
+<div id="report" aria-hidden="true" role="dialog" aria-label="Laudo Croma-Sônico">
+  <div class="r-top">
+    <div class="r-top-in">
+      <div class="min-w-0">
+        <div class="label">Laudo Croma-Sônico</div>
+        <div id="r-title" class="r-h1 truncate">—</div>
+      </div>
+      <div class="r-actions">
+        <button class="btn" id="r-json">Baixar laudo (JSON)</button>
+        <button class="btn" id="r-rec" hidden>Baixar gravação</button>
+        <button class="btn" id="r-print">Imprimir / PDF</button>
+        <button class="btn" id="r-close" aria-label="Fechar laudo">✕</button>
+      </div>
+    </div>
+    <div id="r-progress"><div id="r-bar"></div></div>
+  </div>
+  <div class="r-body" id="r-body"></div>
+</div>
+<div id="rtip" role="tooltip"></div>
 
 <div id="dropzone"><div class="box glass"><div class="title-font text-xl rainbow-text">Solte o arquivo de áudio</div><div class="text-sm text-[color:var(--muted)] mt-2">.mp3 · .wav · .m4a · .ogg</div></div></div>
 <div id="toast" class="glass px-4 py-2 text-sm"></div>
@@ -366,6 +478,14 @@
         </div>
       </div>
     </div>
+    <h3>Laudo: a música inteira no modelo</h3>
+    <p>Além do tempo real, o botão <strong>Analisar música inteira</strong> (ou <strong>Laudo</strong>, no player) processa o arquivo do começo ao fim, e <strong>Gravar sessão</strong> grava o microfone e analisa a gravação ao parar. O laudo mostra:</p>
+    <ul class="list-disc pl-5 space-y-1 mt-2">
+      <li><strong>Enquadramento</strong>: índice Ar/Terra, tônica, cor e quadrante do Sentirama predominantes, em duas leituras — <em>absoluta</em> (Ré = Verde 0) e <em>relativa</em> (a tônica detectada vira o Verde 0).</li>
+      <li><strong>A música no tempo</strong>: faixa colorida da nota dominante, tonalidade por trecho, índice Ar/Terra, tensão Fá ↔ Si e dinâmica. Clique num ponto para ouvir aquele instante.</li>
+      <li><strong>Perfil cromático, paleta, Sentirama, tonalidade e acordes</strong>, com tabelas, além dos parâmetros e das limitações do método.</li>
+      <li><strong>Baixar laudo (JSON)</strong> guarda o resumo e a linha do tempo completa (a cada ~46 ms) para continuar a pesquisa em outra ferramenta ou reabrir depois em <em>Abrir laudo salvo</em>.</li>
+    </ul>
     <p class="mt-6 text-[12px] text-[color:var(--muted)]">Nota: o microfone exige contexto seguro — abra a página via <code>https://</code> ou <code>http://localhost</code> (ex.: <code>python3 -m http.server</code>). As posições 3D intermediárias no Sentirama (laranjas, violetas e o tom espelho de cada nota em torno da tônica) e a fórmula do índice Ar/Terra são interpretações visuais deste aplicativo.</p>
   </div>
 </div>
@@ -417,22 +537,418 @@ const ICO_DIRS = (() => {
   return d;
 })();
 
-// Posições no Sentirama (cruz de dois planos que se cortam na tônica = Verde 0):
-//  x = Plano Físico: Azul (−, frio, à esquerda) ↔ Amarelo (+, quente, à direita)
-//  y = Plano Espiritual: Vermelho (denso, embaixo) ↔ Rosa (sutil, em cima)
-//  z = Kandinsky: o amarelo avança em direção ao observador, o azul recua.
-// Simetria: o tom −k fica no ponto oposto ao tom k (cores complementares).
-const SENT_POS = (() => {
-  const half = { 1: [0.88, -0.14, 0.42], 2: [0.66, -0.66, 0.26], 3: [0, -1, 0], 4: [-0.56, 0.76, -0.2], 5: [-1, -0.14, -0.45] };
-  const p = new Array(12);
-  p[0] = new THREE.Vector3(0, 0, 0);
-  p[6] = new THREE.Vector3(0, 0, -0.32);
-  for (const k in half) {
-    p[+k] = new THREE.Vector3(...half[k]);
-    p[12 - k] = p[+k].clone().negate();
+/* =====================================================================
+   NÚCLEO DSP (funções puras, sem DOM nem Three.js) — usado pelo tempo
+   real e, dentro de um Web Worker, pela análise completa (laudo).
+   ===================================================================== */
+function dspCore() {
+  'use strict';
+  const VERSION = 'croma-dsp 1.0';
+  const pcToTone = pc => (pc + 10) % 12;
+  const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  const smoothK = (dt, rate) => 1 - Math.exp(-dt * rate);
+  const KMAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
+  const KMIN = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+  const CHORD_Q = [['maior', 4, 7, true], ['menor', 3, 7, true], ['diminuto', 3, 6, false], ['aumentado', 4, 8, false]];
+  const NATURALS = [0, 2, 3, 5, 7, 9, 10];
+  // famílias de cor (as ultravioletas repetem a cor de uma natural)
+  const FAMILIES = [
+    { name: 'Verde', tones: [0, 6] }, { name: 'Amarelo', tones: [7, 1] }, { name: 'Laranja', tones: [2, 8] },
+    { name: 'Vermelho', tones: [3] }, { name: 'Violeta', tones: [10, 4] }, { name: 'Azul', tones: [5, 11] }, { name: 'Rosa', tones: [9] },
+  ];
+  // Posições no Sentirama (cruz de dois planos que se cortam na tônica = Verde 0):
+  //  x = Plano Físico: Azul (−, frio, à esquerda) ↔ Amarelo (+, quente, à direita)
+  //  y = Plano Espiritual: Vermelho (denso, embaixo) ↔ Rosa (sutil, em cima)
+  //  z = Kandinsky: o amarelo avança em direção ao observador, o azul recua.
+  // Simetria: o tom −k fica no ponto oposto ao tom k (cores complementares).
+  const SENT_XYZ = (() => {
+    const half = { 1: [0.88, -0.14, 0.42], 2: [0.66, -0.66, 0.26], 3: [0, -1, 0], 4: [-0.56, 0.76, -0.2], 5: [-1, -0.14, -0.45] };
+    const p = new Array(12);
+    p[0] = [0, 0, 0]; p[6] = [0, 0, -0.32];
+    for (const k in half) { p[+k] = half[k]; p[12 - k] = half[k].map(v => -v); }
+    return p;
+  })();
+
+  // ---- um quadro: espectro em dB + amostras no tempo → descritores ----
+  function extractFrame(freqDb, timeBuf, sampleRate, fftSize, prevMag) {
+    let s = 0;
+    for (let i = 0; i < timeBuf.length; i++) s += timeBuf[i] * timeBuf[i];
+    const rms = Math.sqrt(s / timeBuf.length);
+    const binHz = sampleRate / fftSize, nb = freqDb.length;
+    let num = 0, den = 0, flux = 0;
+    for (let i = 1; i < nb; i++) {
+      const db = freqDb[i];
+      const m = db > -150 ? Math.pow(10, db / 20) : 0;
+      const f = i * binHz;
+      if (f > 30 && f < 12000) { num += f * m; den += m; }
+      const d = m - prevMag[i];
+      if (d > 0 && f < 8000) flux += d;
+      prevMag[i] = m;
+    }
+    // cromagrama por picos espectrais com interpolação parabólica (A4 = 440 Hz)
+    const raw = new Float32Array(12), peakF = new Float32Array(12), peakM = new Float32Array(12);
+    const lo = Math.max(2, Math.floor(50 / binHz)), hi = Math.min(nb - 2, Math.ceil(5000 / binHz));
+    let maxDb = -200;
+    for (let i = lo; i <= hi; i++) if (freqDb[i] > maxDb) maxDb = freqDb[i];
+    const gate = Math.max(-90, maxDb - 40);
+    for (let i = lo; i <= hi; i++) {
+      const b = freqDb[i];
+      if (b < gate) continue;
+      const a = freqDb[i - 1], c = freqDb[i + 1];
+      if (!(b > a && b >= c)) continue;
+      const den2 = a - 2 * b + c;
+      const p = den2 !== 0 ? clamp(0.5 * (a - c) / den2, -0.5, 0.5) : 0;
+      const f = (i + p) * binHz;
+      if (f < 50) continue;
+      const midi = 69 + 12 * Math.log2(f / 440);
+      const r = Math.round(midi), dev = Math.abs(midi - r);
+      const tuneW = Math.pow(Math.cos(dev * Math.PI), 2);
+      const bandW = f < 120 ? 0.6 : (f > 2500 ? 0.55 : 1);
+      const w = Math.pow(10, b / 20) * tuneW * bandW;
+      const t = pcToTone(((r % 12) + 12) % 12);
+      raw[t] += w;
+      if (w > peakM[t]) { peakM[t] = w; peakF[t] = f; }
+    }
+    let maxRaw = 0;
+    for (let k = 0; k < 12; k++) if (raw[k] > maxRaw) maxRaw = raw[k];
+    return {
+      rms, rmsDb: 20 * Math.log10(rms + 1e-9), centroid: den > 0 ? num / den : 0, flux, maxDb, raw, peakF, maxRaw,
+      active: rms > 0.0025 && maxDb > -85 && maxRaw > 0,
+    };
   }
-  return p;
-})();
+
+  function pearson(x, prof, root) {
+    let mx = 0, my = 0;
+    for (let i = 0; i < 12; i++) { mx += x[i]; my += prof[i]; }
+    mx /= 12; my /= 12;
+    let num = 0, dx = 0, dy = 0;
+    for (let i = 0; i < 12; i++) {
+      const a = x[i] - mx, b = prof[(i - root + 12) % 12] - my;
+      num += a * b; dx += a * a; dy += b * b;
+    }
+    return dx > 0 ? num / Math.sqrt(dx * dy) : 0;
+  }
+  // tonalidade (Krumhansl-Schmuckler) a partir de um cromagrama na ordem Croma
+  function keyFromChroma(chroma) {
+    const x = new Array(12);
+    for (let pc = 0; pc < 12; pc++) x[pc] = chroma[pcToTone(pc)];
+    const all = [];
+    let bMaj = -2, bMin = -2;
+    for (let r = 0; r < 12; r++) {
+      const cM = pearson(x, KMAJ, r), cm = pearson(x, KMIN, r);
+      all.push({ root: r, tone: pcToTone(r), mode: 'maior', r: cM }, { root: r, tone: pcToTone(r), mode: 'menor', r: cm });
+      if (cM > bMaj) bMaj = cM;
+      if (cm > bMin) bMin = cm;
+    }
+    all.sort((a, b) => b.r - a.r);
+    return Object.assign({}, all[0], { second: all[1], rMaj: bMaj, rMin: bMin, modeScore: clamp((bMaj - bMin) * 5, -1, 1) });
+  }
+  // acorde: tríade cujos três tons passam do limiar (use o cromagrama linear, sem a compressão ^1,4)
+  const CHORD_THR = 0.35;
+  function detectChord(chroma, thr = CHORD_THR) {
+    let best = null, bestScore = 0;
+    for (let r = 0; r < 12; r++) for (const q of CHORD_Q) {
+      const ts = [r, (r + q[1]) % 12, (r + q[2]) % 12].map(pcToTone);
+      if (ts.every(t => chroma[t] > thr)) {
+        const sc = ts.reduce((s, t) => s + chroma[t], 0) + (q[3] ? 0.05 : 0);
+        if (sc > bestScore) { bestScore = sc; best = { root: pcToTone(r), quality: q[0], consonant: q[3], tones: ts }; }
+      }
+    }
+    return best;
+  }
+  // andamento por autocorrelação do envelope de onsets (fluxo espectral)
+  function bpmFromFlux(flux, dt) {
+    const n = flux.length;
+    if (n < 40 || !(dt > 0)) return null;
+    const env = new Float32Array(n), half = Math.max(2, Math.round(0.15 / dt));
+    let energy = 0;
+    for (let i = 0; i < n; i++) {
+      let s = 0, c = 0;
+      for (let j = Math.max(0, i - half); j <= Math.min(n - 1, i + half); j++) { s += flux[j]; c++; }
+      env[i] = Math.max(0, flux[i] - s / c);
+      energy += env[i] * env[i];
+    }
+    if (energy <= 1e-12) return null;
+    let best = 0, bestScore = 0;
+    for (let bpm = 60; bpm <= 190; bpm += 1) {
+      const lag = 60 / bpm / dt, li = Math.floor(lag), fr = lag - li;
+      if (li + 1 >= n - 10) continue;
+      let s = 0;
+      for (let i = 0; i + li + 1 < n; i++) s += env[i] * ((1 - fr) * env[i + li] + fr * env[i + li + 1]);
+      s /= (n - li);
+      const score = s * Math.exp(-0.5 * Math.pow(Math.log2(bpm / 120) / 0.9, 2));
+      if (score > bestScore) { bestScore = score; best = bpm; }
+    }
+    const strength = bestScore / (energy / n);
+    return best ? { bpm: best, strength } : null;
+  }
+  // posição no Sentirama (média ponderada por cromagrama²)
+  function sentiramaPos(chroma) {
+    let wx = 0, wy = 0, wz = 0, ws = 0;
+    for (let k = 0; k < 12; k++) {
+      const w = chroma[k] * chroma[k];
+      wx += SENT_XYZ[k][0] * w; wy += SENT_XYZ[k][1] * w; wz += SENT_XYZ[k][2] * w; ws += w;
+    }
+    return ws > 0 ? [wx / ws, wy / ws, wz / ws] : null;
+  }
+  // índice Ar (+) / Terra (−): modo maior/menor, brilho (centroide) e andamento
+  function airIndex(modeScore, centroid, bpm) {
+    const cS = centroid > 0 ? clamp(Math.log2(centroid / 1500) / 1.6, -1, 1) : 0;
+    const bS = bpm ? clamp((bpm - 110) / 50, -1, 1) : 0;
+    return { air: clamp(0.5 * modeScore + 0.32 * cS + 0.18 * bS, -1, 1), mode: modeScore, bright: cS, tempo: bS };
+  }
+  const tensionOf = vis => clamp(Math.sqrt(vis[3] * vis[9]) * 2.0, 0, 1);
+  // leitura relativa: a tônica passa a ser o Verde 0
+  function rotateChroma(chroma, tonic) {
+    const out = new Float32Array(12);
+    for (let k = 0; k < 12; k++) out[k] = chroma[(k + tonic) % 12];
+    return out;
+  }
+
+  // ---- FFT radix-2 (in place) e espectro em dB como o AnalyserNode ----
+  function fft(re, im) {
+    const n = re.length;
+    for (let i = 1, j = 0; i < n; i++) {
+      let bit = n >> 1;
+      for (; j & bit; bit >>= 1) j ^= bit;
+      j ^= bit;
+      if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+    }
+    for (let len = 2; len <= n; len <<= 1) {
+      const ang = -2 * Math.PI / len, wr = Math.cos(ang), wi = Math.sin(ang), h = len >> 1;
+      for (let i = 0; i < n; i += len) {
+        let cr = 1, ci = 0;
+        for (let k = 0; k < h; k++) {
+          const a = i + k, b = a + h;
+          const xr = re[b] * cr - im[b] * ci, xi = re[b] * ci + im[b] * cr;
+          re[b] = re[a] - xr; im[b] = im[a] - xi; re[a] += xr; im[a] += xi;
+          const t = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = t;
+        }
+      }
+    }
+  }
+  function blackman(n) {
+    const w = new Float32Array(n), a = 0.16, a0 = (1 - a) / 2, a1 = 0.5, a2 = a / 2;
+    for (let i = 0; i < n; i++) w[i] = a0 - a1 * Math.cos(2 * Math.PI * i / n) + a2 * Math.cos(4 * Math.PI * i / n);
+    return w;
+  }
+
+  // ---- análise completa de um sinal mono ----
+  function analyzeBuffer(samples, sampleRate, opts = {}, onProgress) {
+    const N = opts.fftSize || 4096, hop = opts.hop || 2048, dt = hop / sampleRate;
+    // suavização do AnalyserNode (0,55 a ~60 quadros/s) convertida para este salto
+    const tau = Math.pow(0.55, dt * 60);
+    const nFrames = Math.max(1, Math.floor(Math.max(0, samples.length - N) / hop) + 1);
+    const win = blackman(N), re = new Float32Array(N), im = new Float32Array(N), frame = new Float32Array(N);
+    const sm = new Float32Array(N / 2), freqDb = new Float32Array(N / 2), prevMag = new Float32Array(N / 2);
+    const T = nFrames;
+    const tl = {
+      t: new Float32Array(T), rmsDb: new Float32Array(T), centroid: new Float32Array(T), flux: new Float32Array(T),
+      level: new Float32Array(T), active: new Uint8Array(T), dom: new Int8Array(T), tension: new Float32Array(T),
+      chroma: new Float32Array(T * 12), raw: new Float32Array(T * 12), chord: new Int16Array(T),
+    };
+    const chordIndex = new Map(), chordList = [];
+    const chroma = new Float32Array(12), lin = new Float32Array(12), vis = new Float32Array(12);
+    let level = 0, dom = -1, tension = 0;
+    for (let fi = 0; fi < T; fi++) {
+      const off = fi * hop;
+      for (let i = 0; i < N; i++) { const v = off + i < samples.length ? samples[off + i] : 0; frame[i] = v; re[i] = v * win[i]; im[i] = 0; }
+      fft(re, im);
+      for (let k = 0; k < N / 2; k++) {
+        const m = Math.sqrt(re[k] * re[k] + im[k] * im[k]) / N;
+        sm[k] = tau * sm[k] + (1 - tau) * m;
+        freqDb[k] = sm[k] > 0 ? 20 * Math.log10(sm[k]) : -200;
+      }
+      const f = extractFrame(freqDb, frame, sampleRate, N, prevMag);
+      // mesmas regras de suavização do tempo real
+      const lvlT = f.active ? clamp((f.rmsDb + 58) / 44, 0, 1) : 0;
+      level += (lvlT - level) * smoothK(dt, lvlT > level ? 18 : 4);
+      if (f.active) {
+        const kf = smoothK(dt, 9);
+        for (let k = 0; k < 12; k++) {
+          chroma[k] += (Math.pow(f.raw[k] / f.maxRaw, 1.4) - chroma[k]) * kf;
+          lin[k] += (f.raw[k] / f.maxRaw - lin[k]) * kf;
+        }
+      } else {
+        const kd = smoothK(dt, 1.6);
+        for (let k = 0; k < 12; k++) { chroma[k] -= chroma[k] * kd; lin[k] -= lin[k] * kd; }
+      }
+      let best = -1, bv = 0;
+      for (let k = 0; k < 12; k++) if (chroma[k] > bv) { bv = chroma[k]; best = k; }
+      if (bv < 0.25 || level < 0.04) dom = -1;
+      else if (dom < 0 || chroma[best] > chroma[dom] * 1.12) dom = best;
+      for (let k = 0; k < 12; k++) vis[k] = clamp(chroma[k] * (0.35 + 0.65 * level) * 1.1, 0, 1);
+      const tT = tensionOf(vis);
+      tension += (tT - tension) * smoothK(dt, tT > tension ? 5 : 1.5);
+      let ci = -1;
+      if (level > 0.06) {
+        const ch = detectChord(lin);
+        if (ch) {
+          const key = ch.root + ':' + ch.quality;
+          if (!chordIndex.has(key)) { chordIndex.set(key, chordList.length); chordList.push(ch); }
+          ci = chordIndex.get(key);
+        }
+      }
+      tl.t[fi] = (off + N / 2) / sampleRate; tl.rmsDb[fi] = f.rmsDb; tl.centroid[fi] = f.centroid; tl.flux[fi] = f.flux;
+      tl.level[fi] = level; tl.active[fi] = f.active ? 1 : 0; tl.dom[fi] = dom; tl.tension[fi] = tension; tl.chord[fi] = ci;
+      for (let k = 0; k < 12; k++) { tl.chroma[fi * 12 + k] = chroma[k]; tl.raw[fi * 12 + k] = f.maxRaw > 0 ? f.raw[k] / f.maxRaw : 0; }
+      if (onProgress && fi % 150 === 0) onProgress(fi / T);
+    }
+    const params = { fftSize: N, hop, sampleRate, frameDt: dt, window: 'Blackman (α = 0,16)', smoothing: +tau.toFixed(3), A4: 440, method: VERSION };
+    return { params, timeline: tl, chords: chordList, summary: summarize(tl, chordList, dt, samples.length / sampleRate) };
+  }
+
+  // ---- resumo (laudo) a partir da linha do tempo ----
+  function pct(a, b) { return b > 0 ? a / b : 0; }
+  function quantile(arr, q) {
+    if (!arr.length) return 0;
+    const s = Float64Array.from(arr).sort();
+    const i = clamp((s.length - 1) * q, 0, s.length - 1), lo = Math.floor(i), hi = Math.ceil(i);
+    return s[lo] + (s[hi] - s[lo]) * (i - lo);
+  }
+  function quadrantOf(x, y) {
+    if (Math.abs(x) < 0.08 && Math.abs(y) < 0.08) return 'centro';
+    return (y >= 0 ? 'rosa' : 'vermelho') + '-' + (x >= 0 ? 'amarelo' : 'azul');
+  }
+  function reading(tl, T, tonic, profileAbs, domCountAbs, domFrames) {
+    // tonic = 0 → leitura absoluta (Ré = Verde 0); tonic = t → a tônica t vira o Verde 0
+    const profile = rotateChroma(profileAbs, tonic);
+    const domShare = new Float32Array(12);
+    for (let k = 0; k < 12; k++) domShare[k] = pct(domCountAbs[(k + tonic) % 12], domFrames);
+    const families = FAMILIES.map(f => ({ name: f.name, tones: f.tones, share: f.tones.reduce((s, t) => s + domShare[t], 0) }));
+    let natE = 0, allE = 0;
+    for (let k = 0; k < 12; k++) { allE += profile[k]; if (NATURALS.includes(k)) natE += profile[k]; }
+    const quads = { 'rosa-amarelo': 0, 'rosa-azul': 0, 'vermelho-amarelo': 0, 'vermelho-azul': 0, centro: 0 };
+    const path = [];
+    let sx = 0, sy = 0, sz = 0, n = 0;
+    const c = new Float32Array(12);
+    for (let i = 0; i < T; i++) {
+      if (!tl.active[i] || tl.dom[i] < 0) continue;
+      for (let k = 0; k < 12; k++) c[k] = tl.chroma[i * 12 + (k + tonic) % 12];
+      const p = sentiramaPos(c);
+      if (!p) continue;
+      sx += p[0]; sy += p[1]; sz += p[2]; n++;
+      quads[quadrantOf(p[0], p[1])]++;
+      path.push([+tl.t[i].toFixed(2), +p[0].toFixed(3), +p[1].toFixed(3), +p[2].toFixed(3)]);
+    }
+    for (const q in quads) quads[q] = pct(quads[q], n);
+    return {
+      tonic, profile: Array.from(profile), dominantShare: Array.from(domShare), families,
+      naturalsEnergy: pct(natE, allE), naturalsTime: NATURALS.reduce((s, t) => s + domShare[t], 0),
+      sentirama: { mean: n ? [sx / n, sy / n, sz / n] : [0, 0, 0], quadrants: quads, path },
+      tonicStability: domShare[0],
+    };
+  }
+  function summarize(tl, chordList, dt, duration) {
+    const T = tl.t.length;
+    // perfil cromático global: média ponderada por amplitude, só quadros ativos
+    const profileAbs = new Float32Array(12);
+    let activeN = 0, wsum = 0;
+    const rmsAct = [], centAct = [];
+    for (let i = 0; i < T; i++) {
+      if (!tl.active[i]) continue;
+      activeN++;
+      const w = Math.pow(10, tl.rmsDb[i] / 20);
+      for (let k = 0; k < 12; k++) profileAbs[k] += tl.raw[i * 12 + k] * w;
+      wsum += w;
+      rmsAct.push(tl.rmsDb[i]); centAct.push(tl.centroid[i]);
+    }
+    let pmax = 0;
+    for (let k = 0; k < 12; k++) pmax = Math.max(pmax, profileAbs[k]);
+    if (pmax > 0) for (let k = 0; k < 12; k++) profileAbs[k] /= pmax;
+    const key = keyFromChroma(profileAbs);
+    // andamento: mediana das estimativas em janelas de 8 s
+    const win = Math.max(40, Math.round(8 / dt)), bpms = [];
+    for (let i = 0; i + win <= T; i += Math.round(win / 2)) {
+      const b = bpmFromFlux(tl.flux.subarray(i, i + win), dt);
+      if (b && b.strength > 0.25) bpms.push(b.bpm);
+    }
+    const bpm = bpms.length ? quantile(bpms, 0.5) : 0;
+    const centroidMed = quantile(centAct, 0.5);
+    const air = airIndex(key.modeScore, centroidMed, bpm);
+    // linha do tempo da tonalidade e do índice Ar/Terra (janelas de 10 s, passo 5 s)
+    const kw = Math.max(20, Math.round(10 / dt)), ks = Math.max(10, Math.round(5 / dt)), keyTimeline = [];
+    for (let i = 0; i < T; i += ks) {
+      const j = Math.min(T, i + kw), prof = new Float32Array(12), cs = [];
+      let act = 0;
+      for (let f = i; f < j; f++) {
+        if (!tl.active[f]) continue;
+        act++; cs.push(tl.centroid[f]);
+        const w = Math.pow(10, tl.rmsDb[f] / 20);
+        for (let k = 0; k < 12; k++) prof[k] += tl.raw[f * 12 + k] * w;
+      }
+      if (act < (j - i) * 0.3) { keyTimeline.push({ t0: tl.t[i], t1: tl.t[j - 1], tone: -1 }); if (j >= T) break; continue; }
+      const kk = keyFromChroma(prof), a = airIndex(kk.modeScore, quantile(cs, 0.5), bpm);
+      keyTimeline.push({ t0: +tl.t[i].toFixed(2), t1: +tl.t[j - 1].toFixed(2), tone: kk.tone, mode: kk.mode, r: +kk.r.toFixed(3), air: +a.air.toFixed(3) });
+      if (j >= T) break;
+    }
+    // tom dominante
+    const domCount = new Float32Array(12);
+    let domFrames = 0;
+    for (let i = 0; i < T; i++) if (tl.dom[i] >= 0) { domCount[tl.dom[i]]++; domFrames++; }
+    // tensão Fá↔Si
+    let tsum = 0, tHigh = 0;
+    for (let i = 0; i < T; i++) if (tl.active[i]) { tsum += tl.tension[i]; if (tl.tension[i] > 0.5) tHigh++; }
+    const peaks = [];
+    for (let i = 1; i < T - 1; i++) {
+      const v = tl.tension[i];
+      if (v > 0.5 && v >= tl.tension[i - 1] && v > tl.tension[i + 1]) peaks.push({ t: +tl.t[i].toFixed(2), v: +v.toFixed(3) });
+    }
+    peaks.sort((a, b) => b.v - a.v);
+    const tensionPeaks = [];
+    for (const p of peaks) { if (tensionPeaks.every(q => Math.abs(q.t - p.t) > 3)) tensionPeaks.push(p); if (tensionPeaks.length >= 5) break; }
+    tensionPeaks.sort((a, b) => a.t - b.t);
+    // acordes: segmentos ≥ 0,5 s
+    const segs = [];
+    for (let i = 0; i < T; i++) {
+      const c = tl.chord[i];
+      if (segs.length && segs[segs.length - 1].c === c) segs[segs.length - 1].t1 = tl.t[i];
+      else segs.push({ c, t0: tl.t[i], t1: tl.t[i] });
+    }
+    const chordSegs = [];
+    for (const g of segs) {
+      if (g.c < 0 || g.t1 - g.t0 + dt < 0.5) continue;
+      const last = chordSegs[chordSegs.length - 1];
+      if (last && last.c === g.c && g.t0 - last.t1 < 1) last.t1 = g.t1;
+      else chordSegs.push({ c: g.c, t0: g.t0, t1: g.t1 });
+    }
+    const chordDur = new Map();
+    let chordTotal = 0, consTotal = 0;
+    for (const g of chordSegs) {
+      const d = g.t1 - g.t0 + dt;
+      chordDur.set(g.c, (chordDur.get(g.c) || 0) + d); chordTotal += d;
+      if (chordList[g.c].consonant) consTotal += d;
+    }
+    const topChords = [...chordDur.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10)
+      .map(([c, d]) => Object.assign({}, chordList[c], { seconds: +d.toFixed(2), share: pct(d, chordTotal) }));
+    const activeDur = activeN * dt;
+    const abs = reading(tl, T, 0, profileAbs, domCount, domFrames);
+    const rel = reading(tl, T, key.tone, profileAbs, domCount, domFrames);
+    return {
+      duration, activeDuration: activeDur, frames: T,
+      key: { tone: key.tone, root: key.root, mode: key.mode, r: key.r, second: key.second, rMaj: key.rMaj, rMin: key.rMin },
+      air, bpm, bpmWindows: bpms.length,
+      centroid: { median: centroidMed, mean: centAct.length ? centAct.reduce((a, b) => a + b, 0) / centAct.length : 0 },
+      dynamics: { p10: quantile(rmsAct, 0.1), p50: quantile(rmsAct, 0.5), p95: quantile(rmsAct, 0.95) },
+      tension: { mean: pct(tsum, activeN), above50: pct(tHigh, activeN), peaks: tensionPeaks },
+      stabilityD: pct(domCount[0], domFrames),
+      chords: {
+        top: topChords, consonantShare: pct(consTotal, chordTotal), coverage: pct(chordTotal, activeDur),
+        sequence: chordSegs.map(g => ({ root: chordList[g.c].root, quality: chordList[g.c].quality, consonant: chordList[g.c].consonant, t0: +g.t0.toFixed(2), t1: +(g.t1 + dt).toFixed(2) })),
+      },
+      keyTimeline, absolute: abs, relative: rel,
+    };
+  }
+
+  return {
+    VERSION, NATURALS, FAMILIES, SENT_XYZ, KMAJ, KMIN,
+    extractFrame, keyFromChroma, detectChord, bpmFromFlux, sentiramaPos, airIndex, tensionOf, rotateChroma,
+    fft, blackman, analyzeBuffer, summarize,
+  };
+}
+const CORE = dspCore();
+// Posições no Sentirama como vetores (ver SENT_XYZ no núcleo)
+const SENT_POS = CORE.SENT_XYZ.map(p => new THREE.Vector3(p[0], p[1], p[2]));
 
 /* =====================================================================
    2. MOTOR DE ÁUDIO (Web Audio API)
@@ -443,7 +959,7 @@ const A = {
   micStream: null, micSrc: null, elSrc: null, demoBus: null, demoTimer: null,
   el: document.getElementById('audio-el'), source: 'none', fileUrl: null,
 };
-let freqDb, timeBuf, mag, prevMag;
+let freqDb, timeBuf, prevMag;
 
 function ensureAudio() {
   if (!A.ctx) {
@@ -461,7 +977,6 @@ function ensureAudio() {
     A.outGain.connect(A.ctx.destination);
     freqDb = new Float32Array(A.analyser.frequencyBinCount);
     timeBuf = new Float32Array(A.analyser.fftSize);
-    mag = new Float32Array(A.analyser.frequencyBinCount);
     prevMag = new Float32Array(A.analyser.frequencyBinCount);
     applyGain();
   }
@@ -469,6 +984,7 @@ function ensureAudio() {
 }
 
 function stopMic() {
+  if (REC.rec && REC.rec.state !== 'inactive') REC.rec.stop();
   if (A.micSrc) { try { A.micSrc.disconnect(); } catch (e) {} A.micSrc = null; }
   if (A.micStream) { A.micStream.getTracks().forEach(t => t.stop()); A.micStream = null; }
 }
@@ -522,6 +1038,7 @@ function loadFile(file) {
   }
   if (A.fileUrl) URL.revokeObjectURL(A.fileUrl);
   A.fileUrl = URL.createObjectURL(file);
+  A.currentFile = file;
   A.el.src = A.fileUrl;
   A.source = 'file';
   document.getElementById('track-name').textContent = file.name;
@@ -604,6 +1121,7 @@ function applyGain() {
 const AN = {
   active: false, level: 0, rms: 0, rmsDb: -Infinity, centroid: 0, smoothCentroid: 0,
   chroma: new Float32Array(12),   // cromagrama suavizado (ordem Croma: D=0)
+  lin: new Float32Array(12),      // cromagrama linear suavizado (para acordes)
   slow: new Float32Array(12),     // cromagrama lento (para tonalidade)
   vis: new Float32Array(12),      // intensidade visual (cromagrama × nível)
   peakF: new Float32Array(12),
@@ -614,54 +1132,16 @@ const AN = {
   chord: null, chordStrength: 0, lastChord: null,
   color: new THREE.Color(0.55, 0.55, 0.6),
 };
-const raw = new Float32Array(12), peakM = new Float32Array(12), peakFr = new Float32Array(12);
-const KMAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
-const KMIN = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
 const fluxHist = [], fluxTime = [];
 let fluxAvg = 0, lastOnset = 0, lastBpmCalc = 0;
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const smoothK = (dt, rate) => 1 - Math.exp(-dt * rate);
 
-function pearson(x, prof, root) {
-  let mx = 0, my = 0;
-  for (let i = 0; i < 12; i++) { mx += x[i]; my += prof[i]; }
-  mx /= 12; my /= 12;
-  let num = 0, dx = 0, dy = 0;
-  for (let i = 0; i < 12; i++) {
-    const a = x[i] - mx, b = prof[(i - root + 12) % 12] - my;
-    num += a * b; dx += a * a; dy += b * b;
-  }
-  return dx > 0 ? num / Math.sqrt(dx * dy) : 0;
-}
-
-function estimateBpm(now) {
+function estimateBpm() {
   const n = fluxHist.length;
   if (n < 180) return;
-  const dtAvg = (fluxTime[n - 1] - fluxTime[0]) / (n - 1);
-  if (!(dtAvg > 0)) return;
-  // envelope de onsets: fluxo menos média local, retificado
-  const env = new Float32Array(n), half = Math.max(2, Math.round(0.15 / dtAvg));
-  let energy = 0;
-  for (let i = 0; i < n; i++) {
-    let s = 0, c = 0;
-    for (let j = Math.max(0, i - half); j <= Math.min(n - 1, i + half); j++) { s += fluxHist[j]; c++; }
-    env[i] = Math.max(0, fluxHist[i] - s / c);
-    energy += env[i] * env[i];
-  }
-  if (energy <= 1e-12) return;
-  let best = 0, bestScore = 0;
-  for (let bpm = 60; bpm <= 190; bpm += 1) {
-    const lag = 60 / bpm / dtAvg, li = Math.floor(lag), fr = lag - li;
-    if (li + 1 >= n - 10) continue;
-    let s = 0;
-    for (let i = 0; i + li + 1 < n; i++) s += env[i] * ((1 - fr) * env[i + li] + fr * env[i + li + 1]);
-    s /= (n - li);
-    const prior = Math.exp(-0.5 * Math.pow(Math.log2(bpm / 120) / 0.9, 2));
-    const score = s * prior;
-    if (score > bestScore) { bestScore = score; best = bpm; }
-  }
-  const strength = bestScore / (energy / n);
-  if (best && strength > 0.25) AN.bpm = AN.bpm ? AN.bpm + (best - AN.bpm) * 0.35 : best;
+  const b = CORE.bpmFromFlux(fluxHist, (fluxTime[n - 1] - fluxTime[0]) / (n - 1));
+  if (b && b.strength > 0.25) AN.bpm = AN.bpm ? AN.bpm + (b.bpm - AN.bpm) * 0.35 : b.bpm;
 }
 
 function analyse(dt, now) {
@@ -670,51 +1150,10 @@ function analyse(dt, now) {
   if (running) {
     A.analyser.getFloatFrequencyData(freqDb);
     A.analyser.getFloatTimeDomainData(timeBuf);
-    let s = 0;
-    for (let i = 0; i < timeBuf.length; i++) s += timeBuf[i] * timeBuf[i];
-    const rms = Math.sqrt(s / timeBuf.length);
-    AN.rms = rms; AN.rmsDb = 20 * Math.log10(rms + 1e-9);
-
-    const sr = A.ctx.sampleRate, binHz = sr / FFT_SIZE, nb = freqDb.length;
-    let num = 0, den = 0, flux = 0;
-    for (let i = 1; i < nb; i++) {
-      const db = freqDb[i];
-      const m = db > -150 ? Math.pow(10, db / 20) : 0;
-      const f = i * binHz;
-      if (f > 30 && f < 12000) { num += f * m; den += m; }
-      const d = m - prevMag[i];
-      if (d > 0 && f < 8000) flux += d;
-      prevMag[i] = m; mag[i] = m;
-    }
-    AN.centroid = den > 0 ? num / den : 0;
-
-    // ---- Cromagrama por picos espectrais com interpolação parabólica ----
-    const lo = Math.max(2, Math.floor(50 / binHz)), hi = Math.min(nb - 2, Math.ceil(5000 / binHz));
-    let maxDb = -200;
-    for (let i = lo; i <= hi; i++) if (freqDb[i] > maxDb) maxDb = freqDb[i];
-    const gate = Math.max(-90, maxDb - 40);
-    raw.fill(0); peakM.fill(0); peakFr.fill(0);
-    for (let i = lo; i <= hi; i++) {
-      const b = freqDb[i];
-      if (b < gate) continue;
-      const a = freqDb[i - 1], c = freqDb[i + 1];
-      if (!(b > a && b >= c)) continue;
-      const den2 = a - 2 * b + c;
-      const p = den2 !== 0 ? clamp(0.5 * (a - c) / den2, -0.5, 0.5) : 0;
-      const f = (i + p) * binHz;
-      if (f < 50) continue;
-      const midi = 69 + 12 * Math.log2(f / 440);
-      const r = Math.round(midi), dev = Math.abs(midi - r);
-      const tuneW = Math.pow(Math.cos(dev * Math.PI), 2);
-      const bandW = f < 120 ? 0.6 : (f > 2500 ? 0.55 : 1);
-      const w = Math.pow(10, b / 20) * tuneW * bandW;
-      const t = pcToTone(((r % 12) + 12) % 12);
-      raw[t] += w;
-      if (w > peakM[t]) { peakM[t] = w; peakFr[t] = f; }
-    }
-    let maxRaw = 0;
-    for (let k = 0; k < 12; k++) if (raw[k] > maxRaw) maxRaw = raw[k];
-    active = rms > 0.0025 && maxDb > -85 && maxRaw > 0;
+    const fr = CORE.extractFrame(freqDb, timeBuf, A.ctx.sampleRate, FFT_SIZE, prevMag);
+    const { raw, maxRaw, flux } = fr;
+    AN.rms = fr.rms; AN.rmsDb = fr.rmsDb; AN.centroid = fr.centroid;
+    active = fr.active;
 
     // ---- nível (RMS → 0..1) ----
     const lvlT = active ? clamp((AN.rmsDb + 58) / 44, 0, 1) : 0;
@@ -725,8 +1164,9 @@ function analyse(dt, now) {
       for (let k = 0; k < 12; k++) {
         const v = Math.pow(raw[k] / maxRaw, 1.4);
         AN.chroma[k] += (v - AN.chroma[k]) * kf;
+        AN.lin[k] += (raw[k] / maxRaw - AN.lin[k]) * kf;
         AN.slow[k] += (raw[k] / maxRaw - AN.slow[k]) * ks;
-        if (peakFr[k] > 0) AN.peakF[k] = peakFr[k];
+        if (fr.peakF[k] > 0) AN.peakF[k] = fr.peakF[k];
       }
       AN.smoothCentroid += (AN.centroid - AN.smoothCentroid) * smoothK(dt, 3);
     }
@@ -736,12 +1176,12 @@ function analyse(dt, now) {
     while (fluxTime.length && now - fluxTime[0] > 8) { fluxTime.shift(); fluxHist.shift(); }
     fluxAvg += (flux - fluxAvg) * smoothK(dt, 2.5);
     if (active && flux > fluxAvg * 1.7 && now - lastOnset > 0.12 && AN.level > 0.08) { AN.pulse = 1; lastOnset = now; }
-    if (now - lastBpmCalc > 0.5) { lastBpmCalc = now; if (active) estimateBpm(now); }
+    if (now - lastBpmCalc > 0.5) { lastBpmCalc = now; if (active) estimateBpm(); }
   }
   AN.active = active;
   if (!active) {
     const kd = smoothK(dt, 1.6);
-    for (let k = 0; k < 12; k++) AN.chroma[k] -= AN.chroma[k] * kd;
+    for (let k = 0; k < 12; k++) { AN.chroma[k] -= AN.chroma[k] * kd; AN.lin[k] -= AN.lin[k] * kd; }
     AN.level -= AN.level * smoothK(dt, 3);
   }
   AN.pulse *= Math.exp(-dt * 6);
@@ -765,60 +1205,32 @@ function analyse(dt, now) {
   let sumSlow = 0;
   for (let k = 0; k < 12; k++) sumSlow += AN.slow[k];
   if (sumSlow > 0.5) {
-    const x = new Array(12);
-    for (let pc = 0; pc < 12; pc++) x[pc] = AN.slow[pcToTone(pc)];
-    let bMaj = -2, rMaj = 0, bMin = -2, rMin = 0;
-    for (let r = 0; r < 12; r++) {
-      const cM = pearson(x, KMAJ, r), cm = pearson(x, KMIN, r);
-      if (cM > bMaj) { bMaj = cM; rMaj = r; }
-      if (cm > bMin) { bMin = cm; rMin = r; }
-    }
-    const conf = Math.max(bMaj, bMin);
-    if (conf > 0.35) {
-      if (bMaj >= bMin) { AN.keyRoot = rMaj; AN.keyMode = 'maior'; } else { AN.keyRoot = rMin; AN.keyMode = 'menor'; }
-      AN.modeScore = clamp((bMaj - bMin) * 5, -1, 1);
-    }
+    const key = CORE.keyFromChroma(AN.slow);
+    if (key.r > 0.35) { AN.keyRoot = key.root; AN.keyMode = key.mode; AN.modeScore = key.modeScore; }
   }
 
   // ---- acorde instantâneo ----
-  AN.chord = null;
-  if (AN.level > 0.06) {
-    let bestScore = 0;
-    const Q = [['maior', 4, 7, true], ['menor', 3, 7, true], ['diminuto', 3, 6, false], ['aumentado', 4, 8, false]];
-    for (let r = 0; r < 12; r++) for (const q of Q) {
-      const ts = [r, (r + q[1]) % 12, (r + q[2]) % 12].map(pcToTone);
-      if (ts.every(t => AN.chroma[t] > 0.4)) {
-        const sc = ts.reduce((s, t) => s + AN.chroma[t], 0) + (q[3] ? 0.05 : 0);
-        if (sc > bestScore) { bestScore = sc; AN.chord = { root: pcToTone(r), quality: q[0], consonant: q[3], tones: ts }; }
-      }
-    }
-  }
+  AN.chord = AN.level > 0.06 ? CORE.detectChord(AN.lin) : null;
   if (AN.chord) AN.lastChord = AN.chord;
   const chordT = AN.chord && AN.chord.consonant ? 1 : 0;
   AN.chordStrength += (chordT - AN.chordStrength) * smoothK(dt, chordT ? 6 : 2);
 
   // ---- Ar/Terra, polaridade, tensão Fá↔Si, estabilidade em Ré ----
   if (active) {
-    const cS = AN.smoothCentroid > 0 ? clamp(Math.log2(AN.smoothCentroid / 1500) / 1.6, -1, 1) : 0;
-    const bS = AN.bpm ? clamp((AN.bpm - 110) / 50, -1, 1) : 0;
-    const airT = clamp(0.5 * AN.modeScore + 0.32 * cS + 0.18 * bS, -1, 1);
+    const airT = CORE.airIndex(AN.modeScore, AN.smoothCentroid, AN.bpm).air;
     AN.air += (airT - AN.air) * smoothK(dt, 1.2);
-    let wx = 0, wy = 0, wz = 0, ws = 0;
-    for (let k = 0; k < 12; k++) {
-      const w = AN.chroma[k] * AN.chroma[k];
-      wx += SENT_POS[k].x * w; wy += SENT_POS[k].y * w; wz += SENT_POS[k].z * w; ws += w;
-    }
-    if (ws > 0) {
+    const pos = CORE.sentiramaPos(AN.chroma);
+    if (pos) {
       const ks = smoothK(dt, 2.5);
-      AN.polarity += (wx / ws - AN.polarity) * ks;
-      AN.vertical += (wy / ws - AN.vertical) * ks;
-      AN.depth += (wz / ws - AN.depth) * ks;
+      AN.polarity += (pos[0] - AN.polarity) * ks;
+      AN.vertical += (pos[1] - AN.vertical) * ks;
+      AN.depth += (pos[2] - AN.depth) * ks;
     }
   } else {
     const k = smoothK(dt, 0.6);
     AN.air -= AN.air * k; AN.polarity -= AN.polarity * k; AN.vertical -= AN.vertical * k; AN.depth -= AN.depth * k;
   }
-  const tensT = clamp(Math.sqrt(AN.vis[3] * AN.vis[9]) * 2.0, 0, 1);
+  const tensT = CORE.tensionOf(AN.vis);
   AN.tension += (tensT - AN.tension) * smoothK(dt, tensT > AN.tension ? 5 : 1.5);
   const stabT = (AN.dominant === 0 && AN.chroma[0] > 0.55) ? 1 : 0;
   AN.stability += (stabT - AN.stability) * smoothK(dt, stabT ? 2.5 : 1.5);
@@ -1749,6 +2161,7 @@ function updateSourceUI() {
   else { $('player').classList.remove('hidden'); $('player').classList.add('flex'); }
   const playing = A.source === 'file' && !A.el.paused;
   $('ico-play').classList.toggle('hidden', playing); $('ico-pause').classList.toggle('hidden', !playing);
+  updateLaudoButtons();
 }
 
 // eventos de entrada
@@ -1814,6 +2227,11 @@ $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeMo
 window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox') return;
   const k = e.key.toLowerCase();
+  if ($('report').classList.contains('show')) {
+    if (k === 'escape') closeReport();
+    else if (k === ' ' && A.source === 'file' && e.target.tagName !== 'BUTTON') { e.preventDefault(); togglePlay(); }
+    return;
+  }
   if (k === 'escape') closeModal();
   else if (k === 'h') document.body.classList.toggle('hidden-ui');
   else if (k === 'f') toggleFull();
@@ -1829,6 +2247,686 @@ window.addEventListener('resize', () => {
   if (composer) composer.setSize(w, h);
 });
 window.addEventListener('beforeunload', () => stopMic());
+
+/* =====================================================================
+   7. LAUDO — análise completa (arquivo inteiro ou sessão gravada)
+   ===================================================================== */
+const ANALYSIS_SR = 44100;   // tudo é reamostrado para 44,1 kHz mono: resultados iguais em qualquer aparelho
+const R = { result: null, blob: null, worker: null, busy: false };
+const REC = { rec: null, chunks: [], t0: 0, timer: null };
+const QUAD_LABEL = {
+  'rosa-amarelo': 'Rosa–Amarelo · Ar (sutil, quente)',
+  'rosa-azul': 'Rosa–Azul (sutil, frio)',
+  'vermelho-amarelo': 'Vermelho–Amarelo (denso, quente)',
+  'vermelho-azul': 'Vermelho–Azul · Terra (denso, frio)',
+  centro: 'Centro (tônica)',
+};
+const FAMILY_HEX = { Verde: '#43c24a', Amarelo: '#f7dc2f', Laranja: '#f7902f', Vermelho: '#e8402c', Violeta: '#8f4fd0', Azul: '#2f9fe6', Rosa: '#f27bb8' };
+const pctS = (v, d = 0) => (v * 100).toFixed(d).replace('.', ',') + '%';
+const num = (v, d = 2) => v.toFixed(d).replace('.', ',');
+const sgn = (v, d = 2) => (v > 0.005 ? '+' : v < -0.005 ? '−' : '') + Math.abs(v).toFixed(d).replace('.', ',');
+const keyLabel = (tone, mode) => tone < 0 ? '—' : `${TONES[tone].pt} ${mode}`;
+const relNote = (k, tonic) => TONES[(k + tonic) % 12].pt;
+const mmss = s => { s = Math.max(0, s); return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const dot = hex => `<i class="r-dot" style="background:${hex}"></i>`;
+
+// ---------- motor: decodificar e analisar num Web Worker ----------
+async function decodeToMono(arrayBuffer) {
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  const ctx = new OAC(1, ANALYSIS_SR, ANALYSIS_SR);
+  const buf = await new Promise((res, rej) => {
+    const p = ctx.decodeAudioData(arrayBuffer, res, rej);
+    if (p && p.then) p.then(res, rej);
+  });
+  const n = buf.length, ch = buf.numberOfChannels, out = new Float32Array(n);
+  for (let c = 0; c < ch; c++) { const d = buf.getChannelData(c); for (let i = 0; i < n; i++) out[i] += d[i] / ch; }
+  return { samples: out, sampleRate: buf.sampleRate, channels: ch };
+}
+function getWorker() {
+  if (R.worker) return R.worker;
+  const src = `${dspCore.toString()}
+const CORE = dspCore();
+self.onmessage = e => {
+  const { samples, sampleRate } = e.data;
+  try {
+    const r = CORE.analyzeBuffer(samples, sampleRate, {}, p => self.postMessage({ type: 'progress', p }));
+    self.postMessage({ type: 'done', result: r });
+  } catch (err) { self.postMessage({ type: 'error', message: String((err && err.message) || err) }); }
+};`;
+  R.worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+  return R.worker;
+}
+function runAnalysis(samples, sampleRate, onProgress) {
+  return new Promise((resolve, reject) => {
+    let w = null;
+    try { w = getWorker(); } catch (e) { w = null; }
+    if (!w) { // sem Web Worker: roda na própria página
+      setTimeout(() => { try { resolve(CORE.analyzeBuffer(samples, sampleRate, {}, onProgress)); } catch (err) { reject(err); } }, 30);
+      return;
+    }
+    w.onmessage = e => {
+      const m = e.data;
+      if (m.type === 'progress') onProgress(m.p);
+      else if (m.type === 'done') resolve(m.result);
+      else reject(new Error(m.message));
+    };
+    w.onerror = e => { e.preventDefault && e.preventDefault(); R.worker = null; reject(new Error(e.message || 'falha no processamento')); };
+    w.postMessage({ samples, sampleRate }, [samples.buffer]);
+  });
+}
+async function analyzeBlob(blob, meta) {
+  if (R.busy) { toast('Já existe uma análise em andamento.'); return; }
+  R.busy = true; updateLaudoButtons();
+  openReport();
+  $('r-title').textContent = meta.name || 'Áudio';
+  $('r-body').innerHTML = `<section class="r-card"><h2>Analisando</h2><p class="r-sub" id="r-status">Decodificando o áudio…</p></section>`;
+  setProgress(0.03);
+  try {
+    const { samples, sampleRate, channels } = await decodeToMono(await blob.arrayBuffer());
+    if (samples.length < 4096) throw new Error('O áudio é curto demais para analisar (menos de 0,1 s).');
+    const duration = samples.length / sampleRate, t0 = performance.now();
+    const result = await runAnalysis(samples, sampleRate, p => {
+      setProgress(0.06 + 0.92 * p);
+      const st = $('r-status'); if (st) st.textContent = `Analisando ${mmss(duration)} de áudio… ${Math.round(p * 100)}%`;
+    });
+    result.source = { kind: meta.kind, name: meta.name, mime: blob.type || '', duration, sampleRate, channelsOriginal: channels };
+    result.app = { name: 'Cromasfera Audio-Visualizer', analysis: CORE.VERSION, generatedAt: new Date().toISOString(), elapsedMs: Math.round(performance.now() - t0) };
+    R.result = result; R.blob = blob;
+    setProgress(1);
+    renderReport(result);
+  } catch (err) {
+    console.error(err);
+    $('r-body').innerHTML = `<section class="r-card"><h2>Não foi possível analisar</h2><p class="r-sub"></p><p class="r-text">Verifique se o arquivo é um áudio válido (.mp3, .wav, .m4a, .ogg). Formatos que o navegador não decodifica não podem ser analisados.</p></section>`;
+    $('r-body').querySelector('.r-sub').textContent = String(err.message || err);
+    setProgress(0);
+  } finally { R.busy = false; updateLaudoButtons(); }
+}
+function analyzeCurrentFile() {
+  if (!A.currentFile) { toast('Carregue um arquivo de áudio primeiro (Upload ou arrastar).'); return; }
+  analyzeBlob(A.currentFile, { kind: 'arquivo', name: A.currentFile.name });
+}
+
+// ---------- gravação de sessão pelo microfone ----------
+function toggleRecord() {
+  if (REC.rec) { REC.rec.stop(); return; }
+  if (A.source !== 'mic' || !A.micStream) { toast('Ative o microfone para gravar uma sessão.'); return; }
+  if (!window.MediaRecorder) { toast('Este navegador não grava áudio (MediaRecorder indisponível).', 4000); return; }
+  let rec;
+  try { rec = new MediaRecorder(A.micStream); } catch (e) { toast('Não foi possível iniciar a gravação: ' + e.message, 4000); return; }
+  REC.rec = rec; REC.chunks = []; REC.t0 = performance.now();
+  rec.ondataavailable = e => { if (e.data && e.data.size) REC.chunks.push(e.data); };
+  rec.onstop = () => {
+    clearInterval(REC.timer);
+    const type = rec.mimeType || 'audio/webm';
+    const blob = new Blob(REC.chunks, { type });
+    REC.rec = null; REC.chunks = [];
+    updateLaudoButtons();
+    if (!blob.size) { toast('A gravação ficou vazia.'); return; }
+    const d = new Date(), p2 = v => String(v).padStart(2, '0');
+    const ext = type.includes('mp4') ? 'mp4' : type.includes('ogg') ? 'ogg' : 'webm';
+    const name = `sessao-${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}-${p2(d.getHours())}h${p2(d.getMinutes())}.${ext}`;
+    analyzeBlob(blob, { kind: 'gravação', name });
+  };
+  rec.start(1000);
+  REC.timer = setInterval(updateLaudoButtons, 500);
+  updateLaudoButtons();
+  toast('Gravando a sessão. Clique de novo para parar e gerar o laudo.');
+}
+function updateLaudoButtons() {
+  const ba = $('btn-analyze'), br = $('btn-record');
+  ba.disabled = !A.currentFile || R.busy;
+  $('btn-analyze2').disabled = !A.currentFile || R.busy;
+  br.disabled = !(A.source === 'mic' || REC.rec) || R.busy;
+  br.classList.toggle('rec-on', !!REC.rec);
+  br.querySelector('span').textContent = REC.rec ? `Parar e analisar (${mmss((performance.now() - REC.t0) / 1000)})` : 'Gravar sessão';
+}
+
+// ---------- painel do laudo ----------
+function openReport() { $('report').classList.add('show'); $('report').setAttribute('aria-hidden', 'false'); $('report').scrollTop = 0; }
+function closeReport() { $('report').classList.remove('show'); $('report').setAttribute('aria-hidden', 'true'); $('rtip').style.display = 'none'; }
+function setProgress(p) { $('r-bar').style.width = (p * 100).toFixed(1) + '%'; $('r-bar').style.opacity = p > 0 && p < 1 ? 1 : 0; }
+const rcss = name => getComputedStyle($('report')).getPropertyValue(name).trim();
+
+function statCard(k, v, d, hex) {
+  return `<div class="r-stat"><div class="k">${k}</div><div class="v">${hex ? dot(hex) : ''}${v}</div>${d ? `<div class="d">${d}</div>` : ''}</div>`;
+}
+function topFamily(rd) { return rd.families.slice().sort((a, b) => b.share - a.share)[0]; }
+function topQuad(rd) { return Object.entries(rd.sentirama.quadrants).sort((a, b) => b[1] - a[1])[0]; }
+function posWords(m) {
+  const h = m[0] > 0.1 ? 'quente (+, amarelo)' : m[0] < -0.1 ? 'frio (−, azul)' : 'neutro no Plano Físico';
+  const v = m[1] > 0.1 ? 'sutil (rosa)' : m[1] < -0.1 ? 'denso (vermelho)' : 'neutro no Plano Espiritual';
+  return `${h} e ${v}`;
+}
+function readingText(rd, S, rel) {
+  const fam = topFamily(rd), q = topQuad(rd), tonic = S.key.tone;
+  const tonesOf = fam.tones.filter(t => rd.dominantShare[t] > 0.005)
+    .map(t => rel ? `grau ${t} = ${relNote(t, tonic)}` : `${TONES[t].pt} ${t}`).join(', ');
+  const head = rel
+    ? `<h3>Leitura relativa <span>(tônica ${TONES[tonic].pt} = Verde 0)</span></h3>`
+    : `<h3>Leitura absoluta <span>(Ré = Verde 0)</span></h3>`;
+  const stab = rel
+    ? `A tônica (${TONES[tonic].pt}) é a nota dominante em <b>${pctS(rd.tonicStability)}</b> do tempo.`
+    : `Ré (Verde 0) é a nota dominante em <b>${pctS(rd.tonicStability)}</b> do tempo.`;
+  return `<div>${head}
+    <p>A cor que mais domina é <b>${dot(FAMILY_HEX[fam.name])}${fam.name}</b> (${pctS(fam.share)} do tempo${tonesOf ? `; ${tonesOf}` : ''}).
+    No Sentirama a música passa mais tempo no quadrante <b>${QUAD_LABEL[q[0]]}</b> (${pctS(q[1])}); seu centro de gravidade é ${posWords(rd.sentirama.mean)}
+    (x = ${sgn(rd.sentirama.mean[0])}; y = ${sgn(rd.sentirama.mean[1])}). ${stab}
+    As sete naturais concentram ${pctS(rd.naturalsEnergy)} da energia.</p></div>`;
+}
+function airWord(a) { return a > 0.08 ? 'Modo Ar' : a < -0.08 ? 'Modo Terra' : 'Equilíbrio'; }
+
+function renderReport(res) {
+  const S = res.summary, src = res.source || {}, k = S.key, a = S.air, T0 = k.tone;
+  $('r-title').textContent = src.name || 'Áudio';
+  $('r-rec').hidden = !(R.blob && src.kind === 'gravação');
+  const conf = k.r >= 0.75 ? 'alta' : k.r >= 0.5 ? 'média' : 'baixa';
+  const famA = topFamily(S.absolute), famR = topFamily(S.relative), qA = topQuad(S.absolute);
+  const alerts = [];
+  if (k.r < 0.5) alerts.push(`Confiança baixa na tonalidade (r = ${num(k.r)}): a leitura relativa deve ser vista com cautela.`);
+  if (src.duration < 15) alerts.push(`Áudio curto (${num(src.duration, 1)} s): as proporções ainda são instáveis.`);
+  if (S.activeDuration < src.duration * 0.5) alerts.push(`Só ${pctS(S.activeDuration / src.duration)} do áudio tem sinal suficiente; o restante é silêncio ou ruído baixo.`);
+  if (!S.bpm) alerts.push('Andamento não detectado: o índice Ar/Terra usa apenas modo e brilho.');
+  if (S.chords.coverage < 0.2) alerts.push(`Poucas tríades reconhecidas (${pctS(S.chords.coverage)} do tempo com som): comum em melodia solo, fala ou percussão.`);
+  const same = T0 === 0;
+  const keyRows = S.keyTimeline.map(w => `<tr><td>${mmss(w.t0)}–${mmss(w.t1)}</td><td>${w.tone < 0 ? '<span class="r-mut">silêncio</span>' : dot(TONES[w.tone].hex) + keyLabel(w.tone, w.mode)}</td><td>${w.tone < 0 ? '' : num(w.r)}</td><td>${w.tone < 0 ? '' : sgn(w.air)}</td></tr>`).join('');
+  const chordRows = S.chords.top.map(c => `<tr><td>${dot(TONES[c.root].hex)}${TONES[c.root].pt} ${c.quality}</td><td>${c.tones.map(t => dot(TONES[t].hex)).join('')}<span class="r-mut">${c.tones.join('·')}</span></td><td>${num(c.seconds, 1)} s</td><td>${pctS(c.share)}</td><td>${c.consonant ? 'consonante' : '<b>dissonante</b>'}</td></tr>`).join('');
+  const seq = S.chords.sequence.slice(0, 80).map(c => `<span class="r-chip">${dot(TONES[c.root].hex)}${TONES[c.root].pt}${c.quality === 'maior' ? '' : c.quality === 'menor' ? 'm' : c.quality === 'diminuto' ? '°' : '+'} <span class="r-mut">${mmss(c.t0)}</span></span>`).join('');
+  const profRows = TONES.map((o, t) => `<tr><td>${dot(o.hex)}${o.name} ${t}</td><td>${o.pt} (${o.en})</td><td>${pctS(S.absolute.profile[t] / S.absolute.profile.reduce((s, v) => s + v, 0), 1)}</td><td>${pctS(S.absolute.dominantShare[t], 1)}</td><td>${relNote(t, T0)}</td><td>${pctS(S.relative.profile[t] / S.relative.profile.reduce((s, v) => s + v, 0), 1)}</td><td>${pctS(S.relative.dominantShare[t], 1)}</td></tr>`).join('');
+  const famRows = S.absolute.families.map((f, i) => `<tr><td>${dot(FAMILY_HEX[f.name])}${f.name}</td><td>${pctS(f.share, 1)}</td><td>${pctS(S.relative.families[i].share, 1)}</td></tr>`).join('');
+  const quadRows = Object.keys(QUAD_LABEL).map(q => `<tr><td>${QUAD_LABEL[q]}</td><td>${pctS(S.absolute.sentirama.quadrants[q], 1)}</td><td>${pctS(S.relative.sentirama.quadrants[q], 1)}</td></tr>`).join('');
+  const peaks = S.tension.peaks.length ? S.tension.peaks.map(p => `<span class="r-chip r-seek" data-t="${p.t}">${mmss(p.t)} · ${pctS(p.v)}</span>`).join('') : '<span class="r-mut">nenhum pico acima de 50%</span>';
+  const cw = (chart, h) => `<div class="r-cw"><canvas class="r-chart" data-chart="${chart}" data-h="${h}" tabindex="0"></canvas><div class="r-x"></div></div>`;
+
+  $('r-body').innerHTML = `
+  <section class="r-card r-hero">
+    <h2>Enquadramento no modelo</h2>
+    <p class="r-sub">Síntese gerada a partir das medidas abaixo. ${esc(src.kind || 'áudio')} de ${mmss(src.duration)} · ${pctS(S.activeDuration / src.duration)} com som.</p>
+    <p class="r-verdict">${airWord(a.air)} <b>${sgn(a.air)}</b> · tônica <b>${keyLabel(T0, k.mode)}</b> · cor <b>${famA.name}</b> (absoluta)${same ? '' : ` / <b>${famR.name}</b> (relativa)`} · quadrante <b>${QUAD_LABEL[qA[0]]}</b></p>
+    <div class="r-stats">
+      ${statCard('Tônica estimada', keyLabel(T0, k.mode), `confiança ${conf} (r = ${num(k.r)}) · 2ª hipótese ${keyLabel(k.second.tone, k.second.mode)}`, TONES[T0].hex)}
+      ${statCard('Índice Ar / Terra', `${sgn(a.air)} · ${airWord(a.air)}`, `modo ${sgn(a.mode)} · brilho ${sgn(a.bright)} · andamento ${sgn(a.tempo)}`)}
+      ${statCard('Cor predominante', `${famA.name} ${pctS(famA.share)}`, same ? 'mesma nas duas leituras' : `relativa: ${famR.name} ${pctS(famR.share)}`, FAMILY_HEX[famA.name])}
+      ${statCard('Estabilidade', `Ré ${pctS(S.stabilityD)}`, `tônica dominante ${pctS(S.relative.tonicStability)} do tempo`, TONES[0].hex)}
+      ${statCard('Tensão Fá ↔ Si', `média ${pctS(S.tension.mean)}`, `acima de 50% em ${pctS(S.tension.above50)} do tempo`, TONES[3].hex)}
+      ${statCard('Acordes consonantes', pctS(S.chords.consonantShare), `tríades em ${pctS(S.chords.coverage)} do tempo com som`)}
+      ${statCard('Andamento', S.bpm ? `${Math.round(S.bpm)} BPM` : 'não detectado', S.bpm ? `${S.bpmWindows} janelas de 8 s` : '')}
+      ${statCard('Brilho (centroide)', `${Math.round(S.centroid.median)} Hz`, `faixa dinâmica ${num(S.dynamics.p95 - S.dynamics.p10, 0)} dB`)}
+    </div>
+    <div class="r-two r-text">${readingText(S.absolute, S, false)}${same ? `<div><h3>Leitura relativa</h3><p>A tônica estimada é Ré: as duas leituras coincidem.</p></div>` : readingText(S.relative, S, true)}</div>
+    <p class="r-text r-air">Índice Ar/Terra ${sgn(a.air)} = 0,5 × modo (${sgn(a.mode)}, ${k.rMaj >= k.rMin ? 'perfil mais maior' : 'perfil mais menor'}) + 0,32 × brilho (${sgn(a.bright)}, centroide ${Math.round(S.centroid.median)} Hz) + 0,18 × andamento (${sgn(a.tempo)}${S.bpm ? `, ${Math.round(S.bpm)} BPM` : ''}).</p>
+    ${alerts.length ? `<div class="r-alerts">${alerts.map(t => `<div class="r-alert">${t}</div>`).join('')}</div>` : ''}
+  </section>
+
+  <section class="r-card">
+    <h2>A música no tempo</h2>
+    <p class="r-sub">Passe o cursor para ler cada instante; clique para ouvir aquele trecho.</p>
+    <div class="r-lbl">Nota dominante · leitura absoluta (Ré = Verde 0)</div>${cw('stripAbs', 30)}
+    <div class="r-lbl">Nota dominante · leitura relativa (tônica ${TONES[T0].pt} = Verde 0)</div>${cw('stripRel', 30)}
+    <div class="r-lbl">Tonalidade em janelas de 10 s</div>${cw('keys', 34)}
+    <div class="r-lbl">Índice Ar (+) / Terra (−) por janela</div>${cw('air', 96)}
+    <div class="r-lbl">Tensão Fá ↔ Si</div>${cw('tension', 80)}
+    <div class="r-lbl">Dinâmica (RMS em dB)</div>${cw('rms', 92)}
+  </section>
+
+  <div class="r-two">
+    <section class="r-card">
+      <h2>Perfil cromático</h2>
+      <p class="r-sub">Energia de cada tom no áudio inteiro (média ponderada pelo volume). Números = tom Croma; abaixo, a nota.</p>
+      <div class="r-lbl">Absoluto (Ré = Verde 0)</div>${cw('profileAbs', 150)}
+      <div class="r-lbl">Relativo (tônica ${TONES[T0].pt} = Verde 0)</div>${cw('profileRel', 150)}
+      <details class="r-table"><summary>Ver tabela</summary><div class="r-scroll"><table class="r-tab"><thead><tr><th>Tom</th><th>Nota</th><th>Energia abs.</th><th>Dominante abs.</th><th>Nota no grau rel.</th><th>Energia rel.</th><th>Dominante rel.</th></tr></thead><tbody>${profRows}</tbody></table></div></details>
+    </section>
+    <section class="r-card">
+      <h2>Paleta da música</h2>
+      <p class="r-sub">Tempo em que cada cor é a da nota dominante. As ultravioletas somam à cor da sua natural.</p>
+      ${cw('palette', 92)}
+      <div class="r-scroll"><table class="r-tab"><thead><tr><th>Cor</th><th>Absoluta</th><th>Relativa</th></tr></thead><tbody>${famRows}</tbody></table></div>
+      <p class="r-sub" style="margin-top:10px">Naturais × ultravioletas (energia): absoluta ${pctS(S.absolute.naturalsEnergy)} × ${pctS(1 - S.absolute.naturalsEnergy)} · relativa ${pctS(S.relative.naturalsEnergy)} × ${pctS(1 - S.relative.naturalsEnergy)}.</p>
+    </section>
+  </div>
+
+  <section class="r-card">
+    <h2>Sentirama</h2>
+    <p class="r-sub">Cada ponto é um instante da música no cruzamento dos dois planos (cor = nota dominante). O anel marca o centro de gravidade.</p>
+    <div class="r-two">
+      <div><div class="r-lbl">Leitura absoluta (Ré = Verde 0)</div>${cw('sentAbs', 300)}</div>
+      <div><div class="r-lbl">Leitura relativa (tônica ${TONES[T0].pt} = Verde 0)</div>${cw('sentRel', 300)}</div>
+    </div>
+    <div class="r-scroll"><table class="r-tab"><thead><tr><th>Quadrante</th><th>Absoluta</th><th>Relativa</th></tr></thead><tbody>${quadRows}</tbody></table></div>
+  </section>
+
+  <div class="r-two">
+    <section class="r-card">
+      <h2>Tonalidade</h2>
+      <p class="r-sub">Correlação com os perfis de Krumhansl–Kessler (r de −1 a 1).</p>
+      <p class="r-text">Global: <b>${keyLabel(T0, k.mode)}</b> (r = ${num(k.r)}) · 2ª hipótese ${keyLabel(k.second.tone, k.second.mode)} (r = ${num(k.second.r)}) · melhor maior ${num(k.rMaj)} × melhor menor ${num(k.rMin)}.</p>
+      <div class="r-scroll"><table class="r-tab"><thead><tr><th>Trecho</th><th>Tonalidade</th><th>r</th><th>Ar/Terra</th></tr></thead><tbody>${keyRows}</tbody></table></div>
+    </section>
+    <section class="r-card">
+      <h2>Acordes</h2>
+      <p class="r-sub">Tríades reconhecidas por pelo menos 0,5 s. Consonantes: maiores e menores.</p>
+      ${chordRows ? `<div class="r-scroll"><table class="r-tab"><thead><tr><th>Acorde</th><th>Tons</th><th>Duração</th><th>%</th><th></th></tr></thead><tbody>${chordRows}</tbody></table></div>` : '<p class="r-mut">Nenhuma tríade estável reconhecida.</p>'}
+      ${seq ? `<div class="r-lbl" style="margin-top:12px">Sequência${S.chords.sequence.length > 80 ? ' (primeiros 80)' : ''}</div><div class="r-chips">${seq}</div>` : ''}
+    </section>
+  </div>
+
+  <div class="r-two">
+    <section class="r-card">
+      <h2>Tensão e estabilidade</h2>
+      <p class="r-text">Tensão Fá (Vermelho 3) ↔ Si (Rosa 9): média ${pctS(S.tension.mean)}; acima de 50% em ${pctS(S.tension.above50)} do tempo.</p>
+      <div class="r-lbl">Picos de tensão (clique para ouvir)</div><div class="r-chips">${peaks}</div>
+      <p class="r-text" style="margin-top:12px">Ré (Verde 0) dominante em ${pctS(S.stabilityD)} do tempo · tônica ${TONES[T0].pt} dominante em ${pctS(S.relative.tonicStability)}.</p>
+      <p class="r-text">Dinâmica: RMS mediano ${num(S.dynamics.p50, 1)} dB (p10 ${num(S.dynamics.p10, 1)} · p95 ${num(S.dynamics.p95, 1)}).</p>
+    </section>
+    <section class="r-card">
+      <h2>Identificação e parâmetros</h2>
+      <div class="r-scroll"><table class="r-tab r-kv"><tbody>
+        <tr><th>Fonte</th><td id="r-src-name"></td></tr>
+        <tr><th>Tipo</th><td>${esc(src.kind || '')}${src.mime ? ` · ${esc(src.mime)}` : ''}</td></tr>
+        <tr><th>Duração</th><td>${mmss(src.duration)} (${num(src.duration, 1)} s) · ${S.frames} quadros</td></tr>
+        <tr><th>Análise</th><td>${src.sampleRate} Hz mono · FFT ${res.params.fftSize} · salto ${res.params.hop} (${num(res.params.frameDt * 1000, 1)} ms) · janela ${esc(res.params.window)} · A4 = ${res.params.A4} Hz</td></tr>
+        <tr><th>Método</th><td>${esc(res.params.method)} · suavização ${num(res.params.smoothing, 3)}</td></tr>
+        <tr><th>Gerado em</th><td>${res.app ? new Date(res.app.generatedAt).toLocaleString('pt-BR') : ''}${res.app && res.app.elapsedMs ? ` · ${num(res.app.elapsedMs / 1000, 1)} s de processamento` : ''}</td></tr>
+      </tbody></table></div>
+    </section>
+  </div>
+
+  <section class="r-card r-method">
+    <h2>Método e limitações</h2>
+    <ul>
+      <li><b>Cromagrama</b> por picos espectrais (FFT de 4096 pontos, janela Blackman, salto de ~46 ms, A4 = 440 Hz). Cada pico soma sua amplitude ao tom mais próximo, com peso pela proximidade da afinação; o tom Croma é a nota com Ré = 0.</li>
+      <li><b>Harmônicos</b>: oitava, quinta e terça naturais de cada nota também somam energia. Instrumentos ricos em harmônicos puxam o perfil para a quinta e a terça da nota tocada.</li>
+      <li><b>Percussão e ruído</b> espalham energia por vários tons; trechos só de bateria tendem ao centro do Sentirama.</li>
+      <li><b>Afinação</b>: gravações fora de 440 Hz (ex.: 432 Hz) deslocam até um terço de semitom; desvios acima de meio semitom caem no tom vizinho.</li>
+      <li><b>Tonalidade</b> por correlação com os perfis de Krumhansl–Kessler; r ≥ 0,75 indica ajuste alto. A leitura relativa gira todo o cromagrama para que a tônica estimada vire o Verde 0.</li>
+      <li><b>Índice Ar/Terra</b> = 0,5 · modo + 0,32 · brilho + 0,18 · andamento (cada componente entre −1 e +1). Os pesos são definidos por este aplicativo; calibrá-los com um conjunto de músicas é parte da pesquisa.</li>
+      <li><b>Sentirama</b>: a posição de cada instante é a média das posições dos tons ponderada pelo quadrado do cromagrama. As posições de laranjas, violetas e do Verde 6 são interpretação deste aplicativo.</li>
+      <li><b>Reprodutibilidade</b>: todo áudio é reamostrado para 44,1 kHz mono antes da análise, então o mesmo arquivo gera o mesmo laudo em qualquer aparelho. O JSON exportado guarda os parâmetros e a linha do tempo completa.</li>
+    </ul>
+  </section>`;
+  $('r-src-name').textContent = src.name || '';
+  requestAnimationFrame(drawAllCharts);
+}
+
+// ---------- gráficos (canvas) ----------
+const TL_PAD_L = 46, TL_PAD_R = 10;
+function prepCanvas(cv) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2), w = cv.clientWidth || 300, h = +cv.dataset.h || 60;
+  cv.style.height = h + 'px';
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  const g = cv.getContext('2d');
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  g.font = '10px Inter, system-ui, sans-serif';
+  return { g, w, h };
+}
+function tlInfo(res) {
+  const tl = res.timeline, n = tl.t.length;
+  const dur = (res.source && res.source.duration) || (n ? tl.t[n - 1] : 1);
+  const dt = res.params.frameDt || (n > 1 ? tl.t[1] - tl.t[0] : 0.05);
+  return { tl, n, dur, dt };
+}
+function xmap(cv, w, dur) {
+  const x0 = TL_PAD_L, x1 = w - TL_PAD_R;
+  cv._x = { x0, x1, dur };
+  return t => x0 + (t / dur) * (x1 - x0);
+}
+function frameAt(res, t) { const { tl, n, dt } = tlInfo(res); return clamp(Math.round((t - (n ? tl.t[0] : 0)) / dt), 0, n - 1); }
+// quadros cobertos pela coluna c de cols (sempre ao menos um, mesmo com mais pixels que quadros)
+function colFrames(res, c, cols) {
+  const { dur } = tlInfo(res), a = frameAt(res, c / cols * dur), b = frameAt(res, (c + 1) / cols * dur);
+  return [a, Math.max(a, b - 1)];
+}
+function roundTop(g, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h);
+  g.beginPath(); g.moveTo(x, y + h); g.lineTo(x, y + r); g.quadraticCurveTo(x, y, x + r, y);
+  g.lineTo(x + w - r, y); g.quadraticCurveTo(x + w, y, x + w, y + r); g.lineTo(x + w, y + h); g.closePath();
+}
+function timeAxis(g, w, h, dur, X) {
+  const steps = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600];
+  const step = steps.find(s => dur / s <= Math.max(3, (w - TL_PAD_L) / 70)) || 600;
+  g.fillStyle = rcss('--r-ink2'); g.textAlign = 'center';
+  for (let t = 0; t <= dur + 1e-6; t += step) g.fillText(mmss(t), clamp(X(t), TL_PAD_L + 12, w - TL_PAD_R - 12), h - 3);
+}
+function drawDomStrip(cv, res, rel) {
+  const { g, w, h } = prepCanvas(cv), { tl, n, dur } = tlInfo(res);
+  xmap(cv, w, dur);
+  const tonic = rel ? res.summary.key.tone : 0, cols = Math.max(1, Math.floor(w - TL_PAD_L - TL_PAD_R));
+  const counts = new Uint16Array(12);
+  g.fillStyle = rcss('--r-line'); g.fillRect(TL_PAD_L, 4, cols, h - 8);
+  for (let c = 0; c < cols; c++) {
+    const [i0, i1] = colFrames(res, c, cols);
+    counts.fill(0);
+    for (let i = i0; i <= i1 && i < n; i++) if (tl.dom[i] >= 0) counts[(tl.dom[i] - tonic + 12) % 12]++;
+    let best = -1, bv = 0;
+    for (let k = 0; k < 12; k++) if (counts[k] > bv) { bv = counts[k]; best = k; }
+    if (best < 0) continue;
+    g.fillStyle = TONES[best].hex; g.fillRect(TL_PAD_L + c, 4, 1.05, h - 8);
+  }
+  g.fillStyle = rcss('--r-ink2'); g.textAlign = 'right'; g.font = '600 10px Inter, system-ui, sans-serif';
+  g.fillText(rel ? 'REL.' : 'ABS.', TL_PAD_L - 8, h / 2 + 3.5);
+}
+function keySegments(res) {
+  const kt = res.summary.keyTimeline, { dur } = tlInfo(res);
+  const step = kt.length > 1 ? kt[1].t0 - kt[0].t0 : dur;
+  return kt.map((w, i) => {
+    const c = (w.t0 + w.t1) / 2;
+    return { a: i === 0 ? 0 : c - step / 2, b: i === kt.length - 1 ? dur : c + step / 2, w };
+  });
+}
+function drawKeys(cv, res) {
+  const { g, w, h } = prepCanvas(cv), { dur } = tlInfo(res), X = xmap(cv, w, dur);
+  const segs = keySegments(res);
+  segs.forEach(s => {
+    const x0 = X(s.a), x1 = X(s.b);
+    g.fillStyle = s.w.tone < 0 ? rcss('--r-line') : TONES[s.w.tone].hex;
+    g.fillRect(x0 + 1, 3, Math.max(1, x1 - x0 - 2), 14);
+    if (s.w.tone >= 0 && x1 - x0 > 34) {
+      g.fillStyle = rcss('--r-ink2'); g.textAlign = 'center';
+      g.fillText(`${TONES[s.w.tone].pt}${s.w.mode === 'menor' ? 'm' : ''}`, (x0 + x1) / 2, h - 4);
+    }
+  });
+  g.fillStyle = rcss('--r-ink2'); g.textAlign = 'right'; g.font = '600 10px Inter, system-ui, sans-serif';
+  g.fillText('TOM', TL_PAD_L - 8, 14);
+}
+function lineChart(cv, res, o) {
+  const { g, w, h } = prepCanvas(cv), { dur } = tlInfo(res), X = xmap(cv, w, dur);
+  const top = 6, bot = h - (o.axis ? 18 : 6);
+  const Y = v => bot - (clamp(v, o.min, o.max) - o.min) / (o.max - o.min) * (bot - top);
+  g.lineWidth = 1; g.strokeStyle = rcss('--r-grid'); g.fillStyle = rcss('--r-ink2'); g.textAlign = 'right';
+  for (const v of o.grid) {
+    const y = Math.round(Y(v)) + 0.5;
+    g.beginPath(); g.moveTo(TL_PAD_L, y); g.lineTo(w - TL_PAD_R, y); g.stroke();
+    g.fillText(o.fmtY(v), TL_PAD_L - 8, y + 3.5);
+  }
+  const pts = o.points;
+  if (pts.length) {
+    const path = () => {
+      g.beginPath();
+      pts.forEach((p, i) => {
+        const x = X(p[0]), y = Y(p[1]);
+        if (i === 0) g.moveTo(x, y);
+        else if (o.stepped) { g.lineTo(x, Y(pts[i - 1][1])); g.lineTo(x, y); }
+        else g.lineTo(x, y);
+      });
+      if (o.stepped) g.lineTo(X(o.endT != null ? o.endT : pts[pts.length - 1][0]), Y(pts[pts.length - 1][1]));
+    };
+    const base = Y(o.base);
+    const area = (clipTop, clipBot, color) => {
+      g.save(); g.beginPath(); g.rect(TL_PAD_L, clipTop, w, clipBot - clipTop); g.clip();
+      path(); g.lineTo(X(o.stepped && o.endT != null ? o.endT : pts[pts.length - 1][0]), base); g.lineTo(X(pts[0][0]), base); g.closePath();
+      g.fillStyle = color; g.fill(); g.restore();
+    };
+    if (o.fillPos) area(0, base, o.fillPos);
+    if (o.fillNeg) area(base, h, o.fillNeg);
+    path(); g.strokeStyle = o.line || rcss('--r-ink'); g.lineWidth = 1.5; g.lineJoin = 'round'; g.stroke();
+    if (o.threshold != null) {
+      g.setLineDash([4, 4]); g.strokeStyle = rcss('--r-ink2'); g.lineWidth = 1;
+      const y = Math.round(Y(o.threshold)) + 0.5; g.beginPath(); g.moveTo(TL_PAD_L, y); g.lineTo(w - TL_PAD_R, y); g.stroke(); g.setLineDash([]);
+    }
+  }
+  if (o.axis) timeAxis(g, w, h, dur, X);
+}
+// reduz a linha do tempo a um valor por pixel (máximo da coluna)
+function envelope(res, arr, cols, fallback) {
+  const { dur } = tlInfo(res), pts = [];
+  for (let c = 0; c < cols; c++) {
+    const [i0, i1] = colFrames(res, c, cols);
+    let m = -Infinity;
+    for (let i = i0; i <= i1; i++) if (arr[i] > m) m = arr[i];
+    pts.push([(c + 0.5) / cols * dur, isFinite(m) ? m : fallback]);
+  }
+  return pts;
+}
+function drawProfile(cv, res, rel) {
+  const S = res.summary, rd = rel ? S.relative : S.absolute, tonic = rel ? S.key.tone : 0;
+  const { g, w, h } = prepCanvas(cv), vals = rd.profile, sum = vals.reduce((s, v) => s + v, 0) || 1;
+  const padT = 16, padB = 30, gap = 4, bw = (w - gap * 11) / 12, H = h - padT - padB;
+  const order = vals.map((v, k) => [k, v]).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => e[0]);
+  cv._bars = [];
+  g.strokeStyle = rcss('--r-grid'); g.beginPath(); g.moveTo(0, padT + H + 0.5); g.lineTo(w, padT + H + 0.5); g.stroke();
+  for (let k = 0; k < 12; k++) {
+    const x = k * (bw + gap), bh = Math.max(1, vals[k] * H), y = padT + H - bh;
+    g.fillStyle = TONES[k].hex; roundTop(g, x, y, bw, bh, 4); g.fill();
+    cv._bars.push({ x0: x - gap / 2, x1: x + bw + gap / 2, k, v: vals[k] / sum });
+    g.textAlign = 'center'; g.fillStyle = rcss('--r-ink'); g.font = '600 11px Inter, system-ui, sans-serif';
+    g.fillText(String(k), x + bw / 2, padT + H + 13);
+    g.fillStyle = rcss('--r-ink2'); g.font = '10px Inter, system-ui, sans-serif';
+    g.fillText(rel ? relNote(k, tonic) : TONES[k].pt, x + bw / 2, padT + H + 25);
+    if (order.includes(k)) { g.fillStyle = rcss('--r-ink'); g.fillText(pctS(vals[k] / sum), x + bw / 2, y - 4); }
+  }
+}
+function drawPalette(cv, res) {
+  const S = res.summary, { g, w, h } = prepCanvas(cv), lab = 70, bh = 24;
+  cv._segs = [];
+  [['Absoluta', S.absolute.families, 10], ['Relativa', S.relative.families, 52]].forEach(([name, fams, y]) => {
+    g.fillStyle = rcss('--r-ink2'); g.textAlign = 'left'; g.font = '600 11px Inter, system-ui, sans-serif';
+    g.fillText(name, 0, y + bh / 2 + 4);
+    const total = fams.reduce((s, f) => s + f.share, 0) || 1, W = w - lab;
+    let x = lab;
+    fams.forEach(f => {
+      const sw = f.share / total * W;
+      if (sw <= 0) return;
+      g.fillStyle = FAMILY_HEX[f.name]; g.fillRect(x, y, Math.max(0.5, sw - 2), bh);
+      cv._segs.push({ x0: x, x1: x + sw, y0: y, y1: y + bh, f, reading: name });
+      x += sw;
+    });
+  });
+}
+function drawSent(cv, res, rel) {
+  const S = res.summary, rd = rel ? S.relative : S.absolute, tonic = rel ? S.key.tone : 0;
+  const { g, w, h } = prepCanvas(cv), { tl, n, dt } = tlInfo(res);
+  const size = Math.min(w, h), cx = w / 2, cy = h / 2, Rr = size / 2 - 26;
+  const P = (x, y) => [cx + x / 1.1 * Rr, cy - y / 1.1 * Rr];
+  cv._sent = { cx, cy, Rr, rd };
+  g.strokeStyle = rcss('--r-grid'); g.lineWidth = 1;
+  g.beginPath(); g.arc(cx, cy, Rr / 1.1, 0, TAU); g.stroke();
+  const gx = g.createLinearGradient(cx - Rr, 0, cx + Rr, 0);
+  gx.addColorStop(0, '#2f9fe6'); gx.addColorStop(0.5, '#43c24a'); gx.addColorStop(1, '#f7dc2f');
+  const gy = g.createLinearGradient(0, cy + Rr, 0, cy - Rr);
+  gy.addColorStop(0, '#e8402c'); gy.addColorStop(0.5, '#43c24a'); gy.addColorStop(1, '#f27bb8');
+  g.lineWidth = 3; g.globalAlpha = 0.75;
+  g.strokeStyle = gx; g.beginPath(); g.moveTo(cx - Rr, cy); g.lineTo(cx + Rr, cy); g.stroke();
+  g.strokeStyle = gy; g.beginPath(); g.moveTo(cx, cy + Rr); g.lineTo(cx, cy - Rr); g.stroke();
+  g.globalAlpha = 1;
+  // pontos: um por instante, na cor da nota dominante
+  const t0 = n ? tl.t[0] : 0;
+  g.globalAlpha = Math.max(0.08, Math.min(0.35, 220 / Math.max(1, rd.sentirama.path.length)));
+  for (const p of rd.sentirama.path) {
+    const i = clamp(Math.round((p[0] - t0) / dt), 0, n - 1), d = tl.dom[i];
+    if (d < 0) continue;
+    const [x, y] = P(p[1], p[2]);
+    g.fillStyle = TONES[(d - tonic + 12) % 12].hex;
+    g.beginPath(); g.arc(x, y, 2.2, 0, TAU); g.fill();
+  }
+  g.globalAlpha = 1;
+  const [mx, my] = P(rd.sentirama.mean[0], rd.sentirama.mean[1]);
+  g.lineWidth = 2; g.strokeStyle = rcss('--r-ink');
+  g.beginPath(); g.arc(mx, my, 7, 0, TAU); g.stroke();
+  g.beginPath(); g.moveTo(mx - 11, my); g.lineTo(mx - 4, my); g.moveTo(mx + 4, my); g.lineTo(mx + 11, my); g.stroke();
+  // rótulos dos pólos e porcentagem de cada quadrante
+  g.fillStyle = rcss('--r-ink2'); g.font = '10px Inter, system-ui, sans-serif';
+  g.textAlign = 'center'; g.fillText('Rosa · sutil', cx, cy - Rr - 8); g.fillText('Vermelho · denso', cx, cy + Rr + 16);
+  g.textAlign = 'left'; g.fillText('− Azul', cx - Rr, cy - 6);
+  g.textAlign = 'right'; g.fillText('+ Amarelo', cx + Rr, cy - 6);
+  const q = rd.sentirama.quadrants, off = Rr * 0.62;
+  g.font = '600 13px Inter, system-ui, sans-serif'; g.fillStyle = rcss('--r-ink'); g.textAlign = 'center';
+  g.fillText(pctS(q['rosa-amarelo']), cx + off, cy - off); g.fillText(pctS(q['rosa-azul']), cx - off, cy - off);
+  g.fillText(pctS(q['vermelho-amarelo']), cx + off, cy + off + 8); g.fillText(pctS(q['vermelho-azul']), cx - off, cy + off + 8);
+}
+const CHARTS = {
+  stripAbs: (cv, r) => drawDomStrip(cv, r, false),
+  stripRel: (cv, r) => drawDomStrip(cv, r, true),
+  keys: drawKeys,
+  air: (cv, r) => {
+    const segs = keySegments(r).filter(s => s.w.tone >= 0);
+    lineChart(cv, r, {
+      points: segs.map(s => [s.a, s.w.air]), stepped: true, endT: segs.length ? segs[segs.length - 1].b : 0,
+      min: -1, max: 1, base: 0, grid: [-1, 0, 1], fmtY: v => v > 0 ? 'Ar +1' : v < 0 ? 'Terra −1' : '0',
+      fillPos: 'rgba(242,123,184,.32)', fillNeg: 'rgba(232,64,44,.32)',
+    });
+  },
+  tension: (cv, r) => {
+    const cols = Math.max(1, Math.floor((cv.clientWidth || 300) - TL_PAD_L - TL_PAD_R) >> 1);
+    lineChart(cv, r, {
+      points: envelope(r, r.timeline.tension, cols, 0), min: 0, max: 1, base: 0, grid: [0, 1], threshold: 0.5,
+      fmtY: v => pctS(v), fillPos: 'rgba(232,64,44,.30)', line: '#e8402c',
+    });
+  },
+  rms: (cv, r) => {
+    const cols = Math.max(1, Math.floor((cv.clientWidth || 300) - TL_PAD_L - TL_PAD_R) >> 1);
+    lineChart(cv, r, {
+      points: envelope(r, r.timeline.rmsDb, cols, -80), min: -60, max: 0, base: -60, grid: [-60, -30, 0], axis: true,
+      fmtY: v => `${v} dB`, fillPos: 'rgba(163,156,181,.28)',
+    });
+  },
+  profileAbs: (cv, r) => drawProfile(cv, r, false),
+  profileRel: (cv, r) => drawProfile(cv, r, true),
+  palette: drawPalette,
+  sentAbs: (cv, r) => drawSent(cv, r, false),
+  sentRel: (cv, r) => drawSent(cv, r, true),
+};
+function drawAllCharts() {
+  if (!R.result || !$('report').classList.contains('show')) return;
+  document.querySelectorAll('#r-body canvas[data-chart]').forEach(cv => {
+    try { CHARTS[cv.dataset.chart](cv, R.result); } catch (e) { console.error('gráfico', cv.dataset.chart, e); }
+  });
+}
+
+// ---------- leitura por hover e clique ----------
+const TIME_CHARTS = ['stripAbs', 'stripRel', 'keys', 'air', 'tension', 'rms'];
+function chartReadout(cv, ev) {
+  const res = R.result, kind = cv.dataset.chart, rect = cv.getBoundingClientRect();
+  const x = ev.clientX - rect.left, y = ev.clientY - rect.top;
+  if (TIME_CHARTS.includes(kind)) {
+    const X = cv._x;
+    if (!X || x < X.x0 || x > X.x1) return null;
+    const t = (x - X.x0) / (X.x1 - X.x0) * X.dur, i = frameAt(res, t), tl = res.timeline, T0 = res.summary.key.tone;
+    let html = `<b>${mmss(t)}</b> · `;
+    if (kind === 'stripAbs' || kind === 'stripRel') {
+      const d = tl.dom[i];
+      if (d < 0) html += 'silêncio / sem nota dominante';
+      else if (kind === 'stripAbs') html += `${dot(TONES[d].hex)}${TONES[d].pt} (${TONES[d].en}) → ${TONES[d].name} ${d}`;
+      else { const r = (d - T0 + 12) % 12; html += `${dot(TONES[r].hex)}grau ${r} (${TONES[r].name.replace(/-UV$/, '')}) = ${TONES[d].pt}`; }
+    } else if (kind === 'keys' || kind === 'air') {
+      const s = keySegments(res).find(s => t >= s.a && t <= s.b);
+      if (!s || s.w.tone < 0) html += 'trecho sem sinal';
+      else html += kind === 'keys' ? `${dot(TONES[s.w.tone].hex)}${keyLabel(s.w.tone, s.w.mode)} (r = ${num(s.w.r)})` : `${airWord(s.w.air)} ${sgn(s.w.air)}`;
+    } else if (kind === 'tension') html += `tensão Fá ↔ Si ${pctS(tl.tension[i])}`;
+    else html += `${num(tl.rmsDb[i], 1)} dB`;
+    return { html, x, t };
+  }
+  if (kind === 'profileAbs' || kind === 'profileRel') {
+    const b = (cv._bars || []).find(b => x >= b.x0 && x <= b.x1);
+    if (!b) return null;
+    const rel = kind === 'profileRel', T0 = res.summary.key.tone;
+    return { html: `${dot(TONES[b.k].hex)}<b>${pctS(b.v, 1)}</b> da energia · ${TONES[b.k].name} ${b.k} · ${rel ? `grau ${b.k} = ${relNote(b.k, T0)}` : TONES[b.k].pt}` };
+  }
+  if (kind === 'palette') {
+    const s = (cv._segs || []).find(s => x >= s.x0 && x <= s.x1 && y >= s.y0 && y <= s.y1);
+    if (!s) return null;
+    return { html: `${dot(FAMILY_HEX[s.f.name])}<b>${pctS(s.f.share, 1)}</b> do tempo · ${s.f.name} · leitura ${s.reading.toLowerCase()}` };
+  }
+  if (kind === 'sentAbs' || kind === 'sentRel') {
+    const s = cv._sent; if (!s) return null;
+    const qx = (x - s.cx) / s.Rr * 1.1, qy = -(y - s.cy) / s.Rr * 1.1;
+    if (Math.hypot(qx, qy) > 1.25) return null;
+    const q = Math.abs(qx) < 0.08 && Math.abs(qy) < 0.08 ? 'centro' : (qy >= 0 ? 'rosa' : 'vermelho') + '-' + (qx >= 0 ? 'amarelo' : 'azul');
+    return { html: `<b>${pctS(s.rd.sentirama.quadrants[q], 1)}</b> do tempo · ${QUAD_LABEL[q]}` };
+  }
+  return null;
+}
+function hideTip() { $('rtip').style.display = 'none'; document.querySelectorAll('#r-body .r-x').forEach(e => e.style.display = 'none'); }
+function seekTo(t) {
+  const src = R.result && R.result.source;
+  if (!src) return;
+  if (A.source === 'file' && A.currentFile && A.currentFile === R.blob) {
+    A.el.currentTime = t; A.el.play(); toast(`▶ ${mmss(t)}`); return;
+  }
+  if (!R.blob) { toast('Este laudo foi aberto de um arquivo JSON; carregue o áudio original no player para ouvir.', 4000); return; }
+  const f = R.blob instanceof File ? R.blob : new File([R.blob], src.name || 'gravacao.webm', { type: R.blob.type });
+  loadFile(f);
+  A.el.addEventListener('loadedmetadata', () => { A.el.currentTime = t; A.el.play().catch(() => {}); }, { once: true });
+  toast(`▶ ${mmss(t)}`);
+}
+
+// ---------- exportar, imprimir e abrir laudos salvos ----------
+function laudoJSON(res) {
+  const tl = res.timeline, rd = (arr, d) => Array.from(arr, v => +(+v).toFixed(d));
+  return JSON.stringify({
+    format: 'cromasfera-laudo', formatVersion: 1, app: res.app, source: res.source, params: res.params,
+    summary: res.summary, chords: res.chords,
+    timeline: {
+      t: rd(tl.t, 3), rmsDb: rd(tl.rmsDb, 1), centroid: rd(tl.centroid, 0), flux: rd(tl.flux, 5), level: rd(tl.level, 3),
+      active: Array.from(tl.active), dom: Array.from(tl.dom), tension: rd(tl.tension, 3), chord: Array.from(tl.chord),
+      chroma: rd(tl.chroma, 3), raw: rd(tl.raw, 3),
+    },
+  });
+}
+async function saveFile(filename, data) {
+  try {
+    if (window.claude && window.claude.use) {
+      const d = await window.claude.use('downloads');
+      if (d) { await d.save({ filename, data }); return; }
+    }
+  } catch (e) {
+    if (e && e.code === 'declined') return;
+    if (e && e.code && e.code !== 'unavailable') { toast('Não foi possível salvar: ' + (e.message || e.code), 4000); return; }
+  }
+  const blob = data instanceof Blob ? data : new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+function baseName() { return ((R.result && R.result.source && R.result.source.name) || 'audio').replace(/\.[a-z0-9]+$/i, '').replace(/[^\w\-]+/g, '_').slice(0, 80); }
+function loadLaudoFile(file) {
+  file.text().then(txt => {
+    const d = JSON.parse(txt);
+    if (d.format !== 'cromasfera-laudo' || !d.summary || !d.timeline) throw new Error('Este JSON não é um laudo da Cromasfera.');
+    R.result = d; R.blob = null;
+    openReport(); setProgress(0); renderReport(d);
+  }).catch(err => toast('Não foi possível abrir o laudo: ' + err.message, 5000));
+}
+
+$('btn-analyze').addEventListener('click', analyzeCurrentFile);
+$('btn-analyze2').addEventListener('click', analyzeCurrentFile);
+$('btn-record').addEventListener('click', toggleRecord);
+$('btn-open-json').addEventListener('click', () => $('json-input').click());
+$('json-input').addEventListener('change', e => { if (e.target.files[0]) loadLaudoFile(e.target.files[0]); e.target.value = ''; });
+$('r-close').addEventListener('click', closeReport);
+$('r-json').addEventListener('click', () => { if (R.result) saveFile(`laudo-cromasfera-${baseName()}.json`, laudoJSON(R.result)); });
+$('r-rec').addEventListener('click', () => { if (R.blob) saveFile(R.result.source.name, R.blob); });
+$('r-print').addEventListener('click', () => {
+  if (!R.result) return;
+  document.body.classList.add('printing'); drawAllCharts();
+  setTimeout(() => { window.print(); document.body.classList.remove('printing'); drawAllCharts(); }, 60);
+});
+window.addEventListener('afterprint', () => { if (document.body.classList.contains('printing')) { document.body.classList.remove('printing'); drawAllCharts(); } });
+$('r-body').addEventListener('pointermove', e => {
+  const cv = e.target.closest && e.target.closest('canvas[data-chart]');
+  if (!cv || !R.result) { hideTip(); return; }
+  const r = chartReadout(cv, e), tip = $('rtip'), xl = cv.parentElement.querySelector('.r-x');
+  if (!r) { hideTip(); return; }
+  tip.innerHTML = r.html; tip.style.display = 'block';
+  const tw = tip.offsetWidth;
+  tip.style.left = Math.min(window.innerWidth - tw - 8, e.clientX + 14) + 'px';
+  tip.style.top = (e.clientY - 38) + 'px';
+  document.querySelectorAll('#r-body .r-x').forEach(el => { if (el !== xl) el.style.display = 'none'; });
+  if (xl) { if (r.x != null) { xl.style.left = r.x + 'px'; xl.style.display = 'block'; } else xl.style.display = 'none'; }
+});
+$('r-body').addEventListener('pointerleave', hideTip);
+$('r-body').addEventListener('click', e => {
+  const chip = e.target.closest && e.target.closest('.r-seek');
+  if (chip) { seekTo(+chip.dataset.t); return; }
+  const cv = e.target.closest && e.target.closest('canvas[data-chart]');
+  if (!cv || !R.result || !TIME_CHARTS.includes(cv.dataset.chart)) return;
+  const r = chartReadout(cv, e);
+  if (r && r.t != null) seekTo(r.t);
+});
+$('report').addEventListener('scroll', hideTip, { passive: true });
+let reportResizeT = 0;
+window.addEventListener('resize', () => { clearTimeout(reportResizeT); reportResizeT = setTimeout(drawAllCharts, 120); });
 
 // layout de celular: painéis recolhidos e painel de entrada logo acima do teclado
 if (window.matchMedia('(max-width: 767px)').matches) {
