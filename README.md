@@ -31,9 +31,27 @@ Além do tempo real, o app gera um **laudo** do áudio inteiro:
 
 - **Analisar música inteira** (ou **Laudo** no player): processa o arquivo carregado do começo ao fim.
 - **Gravar sessão**: com o microfone ativo, grava e analisa a gravação ao parar (a gravação pode ser baixada).
-- O laudo traz o enquadramento no modelo em duas leituras — **de referência** (a nota escolhida como Verde 0, por padrão Ré) e **relativa** (tônica detectada = Verde 0) —, a afinação estimada da gravação (ex.: Lá 4 ≈ 432 Hz),, índice Ar/Terra com seus componentes, perfil cromático, paleta de cores, trajetória no Sentirama, tonalidade por trecho, acordes, tensão Fá ↔ Si, andamento, parâmetros e limitações do método.
+- O laudo traz o enquadramento no modelo em duas leituras — **de referência** (a nota escolhida como Verde 0, por padrão Ré) e **relativa** (tônica detectada = Verde 0) —, a afinação estimada da gravação (ex.: Lá 4 ≈ 432 Hz), índice Ar/Terra com seus componentes, perfil cromático, paleta de cores, trajetória no Sentirama, tonalidade por trecho, acordes, tensão Fá ↔ Si, andamento, parâmetros e limitações do método.
 - **Baixar laudo (JSON)** exporta resumo + linha do tempo (~46 ms por quadro); **Abrir laudo salvo** reabre o JSON; **Imprimir / PDF** gera uma versão para papel.
 - A análise roda num Web Worker, a 44,1 kHz mono e FFT de 4096 pontos, com o mesmo núcleo DSP (`dspCore`) do tempo real — o mesmo arquivo gera o mesmo laudo em qualquer aparelho.
+
+### Leituras do laudo
+
+- **Gramática das cores:** matriz de transições (qual cor leva a qual, por linha), matriz de coocorrência (quais soam juntas), alternância 12 tons ⇄ 7 cores e perfil de intervalos harmônicos.
+- **Roda cromática:** o perfil como mandala de 12 pétalas (raio = energia, anel interno = tempo como nota dominante), nas duas leituras.
+- **Replay no Sentirama:** um ponto com rastro percorre a trajetória da música, sincronizado com o player.
+- **Melodia:** f0 por quadro (YIN via FFT, 50–1500 Hz), contorno no tempo, extensão, altura mediana, % do tempo com nota definida, desvio médio em cents e histograma de intervalos melódicos (±12 semitons).
+
+### Afinador
+
+O botão **Afinador** na barra superior abre, acima do teclado, a nota com oitava, o ponteiro de −50 a +50 cents na cor do tom, a frequência e o contorno melódico dos últimos ~8 s. Segue a afinação e a referência escolhidas.
+
+### Ferramentas de pesquisa (painel de entrada → Pesquisa)
+
+- **Bancada:** 33 estímulos sintetizados offline (12 notas isoladas, tríades maiores/menores, Fá + Si, Ré sustentado, 7 modos, 60/120/180 BPM, progressão em 432 Hz, timbre suave × brilhante), cada um com a expectativa do modelo e o resultado aprovado/reprovado. Em cada linha: ouvir, laudo, WAV, usar no A/B, adicionar ao experimento. Resultado atual: 32 de 33; o Ré eólio (terça menor fraca sobre um bordão) é lido como Ré maior.
+- **Comparação A/B:** A e B podem ser um arquivo, um laudo JSON, um estímulo da bancada ou dois trechos do mesmo arquivo, sempre com a mesma calibração. Mostra a síntese das diferenças, a tabela A | B | Δ, perfis, rodas, paletas e o Sentirama com a seta A → B. Exporta CSV e JSON.
+- **Experimento de escuta (teste cego):** trechos de arquivos, do player ou da bancada (inteiros ou N s do meio), em ordem aleatória, com código anônimo do participante. A tela cobre o app e o áudio não passa pela análise. Para cada trecho: cor sentida (7 + nenhuma), clique no Sentirama, Ar ↔ Terra e se conhece a música; o tempo de resposta é registrado. O modelo analisa o mesmo trecho. Resultados: concordância de cor contra o acaso (1/7, binomial exato), correlações de x, y e Ar/Terra (p pela transformação z de Fisher), referência × relativa, por trecho e por participante, com aviso de amostra pequena. As sessões ficam no navegador; o CSV tem uma linha por resposta e o JSON pode ser importado em outro aparelho (mescla sem duplicar).
+- **Pesos Ar/Terra:** compara os pesos atuais (padrão 0,50 / 0,32 / 0,18) com os ajustados por mínimos quadrados às médias das pessoas por trecho, com validação cruzada deixando um trecho de fora e controles para testar à mão. *Aplicar estes pesos* passa a valer no tempo real e nos laudos novos (o laudo registra os pesos usados) e fica salvo no navegador; *Restaurar padrão* desfaz.
 
 Para usar o microfone, sirva a pasta por `http://localhost` ou `https://`:
 

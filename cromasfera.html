@@ -259,6 +259,9 @@
   .exp-air { display: grid; gap: 6px; max-width: 640px; font-size: .8rem; color: var(--r-ink2); }
   .exp-air input { width: 100%; }
   .exp-air div { display: flex; justify-content: space-between; gap: 12px; }
+  .cw-sliders { display: grid; grid-template-columns: auto 1fr 3.2em; gap: 10px 12px; align-items: center; font-size: .85rem; margin: 6px 0 4px; }
+  .cw-sliders input { width: 100%; }
+  .cw-sliders output { text-align: right; font-variant-numeric: tabular-nums; color: var(--r-ink); }
   .exp-form { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: center; font-size: .85rem; }
   .exp-form > *:nth-child(even) { justify-self: start; }
   .research-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
@@ -377,6 +380,7 @@
         <button class="btn" id="btn-bench" title="Sons controlados com a expectativa do modelo">Bancada</button>
         <button class="btn" id="btn-ab" title="Dois áudios, laudos, estímulos ou trechos lado a lado">Comparação A/B</button>
         <button class="btn" id="btn-exp" title="Teste cego: a percepção das pessoas × a previsão do modelo">Experimento</button>
+        <button class="btn" id="btn-calw" title="Ajustar os pesos do índice Ar/Terra às respostas do experimento">Pesos Ar/Terra</button>
       </div>
     </div>
     <p class="text-[11px] text-[color:var(--muted)] mt-2 leading-relaxed">Ou arraste um arquivo .mp3 / .wav / .m4a / .ogg para a tela.</p>
@@ -397,6 +401,10 @@
       <div class="flex items-center justify-between gap-2 mt-2.5">
         <label for="ref-select" class="text-xs">Referência (Verde 0)</label>
         <select id="ref-select" class="ref-select"></select>
+      </div>
+      <div class="flex items-center justify-between gap-2 mt-2.5">
+        <span class="text-xs">Pesos Ar/Terra</span>
+        <button class="text-[11px] text-[color:var(--muted)] underline underline-offset-2 hover:text-white truncate" id="airw-open" title="Abrir a calibração dos pesos"><span id="airw-info">padrão</span></button>
       </div>
       <p class="text-[10px] text-[color:var(--muted)] mt-1.5 leading-relaxed">Padrão do método: Ré (D) = Verde 0, Lá 4 = 440 Hz. A escolha vale para o tempo real e para o laudo.</p>
     </div>
@@ -592,6 +600,16 @@
   </div>
   <div class="r-body" id="exp-body"></div>
 </div>
+<!-- ============ CALIBRAÇÃO DOS PESOS AR/TERRA ============ -->
+<div id="calw" class="r-panel" aria-hidden="true" role="dialog" aria-label="Calibração dos pesos Ar/Terra">
+  <div class="r-top">
+    <div class="r-top-in">
+      <div class="min-w-0"><div class="label">Pesquisa</div><div class="r-h1">Calibração Ar ↔ Terra</div></div>
+      <div class="r-actions"><button class="btn" id="calw-close" aria-label="Fechar calibração">✕</button></div>
+    </div>
+  </div>
+  <div class="r-body" id="calw-body"></div>
+</div>
 <input type="file" id="exp-files" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" multiple class="hidden">
 <input type="file" id="exp-jsonfile" accept=".json,application/json" class="hidden">
 <input type="file" id="ab-jsonfile" accept=".json,application/json" class="hidden">
@@ -613,7 +631,7 @@
     <div class="grid md:grid-cols-[1fr_260px] gap-6 mt-4">
       <div>
         <p>O método <strong>Croma-Sônica</strong> une som e cor numa mesma esfera de relações. Os 12 semitons da escala cromática são dispostos num círculo de 12 cores, tendo como centro de equilíbrio a nota <strong>Ré (D) = Verde 0</strong>. As <strong>sete naturais</strong> (teclas brancas: Ré, Mi, Fá, Sol, Lá, Si, Dó) são representadas por círculos; as <strong>cinco ultravioletas</strong> (teclas pretas) por triângulos. Cada ultravioleta tem a mesma cor de uma natural — <em>Yellow[1] = Yeluv[1], Violet[4] = Viluv[4], Green[6] = Gruv[6], Orange[8] = Oruv[8], Blue[11] = Bluv[11]</em> —, de modo que o ciclo das cores dá duas voltas ao longo dos 12 tons.</p>
-        <p class="mt-2">Este visualizador escuta o áudio em tempo real, extrai o <em>cromagrama</em> (energia de cada classe de nota, afinação A4 = 440 Hz), identifica a nota dominante e seus harmônicos, e traduz tudo em cor, forma e movimento.</p>
+        <p class="mt-2">Este visualizador escuta o áudio em tempo real, extrai o <em>cromagrama</em> (energia de cada classe de nota, afinação Lá 4 = 440 Hz ou 432 Hz, à escolha), identifica a nota dominante e seus harmônicos, e traduz tudo em cor, forma e movimento.</p>
       </div>
       <img src="assets/mandala-croma-sonica.webp" alt="Mandala Croma-Sônica de 12 pétalas" class="ref-img w-full">
     </div>
@@ -628,7 +646,7 @@
           <li><strong style="color:#f27bb8">Modo Ar (Maior)</strong> — frequências agudas, andamento rápido e tonalidades maiores. Rosa/Amarelo: partículas mais velozes, vibração expansiva, brilho sublimado.</li>
           <li><strong style="color:#e8402c">Modo Terra (Menor)</strong> — graves, tons densos e tonalidades menores. Vermelho/Azul: maior densidade, distorção de malha e opacidade.</li>
         </ul>
-        <p class="mt-2 text-[13px] text-[color:var(--muted)]">O índice Ar/Terra combina: correlação maior × menor do perfil tonal (Krumhansl), centroide espectral (brilho) e BPM.</p>
+        <p class="mt-2 text-[13px] text-[color:var(--muted)]">O índice Ar/Terra combina: correlação maior × menor do perfil tonal (Krumhansl), centroide espectral (brilho) e BPM, com pesos 0,50 / 0,32 / 0,18 que podem ser calibrados com o Experimento de escuta.</p>
         <h3>O Sentirama</h3>
         <p>Como a cruz astrológica (símbolo da Terra), o Sentirama é a interseção de dois planos — e nós estamos no ponto de cruzamento, entendido como a <strong>frequência base, a “tônica”</strong> da nossa harmonia pessoal.</p>
         <ul class="list-disc pl-5 space-y-1 mt-2">
@@ -667,6 +685,19 @@
       <li><strong>A música no tempo</strong>: faixa colorida da nota dominante, tonalidade por trecho, índice Ar/Terra, tensão Fá ↔ Si e dinâmica. Clique num ponto para ouvir aquele instante.</li>
       <li><strong>Perfil cromático, paleta, Sentirama, tonalidade e acordes</strong>, com tabelas, além dos parâmetros e das limitações do método.</li>
       <li><strong>Baixar laudo (JSON)</strong> guarda o resumo e a linha do tempo completa (a cada ~46 ms) para continuar a pesquisa em outra ferramenta ou reabrir depois em <em>Abrir laudo salvo</em>.</li>
+    </ul>
+    <h3>Leituras do laudo</h3>
+    <ul class="list-disc pl-5 space-y-1">
+      <li><strong>Gramática das cores</strong>: matriz de transições (qual cor leva a qual) e de coocorrência (quais soam juntas), em 12 tons ou 7 cores, e o perfil de intervalos (quintas, terças, trítonos…).</li>
+      <li><strong>Roda cromática</strong>: o perfil desenhado como mandala de 12 pétalas. <strong>Replay no Sentirama</strong>: um ponto percorre a trajetória da música em sincronia com o áudio.</li>
+      <li><strong>Melodia</strong>: contorno da nota fundamental (f0) no tempo, extensão, desvio de afinação em cents e intervalos melódicos. O botão <strong>Afinador</strong> (barra superior) mostra nota, cents e contorno ao vivo.</li>
+    </ul>
+    <h3>Ferramentas de pesquisa</h3>
+    <ul class="list-disc pl-5 space-y-1">
+      <li><strong>Bancada</strong>: sons controlados (notas, tríades, modos, andamentos, timbres, Fá + Si, 432 Hz) analisados e conferidos com a expectativa do modelo: aprovado ou reprovado.</li>
+      <li><strong>Comparação A/B</strong>: dois áudios, laudos, estímulos ou trechos do mesmo arquivo lado a lado, com a síntese das diferenças e a tabela A | B | Δ.</li>
+      <li><strong>Experimento</strong>: teste cego. A pessoa ouve cada trecho e responde cor, posição no Sentirama e Ar ↔ Terra sem ver a análise; os resultados medem a concordância com o modelo (contra o acaso) nas leituras de referência e relativa. CSV e JSON para juntar aparelhos.</li>
+      <li><strong>Pesos Ar/Terra</strong>: ajusta os pesos do índice (modo, brilho, andamento) às notas das pessoas, com validação cruzada; os pesos aplicados valem para o tempo real e para os laudos novos.</li>
     </ul>
     <p class="mt-6 text-[12px] text-[color:var(--muted)]">Nota: o microfone exige contexto seguro — abra a página via <code>https://</code> ou <code>http://localhost</code> (ex.: <code>python3 -m http.server</code>). As posições 3D intermediárias no Sentirama (laranjas, violetas e o tom espelho de cada nota em torno da tônica) e a fórmula do índice Ar/Terra são interpretações visuais deste aplicativo.</p>
   </div>
@@ -737,13 +768,17 @@ const ICO_DIRS = (() => {
    ===================================================================== */
 function dspCore() {
   'use strict';
-  const VERSION = 'croma-dsp 1.3';
+  const VERSION = 'croma-dsp 1.4';
   // referência do método: a classe de altura (C = 0) que vira o Verde 0 (padrão Ré = 2) e a afinação do Lá 4
   let REF = 2, A4 = 440;
+  // pesos do índice Ar/Terra (modo, brilho, andamento): padrão do aplicativo ou calibrados por experimento
+  const AIRW_DEFAULT = [0.5, 0.32, 0.18];
+  let AIRW = AIRW_DEFAULT.slice();
   function configure(o = {}) {
     if (o.ref != null) REF = ((o.ref % 12) + 12) % 12;
     if (o.a4) A4 = +o.a4;
-    return { ref: REF, a4: A4 };
+    if (Array.isArray(o.airWeights) && o.airWeights.length === 3 && o.airWeights.every(Number.isFinite)) AIRW = o.airWeights.map(Number);
+    return { ref: REF, a4: A4, airWeights: AIRW.slice() };
   }
   const pcToTone = pc => (pc - REF + 12) % 12;
   const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -896,10 +931,10 @@ function dspCore() {
     return ws > 0 ? [wx / ws, wy / ws, wz / ws] : null;
   }
   // índice Ar (+) / Terra (−): modo maior/menor, brilho (centroide) e andamento
-  function airIndex(modeScore, centroid, bpm) {
+  function airIndex(modeScore, centroid, bpm, w = AIRW) {
     const cS = centroid > 0 ? clamp(Math.log2(centroid / 1500) / 1.6, -1, 1) : 0;
     const bS = bpm ? clamp((bpm - 110) / 50, -1, 1) : 0;
-    return { air: clamp(0.5 * modeScore + 0.32 * cS + 0.18 * bS, -1, 1), mode: modeScore, bright: cS, tempo: bS };
+    return { air: clamp(w[0] * modeScore + w[1] * cS + w[2] * bS, -1, 1), mode: modeScore, bright: cS, tempo: bS };
   }
   const tensionOf = vis => clamp(Math.sqrt(vis[3] * vis[9]) * 2.0, 0, 1);
   // leitura relativa: a tônica passa a ser o Verde 0
@@ -1044,7 +1079,7 @@ function dspCore() {
       for (let k = 0; k < 12; k++) { tl.chroma[fi * 12 + k] = chroma[k]; tl.raw[fi * 12 + k] = f.maxRaw > 0 ? f.raw[k] / f.maxRaw : 0; }
       if (onProgress && fi % 150 === 0) onProgress(fi / T);
     }
-    const params = { fftSize: N, hop, sampleRate, frameDt: dt, window: 'Blackman (α = 0,16)', smoothing: +tau.toFixed(3), A4, ref: REF, method: VERSION };
+    const params = { fftSize: N, hop, sampleRate, frameDt: dt, window: 'Blackman (α = 0,16)', smoothing: +tau.toFixed(3), A4, ref: REF, airWeights: AIRW.slice(), method: VERSION };
     const summary = summarize(tl, chordList, dt, samples.length / sampleRate);
     // afinação estimada da gravação: desvio médio dos picos em relação à grade de A4
     const cents = (tuneC || tuneS) ? Math.atan2(tuneS, tuneC) / (2 * Math.PI) * 100 : 0;
@@ -1328,7 +1363,7 @@ function dspCore() {
 
   return {
     VERSION, NATURALS, FAMILIES, FAM_OF, SENT_XYZ, KMAJ, KMIN, configure, pcToTone,
-    extractFrame, pitchYin, keyFromChroma, detectChord, bpmFromFlux, sentiramaPos, airIndex, tensionOf, rotateChroma,
+    AIRW_DEFAULT, extractFrame, pitchYin, keyFromChroma, detectChord, bpmFromFlux, sentiramaPos, airIndex, tensionOf, rotateChroma,
     fft, blackman, analyzeBuffer, summarize, stats,
   };
 }
@@ -1338,7 +1373,12 @@ try {
   if (c && Number.isInteger(c.ref) && c.ref >= 0 && c.ref < 12) REF_PC = c.ref;
   if (c && (c.a4 === 432 || c.a4 === 440)) A4_HZ = c.a4;
 } catch (e) { /* armazenamento indisponível: usa o padrão */ }
-CORE.configure({ ref: REF_PC, a4: A4_HZ });
+let AIR_W = CORE.AIRW_DEFAULT.slice();
+try {
+  const w = JSON.parse(localStorage.getItem('croma.airw') || 'null');
+  if (Array.isArray(w) && w.length === 3 && w.every(Number.isFinite)) AIR_W = w;
+} catch (e) { /* armazenamento indisponível: usa o padrão */ }
+CORE.configure({ ref: REF_PC, a4: A4_HZ, airWeights: AIR_W });
 // Posições no Sentirama como vetores (ver SENT_XYZ no núcleo)
 const SENT_POS = CORE.SENT_XYZ.map(p => new THREE.Vector3(p[0], p[1], p[2]));
 
@@ -2668,6 +2708,7 @@ $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeMo
 window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox') return;
   if ($('exp').classList.contains('show')) { if (e.key === 'Escape') closeExp(); return; }
+  if ($('calw').classList.contains('show')) { if (e.key === 'Escape') closeCalW(); return; }
   if (synthKey(e, true)) return;
   const k = e.key.toLowerCase();
   if ($('ab').classList.contains('show') && !$('report').classList.contains('show')) {
@@ -2739,8 +2780,8 @@ function getWorker() {
   const src = `${dspCore.toString()}
 const CORE = dspCore();
 self.onmessage = e => {
-  const { samples, sampleRate, ref, a4 } = e.data;
-  CORE.configure({ ref, a4 });
+  const { samples, sampleRate, ref, a4, airWeights } = e.data;
+  CORE.configure({ ref, a4, airWeights });
   try {
     const r = CORE.analyzeBuffer(samples, sampleRate, {}, p => self.postMessage({ type: 'progress', p }));
     self.postMessage({ type: 'done', result: r });
@@ -2764,7 +2805,7 @@ function runAnalysis(samples, sampleRate, onProgress) {
       else reject(new Error(m.message));
     };
     w.onerror = e => { e.preventDefault && e.preventDefault(); R.worker = null; reject(new Error(e.message || 'falha no processamento')); };
-    w.postMessage({ samples, sampleRate, ref: REF_PC, a4: A4_HZ }, [samples.buffer]);
+    w.postMessage({ samples, sampleRate, ref: REF_PC, a4: A4_HZ, airWeights: AIR_W }, [samples.buffer]);
   });
 }
 async function analyzeBlob(blob, meta) {
@@ -2874,9 +2915,11 @@ function readingText(rd, S, rel) {
 function airWord(a) { return a > 0.08 ? 'Modo Ar' : a < -0.08 ? 'Modo Terra' : 'Equilíbrio'; }
 
 function renderReport(res) { return withNames(laudoRef(res), () => renderReportBody(res)); }
+const airWOf = res => (res && res.params && Array.isArray(res.params.airWeights) ? res.params.airWeights : CORE.AIRW_DEFAULT);
+const airWDefault = w => w.every((v, i) => Math.abs(v - CORE.AIRW_DEFAULT[i]) < 1e-6);
 const laudoRef = res => (res && res.params && res.params.ref != null ? res.params.ref : 2);
 function renderReportBody(res) {
-  const S = res.summary, src = res.source || {}, k = S.key, a = S.air, T0 = k.tone;
+  const S = res.summary, src = res.source || {}, k = S.key, a = S.air, T0 = k.tone, AW = airWOf(res);
   $('r-title').textContent = src.name || 'Áudio';
   $('r-rec').hidden = !(R.blob && src.kind === 'gravação');
   const conf = k.r >= 0.75 ? 'alta' : k.r >= 0.5 ? 'média' : 'baixa';
@@ -2920,7 +2963,7 @@ function renderReportBody(res) {
       ${tu ? statCard('Afinação estimada', `Lá 4 ≈ ${num(tu.a4Estimated, 1)} Hz`, `${sgn(tu.cents, 0)} cents em relação a ${tu.a4Used} Hz (usado na análise)`) : ''}
     </div>
     <div class="r-two r-text">${readingText(S.absolute, S, false)}${same ? `<div><h3>Leitura relativa</h3><p>A tônica estimada é ${TONES[0].pt}, a própria referência: as duas leituras coincidem.</p></div>` : readingText(S.relative, S, true)}</div>
-    <p class="r-text r-air">Índice Ar/Terra ${sgn(a.air)} = 0,5 × modo (${sgn(a.mode)}, ${k.rMaj >= k.rMin ? 'perfil mais maior' : 'perfil mais menor'}) + 0,32 × brilho (${sgn(a.bright)}, centroide ${Math.round(S.centroid.median)} Hz) + 0,18 × andamento (${sgn(a.tempo)}${S.bpm ? `, ${Math.round(S.bpm)} BPM` : ''}).</p>
+    <p class="r-text r-air">Índice Ar/Terra ${sgn(a.air)} = ${num(AW[0])} × modo (${sgn(a.mode)}, ${k.rMaj >= k.rMin ? 'perfil mais maior' : 'perfil mais menor'}) + ${num(AW[1])} × brilho (${sgn(a.bright)}, centroide ${Math.round(S.centroid.median)} Hz) + ${num(AW[2])} × andamento (${sgn(a.tempo)}${S.bpm ? `, ${Math.round(S.bpm)} BPM` : ''}).</p>
     ${alerts.length ? `<div class="r-alerts">${alerts.map(t => `<div class="r-alert">${t}</div>`).join('')}</div>` : ''}
   </section>
 
@@ -3039,6 +3082,7 @@ function renderReportBody(res) {
         <tr><th>Tipo</th><td>${esc(src.kind || '')}${src.mime ? ` · ${esc(src.mime)}` : ''}</td></tr>
         <tr><th>Duração</th><td>${mmss(src.duration)} (${num(src.duration, 1)} s) · ${S.frames} quadros</td></tr>
         <tr><th>Calibração</th><td>Lá 4 = ${res.params.A4} Hz · Verde 0 = ${TONES[0].pt} (${TONES[0].en})${(res.params.ref != null ? res.params.ref : 2) === 2 ? ', padrão do método' : ', referência manual'}</td></tr>
+        <tr><th>Pesos Ar/Terra</th><td>modo ${num(AW[0])} · brilho ${num(AW[1])} · andamento ${num(AW[2])}${airWDefault(AW) ? ' (padrão)' : ' (calibrados)'}</td></tr>
         <tr><th>Análise</th><td>${src.sampleRate} Hz mono · FFT ${res.params.fftSize} · salto ${res.params.hop} (${num(res.params.frameDt * 1000, 1)} ms) · janela ${esc(res.params.window)}</td></tr>
         <tr><th>Método</th><td>${esc(res.params.method)} · suavização ${num(res.params.smoothing, 3)}</td></tr>
         <tr><th>Gerado em</th><td>${res.app ? new Date(res.app.generatedAt).toLocaleString('pt-BR') : ''}${res.app && res.app.elapsedMs ? ` · ${num(res.app.elapsedMs / 1000, 1)} s de processamento` : ''}</td></tr>
@@ -3054,7 +3098,7 @@ function renderReportBody(res) {
       <li><b>Percussão e ruído</b> espalham energia por vários tons; trechos só de bateria tendem ao centro do Sentirama.</li>
       <li><b>Afinação</b>: gravações afinadas diferente da escolhida (ex.: 432 × 440 Hz, cerca de um terço de semitom) perdem peso no cromagrama; desvios acima de meio semitom caem no tom vizinho. A afinação estimada (média circular do desvio dos picos) indica qual escolher.</li>
       <li><b>Tonalidade</b> por correlação com os perfis de Krumhansl–Kessler; r ≥ 0,75 indica ajuste alto. A leitura de referência usa a nota escolhida como Verde 0 (padrão: Ré); a leitura relativa gira o cromagrama para que a tônica estimada vire o Verde 0.</li>
-      <li><b>Índice Ar/Terra</b> = 0,5 · modo + 0,32 · brilho + 0,18 · andamento (cada componente entre −1 e +1). Os pesos são definidos por este aplicativo; calibrá-los com um conjunto de músicas é parte da pesquisa.</li>
+      <li><b>Índice Ar/Terra</b> = ${num(AW[0])} · modo + ${num(AW[1])} · brilho + ${num(AW[2])} · andamento (cada componente entre −1 e +1). ${airWDefault(AW) ? 'Pesos padrão deste aplicativo (0,50 / 0,32 / 0,18); podem ser calibrados com os dados do Experimento de escuta.' : 'Pesos calibrados pelo usuário (o padrão é 0,50 / 0,32 / 0,18).'}</li>
       <li><b>Sentirama</b>: a posição de cada instante é a média das posições dos tons ponderada pelo quadrado do cromagrama. As posições de laranjas, violetas e do Verde 6 são interpretação deste aplicativo.</li>
       <li><b>Reprodutibilidade</b>: todo áudio é reamostrado para 44,1 kHz mono antes da análise, então o mesmo arquivo gera o mesmo laudo em qualquer aparelho. O JSON exportado guarda os parâmetros e a linha do tempo completa.</li>
     </ul>
@@ -4522,14 +4566,14 @@ function expExcerpt(st) {
   return { x: st.samples.subarray(a, a + len), t0: a / sr, t1: (a + len) / sr };
 }
 async function expPredict(st) {
-  const key = `${EXP.excerpt.mode}:${EXP.excerpt.seconds}:${REF_PC}:${A4_HZ}`;
+  const key = `${EXP.excerpt.mode}:${EXP.excerpt.seconds}:${REF_PC}:${A4_HZ}:${AIR_W.join('/')}`;
   if (st.pred && st.predKey === key) return st.pred;
   const ex = expExcerpt(st), res = await runAnalysis(ex.x.slice(), st.sampleRate, () => {}), S = res.summary;
   st.pred = {
     ref: { color: topFamily(S.absolute).name, x: S.absolute.sentirama.mean[0], y: S.absolute.sentirama.mean[1] },
     rel: { color: topFamily(S.relative).name, x: S.relative.sentirama.mean[0], y: S.relative.sentirama.mean[1] },
     air: S.air.air, comp: { mode: S.air.mode, bright: S.air.bright, tempo: S.air.tempo },
-    tonic: keyLabel(S.key.tone, S.key.mode), keyR: S.key.r, calib: { ref: REF_PC, a4: A4_HZ }, excerpt: [+ex.t0.toFixed(2), +ex.t1.toFixed(2)],
+    tonic: keyLabel(S.key.tone, S.key.mode), keyR: S.key.r, calib: { ref: REF_PC, a4: A4_HZ, airWeights: AIR_W.slice() }, excerpt: [+ex.t0.toFixed(2), +ex.t1.toFixed(2)],
   };
   st.predKey = key;
   return st.pred;
@@ -4647,6 +4691,7 @@ function expResultsHTML() {
         ${statCard('Sentirama x / y (relativa)', `${isFinite(S.xRel.r) ? sgn(S.xRel.r) : '—'} / ${isFinite(S.yRel.r) ? sgn(S.yRel.r) : '—'}`, '')}
       </div>
       <p class="r-text"><b>Qual leitura explica melhor a percepção?</b> Cor: <b>${colorBetter}</b> · posição no Sentirama: <b>${posBetter}</b>. ${S.none ? `${S.none} resposta(s) “nenhuma cor” ficam fora da concordância de cor.` : ''}</p>
+      <div class="r-chips"><button class="mini-btn" data-exp-calw="1">Calibrar os pesos Ar/Terra com estes dados →</button></div>
       <p class="r-sub">Concordância de cor testada contra o acaso (1 em 7) pelo teste binomial exato; p das correlações aproximado pela transformação z de Fisher. Correlações: |r| < 0,1 nula · < 0,3 fraca · < 0,5 moderada · ≥ 0,5 forte.</p>
       ${small}
     </section>
@@ -4699,10 +4744,10 @@ function drawExpResults() {
 function expCSV() {
   const q = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`, n = v => (v == null || !isFinite(v) ? '' : (+v).toFixed(4));
   const head = ['participante', 'sessao', 'inicio', 'ordem', 'trecho', 'resp_cor', 'resp_x', 'resp_y', 'resp_ar_terra', 'conhece', 'vezes_ouvido', 'tempo_resposta_ms',
-    'modelo_cor_ref', 'modelo_x_ref', 'modelo_y_ref', 'modelo_cor_rel', 'modelo_x_rel', 'modelo_y_rel', 'modelo_ar_terra', 'modelo_comp_modo', 'modelo_comp_brilho', 'modelo_comp_andamento', 'modelo_tonica', 'trecho_inicio_s', 'trecho_fim_s', 'verde0_pc', 'la4_hz'];
+    'modelo_cor_ref', 'modelo_x_ref', 'modelo_y_ref', 'modelo_cor_rel', 'modelo_x_rel', 'modelo_y_rel', 'modelo_ar_terra', 'modelo_comp_modo', 'modelo_comp_brilho', 'modelo_comp_andamento', 'modelo_tonica', 'trecho_inicio_s', 'trecho_fim_s', 'verde0_pc', 'la4_hz', 'pesos_ar_terra'];
   const rows = expAllResponses('').map(r => [q(r.participant), q(r.session), q(r.startedAt), r.order, q(r.stimulus), q(r.color), n(r.x), n(r.y), n(r.air), r.familiar ? 1 : 0, r.plays, r.rtMs,
     q(r.pred.ref.color), n(r.pred.ref.x), n(r.pred.ref.y), q(r.pred.rel.color), n(r.pred.rel.x), n(r.pred.rel.y), n(r.pred.air), n(r.pred.comp && r.pred.comp.mode), n(r.pred.comp && r.pred.comp.bright), n(r.pred.comp && r.pred.comp.tempo),
-    q(r.pred.tonic), r.pred.excerpt ? r.pred.excerpt[0] : '', r.pred.excerpt ? r.pred.excerpt[1] : '', r.pred.calib ? r.pred.calib.ref : '', r.pred.calib ? r.pred.calib.a4 : ''].join(','));
+    q(r.pred.tonic), r.pred.excerpt ? r.pred.excerpt[0] : '', r.pred.excerpt ? r.pred.excerpt[1] : '', r.pred.calib ? r.pred.calib.ref : '', r.pred.calib ? r.pred.calib.a4 : '', q(r.pred.calib && r.pred.calib.airWeights ? r.pred.calib.airWeights.join('/') : '')].join(','));
   return [head.join(','), ...rows].join('\n');
 }
 // ---- telas ----
@@ -4795,6 +4840,7 @@ $('exp-body').addEventListener('click', e => {
   else if (t.dataset.expDel) { EXP.stimuli = EXP.stimuli.filter(s => s.id !== t.dataset.expDel); renderExp(); }
   else if (t.dataset.exc) { EXP.excerpt.mode = t.dataset.exc; renderExp(); }
   else if (t.dataset.expGo) { EXP.view = t.dataset.expGo; renderExp(); }
+  else if (t.dataset.expCalw) { closeExp(); openCalW(); }
 });
 $('exp-body').addEventListener('input', e => {
   if (e.target.id === 'exp-air' && EXP.run) { EXP.run.cur.air = e.target.value / 100; EXP.run.cur.airTouched = true; expTrialState(); }
@@ -4820,11 +4866,179 @@ $('exp-jsonfile').addEventListener('change', e => {
     const ids = new Set(EXP.sessions.map(s => s.id)); let added = 0;
     d.sessions.forEach(s => { if (!ids.has(s.id)) { EXP.sessions.push(s); added++; } });
     expSave(); EXP.view = 'results'; renderExp();
+    if ($('calw').classList.contains('show')) renderCalW();
     toast(`${added} sessão(ões) importada(s); ${d.sessions.length - added} já existiam.`, 4000);
   }).catch(err => toast('Não foi possível importar: ' + err.message, 5000));
 });
 let expResizeT = 0;
 window.addEventListener('resize', () => { clearTimeout(expResizeT); expResizeT = setTimeout(() => { if (!$('exp').classList.contains('show')) return; if (EXP.view === 'results') drawExpResults(); if (EXP.view === 'trial') drawExpPlane(); }, 140); });
+
+/* =====================================================================
+   12. CALIBRAÇÃO DOS PESOS AR/TERRA — ajusta modo / brilho / andamento
+   às notas Ar ↔ Terra dadas pelas pessoas no experimento de escuta
+   ===================================================================== */
+const AIRW_KEY = 'croma.airw';
+const CW_KEYS = ['mode', 'bright', 'tempo'];
+const CW_PT = ['modo', 'brilho', 'andamento'];
+const CW = { manual: null };
+// um ponto por trecho: média das notas das pessoas × componentes do modelo (que não dependem dos pesos)
+function cwData() {
+  const m = new Map();
+  expAllResponses('').forEach(r => {
+    if (!r.pred || !r.pred.comp || !Number.isFinite(r.air)) return;
+    if (!m.has(r.stimulus)) m.set(r.stimulus, { name: r.stimulus, air: [], comp: [] });
+    const d = m.get(r.stimulus); d.air.push(r.air); d.comp.push(CW_KEYS.map(k => r.pred.comp[k] || 0));
+  });
+  const mean = CORE.stats.mean;
+  return [...m.values()].map(d => ({ name: d.name, n: d.air.length, y: mean(d.air), x: [0, 1, 2].map(j => mean(d.comp.map(c => c[j]))) }));
+}
+const cwPred = (x, w) => clamp(w[0] * x[0] + w[1] * x[1] + w[2] * x[2], -1, 1);
+function cwR(D, w) {
+  const r = CORE.stats.pearsonR(D.map(d => cwPred(d.x, w)), D.map(d => d.y));
+  return { r, p: CORE.stats.corrP(r, D.length) };
+}
+// pesos normalizados para |modo| + |brilho| + |andamento| = 1, como o padrão: o índice fica entre −1 e +1
+function cwNorm(w) { const s = w.reduce((a, v) => a + Math.abs(v), 0); return s > 1e-9 ? w.map(v => v / s) : CORE.AIRW_DEFAULT.slice(); }
+function cwFit(D) {
+  if (D.length < 4) return null;
+  const ls = (rows) => CORE.stats.lstsq3(rows.map(d => d.x), rows.map(d => d.y), 1e-3);
+  const raw = ls(D); if (!raw) return null;
+  // validação cruzada: cada trecho é previsto por pesos ajustados sem ele
+  const loo = D.map((d, i) => { const wi = ls(D.filter((_, j) => j !== i)); return wi ? wi[0] * d.x[0] + wi[1] * d.x[1] + wi[2] * d.x[2] : 0; });
+  const rcv = CORE.stats.pearsonR(loo, D.map(d => d.y));
+  return { w: cwNorm(raw), cv: { r: rcv, p: CORE.stats.corrP(rcv, D.length) } };
+}
+const cwW = w => w.map(v => num(v)).join(' / ');
+const cwRCell = c => Number.isFinite(c.r) ? `<b>${sgn(c.r)}</b> <span class="r-mut">${pFmt(c.p)}</span>` : '<span class="r-mut">—</span>';
+function cwApply(w) {
+  AIR_W = cwNorm(w).map(v => +v.toFixed(4));
+  CORE.configure({ airWeights: AIR_W });
+  try { if (airWDefault(AIR_W)) localStorage.removeItem(AIRW_KEY); else localStorage.setItem(AIRW_KEY, JSON.stringify(AIR_W)); } catch (e) { /* sem armazenamento: vale só nesta aba */ }
+  CW.manual = AIR_W.slice();
+  updateAirWInfo();
+  if ($('calw').classList.contains('show')) renderCalW();
+  toast(airWDefault(AIR_W) ? 'Pesos Ar/Terra de volta ao padrão (0,50 / 0,32 / 0,18).' : `Pesos aplicados: modo ${num(AIR_W[0])} · brilho ${num(AIR_W[1])} · andamento ${num(AIR_W[2])}. Valem para o tempo real e para os próximos laudos.`, 4500);
+}
+function updateAirWInfo() {
+  const el = $('airw-info'); if (!el) return;
+  el.textContent = airWDefault(AIR_W) ? 'padrão' : 'calibrados · ' + cwW(AIR_W);
+}
+function renderCalW() {
+  const D = cwData(), fit = cwFit(D), def = CORE.AIRW_DEFAULT, inUse = !airWDefault(AIR_W);
+  if (!CW.manual) CW.manual = AIR_W.slice();
+  CW.D = D;
+  const nResp = D.reduce((s, d) => s + d.n, 0);
+  const rDef = cwR(D, def), rUse = cwR(D, AIR_W);
+  const neg = fit && fit.w.some(v => v < -0.02) ? `<p class="r-sub">Peso negativo: nesses dados, as pessoas ouvem esse componente no sentido contrário ao do modelo.</p>` : '';
+  let verdict = '';
+  if (fit && Number.isFinite(fit.cv.r) && Number.isFinite(rDef.r)) {
+    verdict = fit.cv.r > rDef.r + 0.05
+      ? `Os pesos ajustados preveem melhor as pessoas mesmo em trechos que ficaram fora do ajuste (r validado ${sgn(fit.cv.r)} contra ${sgn(rDef.r)} do padrão).`
+      : `O ajuste não supera o padrão de forma confiável (r validado ${sgn(fit.cv.r)} contra ${sgn(rDef.r)} do padrão): mantenha o padrão ou colete mais respostas.`;
+  }
+  const alert = D.length < 4
+    ? `<div class="r-alert">São necessários pelo menos 4 trechos com respostas para ajustar os pesos (o ideal são 10 ou mais, de vários participantes). Rode sessões no Experimento de escuta ou importe um JSON.</div>`
+    : D.length < 10 ? `<div class="r-alert">Amostra pequena (${D.length} trechos): com 3 pesos para ajustar, o resultado ainda é frágil. Confira a validação cruzada.</div>` : '';
+  const stimRows = D.map((d, i) => `<tr><td>${esc(d.name)}</td><td>${d.n}</td><td><b>${sgn(d.y)}</b></td>${d.x.map(v => `<td>${sgn(v)}</td>`).join('')}<td>${sgn(cwPred(d.x, AIR_W))}</td><td data-cw-man="${i}">${sgn(cwPred(d.x, CW.manual))}</td></tr>`).join('');
+  $('calw-body').innerHTML = `
+    <section class="r-card r-hero">
+      <h2>Pesos do índice Ar ↔ Terra</h2>
+      <p class="r-text">O índice soma três componentes do modelo, cada um entre −1 e +1: <b>modo</b> (maior × menor), <b>brilho</b> (centroide do timbre) e <b>andamento</b> (BPM). Aqui os pesos são comparados com as notas Ar ↔ Terra dadas pelas pessoas no Experimento de escuta: um ponto por trecho, com a média das respostas.</p>
+      <div class="r-stats">
+        ${statCard('Trechos com respostas', String(D.length), `${nResp} respostas`)}
+        ${statCard('Pesos em uso', cwW(AIR_W), inUse ? 'calibrados' : 'padrão do aplicativo')}
+        ${statCard('Padrão × pessoas', Number.isFinite(rDef.r) ? sgn(rDef.r) : '—', `correlação ${corrWord(rDef.r)}`)}
+        ${statCard('Ajustado (validado)', fit && Number.isFinite(fit.cv.r) ? sgn(fit.cv.r) : '—', fit ? 'deixando um trecho de fora' : 'dados insuficientes')}
+      </div>
+      ${alert}
+      <div class="r-chips"><button class="mini-btn" id="cw-open-exp">Abrir experimento</button><button class="mini-btn" id="cw-import">Importar JSON do experimento</button></div>
+    </section>
+    <section class="r-card">
+      <h2>Conjuntos de pesos</h2>
+      <div class="r-scroll"><table class="r-tab"><thead><tr><th>Conjunto</th><th>Modo</th><th>Brilho</th><th>Andamento</th><th>r com as pessoas</th><th>Validação cruzada</th></tr></thead><tbody>
+        <tr><td>Padrão</td>${def.map(v => `<td>${num(v)}</td>`).join('')}<td>${cwRCell(rDef)}</td><td class="r-mut">não ajustado: já é “fora da amostra”</td></tr>
+        ${inUse ? `<tr><td>Em uso</td>${AIR_W.map(v => `<td>${num(v)}</td>`).join('')}<td>${cwRCell(rUse)}</td><td></td></tr>` : ''}
+        <tr><td>Ajustado (mínimos quadrados)</td>${fit ? fit.w.map(v => `<td>${num(v)}</td>`).join('') + `<td>${cwRCell(cwR(D, fit.w))}</td><td>${cwRCell(fit.cv)}</td>` : '<td colspan="5" class="r-mut">precisa de pelo menos 4 trechos</td>'}</tr>
+        <tr id="cw-manual-row"></tr>
+      </tbody></table></div>
+      ${verdict ? `<p class="r-text">${verdict}</p>` : ''}
+      ${neg}
+      <p class="r-sub">Os pesos são normalizados para que |modo| + |brilho| + |andamento| = 1, como no padrão; assim o índice continua entre −1 e +1 e a correlação não muda. Validação cruzada: cada trecho é previsto por pesos ajustados sem ele; se esse r ficar bem abaixo do r ajustado, o ajuste está decorando os dados.</p>
+    </section>
+    <div class="r-two">
+      <section class="r-card">
+        <h2>Testar à mão</h2>
+        <div class="cw-sliders">${CW_PT.map((nm, j) => `<label for="cw-w${j}">${nm}</label><input type="range" id="cw-w${j}" min="-100" max="100" value="${Math.round(CW.manual[j] * 100)}"><output id="cw-v${j}">${num(CW.manual[j])}</output>`).join('')}</div>
+        <p class="r-text" id="cw-live"></p>
+        <div class="r-chips"><button class="mini-btn" id="cw-use-fit" ${fit ? '' : 'disabled'}>Usar os ajustados</button><button class="mini-btn" id="cw-use-def">Usar o padrão</button><button class="mini-btn" id="cw-use-cur">Usar os atuais</button></div>
+        <div class="flex items-center gap-2 flex-wrap" style="margin-top:14px"><button class="btn" id="cw-apply">Aplicar estes pesos</button><button class="btn" id="cw-reset" ${inUse ? '' : 'disabled'}>Restaurar padrão</button></div>
+        <p class="r-sub" style="margin-top:8px">Aplicar vale para o tempo real e para os laudos novos (o laudo registra os pesos usados) e fica salvo neste navegador.</p>
+      </section>
+      <section class="r-card"><h2>Pessoas × modelo (pesos à mão)</h2><p class="r-sub">Cada ponto é um trecho, na cor prevista pelo modelo. Na diagonal tracejada, o modelo acerta a nota média.</p><canvas class="r-chart" id="cw-scatter" data-h="300"></canvas></section>
+    </div>
+    <section class="r-card"><h2>Por trecho</h2><div class="r-scroll"><table class="r-tab"><thead><tr><th>Trecho</th><th>n</th><th>Pessoas</th><th>Modo</th><th>Brilho</th><th>Andamento</th><th>Modelo (em uso)</th><th>Modelo (à mão)</th></tr></thead><tbody>${stimRows || '<tr><td colspan="8" class="r-mut">Sem dados ainda.</td></tr>'}</tbody></table></div></section>`;
+  cwLive();
+}
+function cwLive() {
+  const D = CW.D || [], w = CW.manual, wn = cwNorm(w), c = cwR(D, w);
+  CW_PT.forEach((_, j) => { const o = $('cw-v' + j); if (o) o.textContent = num(w[j]); });
+  const row = $('cw-manual-row');
+  if (row) row.innerHTML = `<td>À mão (normalizados)</td>${wn.map(v => `<td>${num(v)}</td>`).join('')}<td>${cwRCell(c)}</td><td class="r-mut">escolhidos olhando os dados</td>`;
+  $('cw-live').innerHTML = `Normalizados: modo <b>${num(wn[0])}</b> · brilho <b>${num(wn[1])}</b> · andamento <b>${num(wn[2])}</b> · r com as pessoas ${cwRCell(c)}`;
+  D.forEach((d, i) => { const td = document.querySelector(`#calw-body [data-cw-man="${i}"]`); if (td) td.textContent = sgn(cwPred(d.x, w)); });
+  drawCwScatter();
+}
+function drawCwScatter() {
+  const cv = $('cw-scatter'); if (!cv) return;
+  const { g, w, h } = prepCanvas(cv), pad = 34, X = v => pad + (v + 1) / 2 * (w - pad - 10), Y = v => h - pad - (v + 1) / 2 * (h - pad - 10);
+  g.strokeStyle = rcss('--r-grid'); g.lineWidth = 1;
+  [-1, 0, 1].forEach(v => { g.beginPath(); g.moveTo(X(v), Y(-1)); g.lineTo(X(v), Y(1)); g.stroke(); g.beginPath(); g.moveTo(X(-1), Y(v)); g.lineTo(X(1), Y(v)); g.stroke(); });
+  g.setLineDash([4, 4]); g.strokeStyle = rcss('--r-ink2'); g.beginPath(); g.moveTo(X(-1), Y(-1)); g.lineTo(X(1), Y(1)); g.stroke(); g.setLineDash([]);
+  g.fillStyle = rcss('--r-ink2'); g.font = '10px Inter, system-ui, sans-serif'; g.textAlign = 'center';
+  g.fillText('modelo: Terra −1', X(-0.7), h - 8); g.fillText('Ar +1', X(0.85), h - 8);
+  g.save(); g.translate(10, Y(0)); g.rotate(-Math.PI / 2); g.fillText('pessoas', 0, 0); g.restore();
+  const D = CW.D || [], pts = [];
+  D.forEach(d => {
+    const mx = X(cwPred(d.x, CW.manual)), my = Y(clamp(d.y, -1, 1)), resp = expAllResponses('').find(r => r.stimulus === d.name);
+    g.fillStyle = (resp && FAMILY_HEX[resp.pred.ref.color]) || rcss('--r-ink'); g.beginPath(); g.arc(mx, my, 6, 0, TAU); g.fill();
+    g.strokeStyle = rcss('--r-bg'); g.lineWidth = 2; g.stroke();
+    pts.push({ x: mx, y: my, d });
+  });
+  cv._pts = pts;
+}
+function openCalW() { CW.manual = AIR_W.slice(); renderCalW(); $('calw').classList.add('show'); $('calw').setAttribute('aria-hidden', 'false'); $('calw').scrollTop = 0; }
+function closeCalW() { $('calw').classList.remove('show'); $('calw').setAttribute('aria-hidden', 'true'); }
+$('btn-calw').addEventListener('click', openCalW);
+$('airw-open').addEventListener('click', openCalW);
+$('calw-close').addEventListener('click', closeCalW);
+$('calw-body').addEventListener('input', e => {
+  const m = /^cw-w(\d)$/.exec(e.target.id); if (!m) return;
+  CW.manual[+m[1]] = e.target.value / 100; cwLive();
+});
+$('calw-body').addEventListener('click', e => {
+  const t = e.target.closest && e.target.closest('button'); if (!t) return;
+  const setManual = w => { CW.manual = w.slice(); CW_PT.forEach((_, j) => { $('cw-w' + j).value = Math.round(w[j] * 100); }); cwLive(); };
+  if (t.id === 'cw-use-fit') { const f = cwFit(CW.D || []); if (f) setManual(f.w); }
+  else if (t.id === 'cw-use-def') setManual(CORE.AIRW_DEFAULT);
+  else if (t.id === 'cw-use-cur') setManual(AIR_W);
+  else if (t.id === 'cw-apply') cwApply(CW.manual);
+  else if (t.id === 'cw-reset') cwApply(CORE.AIRW_DEFAULT);
+  else if (t.id === 'cw-open-exp') { closeCalW(); openExp(EXP.sessions.length ? 'results' : 'setup'); }
+  else if (t.id === 'cw-import') $('exp-jsonfile').click();
+});
+$('calw-body').addEventListener('pointermove', e => {
+  const cv = e.target, tip = $('rtip');
+  if (cv.id !== 'cw-scatter' || !cv._pts) { tip.style.display = 'none'; return; }
+  const rc = cv.getBoundingClientRect(), x = e.clientX - rc.left, y = e.clientY - rc.top;
+  const hit = cv._pts.find(p => Math.hypot(p.x - x, p.y - y) < 9);
+  if (!hit) { tip.style.display = 'none'; return; }
+  tip.innerHTML = `<b>${esc(hit.d.name)}</b><br>pessoas ${sgn(hit.d.y)} (${hit.d.n} resp.) · modelo ${sgn(cwPred(hit.d.x, CW.manual))}`; tip.style.display = 'block';
+  tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 8, e.clientX + 14) + 'px'; tip.style.top = (e.clientY - 38) + 'px';
+});
+$('calw-body').addEventListener('pointerleave', () => { $('rtip').style.display = 'none'; });
+let cwResizeT = 0;
+window.addEventListener('resize', () => { clearTimeout(cwResizeT); cwResizeT = setTimeout(() => { if ($('calw').classList.contains('show')) drawCwScatter(); }, 140); });
+updateAirWInfo();
 
 // layout de celular: painéis recolhidos e painel de entrada logo acima do teclado
 if (window.matchMedia('(max-width: 767px)').matches) {
