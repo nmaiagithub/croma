@@ -98,6 +98,11 @@
   #keyboard .nm { font-size: .6rem; color: rgba(18,12,24,.75); margin-top: 2px; font-weight: 600; }
   #keyboard .fill { position: absolute; inset: 0; z-index: -1; }
   #keyboard .dom { box-shadow: 0 0 24px 2px var(--kc); }
+  #keyboard { touch-action: none; user-select: none; -webkit-user-select: none; }
+  #keyboard .white, #keyboard .black { cursor: pointer; }
+  #keyboard .pressed { transform: translateY(2px); filter: brightness(1.25); }
+  #keyboard .kl { position: absolute; top: 4px; left: 0; right: 0; text-align: center; font-size: .62rem; font-weight: 700; color: rgba(255,255,255,.85); text-shadow: 0 1px 2px rgba(0,0,0,.7); display: none; }
+  body.keys-on #keyboard .kl { display: block; }
 
   #dropzone { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: rgba(7,6,13,.75); backdrop-filter: blur(6px); }
   #dropzone.show { display: flex; }
@@ -128,8 +133,7 @@
     #hud-body { max-height: 32vh !important; }
     #panel-left { width: auto !important; left: 12px !important; right: 12px; top: auto !important; bottom: calc(var(--bottom-h, 110px) + 22px); max-height: 45vh !important; padding: .75rem; }
     #panel-left.collapsed .panel-extra { display: none; }
-    #input-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    #btn-demo { grid-column: auto; }
+    #input-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     #input-grid .btn { font-size: .68rem; padding: .45rem .3rem; flex-direction: column; gap: .25rem; text-align: center; line-height: 1.15; }
     #bottom { bottom: 12px; }
     #keyboard { height: 66px; }
@@ -141,10 +145,15 @@
   }
 
   /* ---------- diagnóstico com tamanho fixo ---------- */
-  #dom-text { font-size: 15px; height: 1.45em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #dom-sub { height: 2.7em; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  #secondary { height: 24px; overflow: hidden; flex-wrap: nowrap; align-items: center; }
-  #chord, #key { height: 2.7em; line-height: 1.3; overflow: hidden; }
+  /* alturas fixas dimensionadas para o conteúdo mais longo: nada é cortado */
+  #dom-text { font-size: 15px; line-height: 1.35; height: 2.7em; }
+  #dom-sub { line-height: 1.35; height: 4.05em; }
+  #secondary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; height: 40px; align-items: stretch; }
+  #secondary .sec { border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.05); border-radius: 10px; padding: 3px 8px; font-size: .7rem; line-height: 1.3; min-width: 0; }
+  #secondary .sec b { display: flex; align-items: center; gap: 5px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  #secondary .sec b i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  #secondary .sec span { color: var(--muted); white-space: nowrap; }
+  #chord, #key { height: 2.7em; line-height: 1.3; }
   #mode-text, #pol-text, #spi-text, #tension-text { white-space: nowrap; }
   #hud-head { height: 34px; }
   #hud-head .label { line-height: 1.35; }
@@ -259,6 +268,9 @@
     <button data-mode="2" role="tab">Sentirama 3D</button>
   </div>
   <div class="pointer-events-auto flex items-center gap-2">
+    <button class="btn active" id="btn-rotate" title="Auto-rotação da câmera ligada — clique para parar" aria-label="Auto-rotação da câmera" aria-pressed="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+    </button>
     <button class="btn" id="btn-full" title="Tela cheia (F)" aria-label="Tela cheia">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
     </button>
@@ -282,17 +294,32 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
         <span>Upload de Áudio</span>
       </button>
-      <button class="btn col-span-2" id="btn-demo" title="Toca uma progressão sintetizada para demonstrar o mapeamento">
+      <button class="btn" id="btn-demo" title="Toca uma progressão sintetizada para demonstrar o mapeamento">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        <span>Demonstração (sintetizador)</span>
+        <span>Demonstração</span>
       </button>
+      <button class="btn" id="btn-keys" title="Tocar com o teclado do computador (Q W E R T Y U I O P e 2 3 5 6 7 9 0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
+        <span>Teclado musical</span>
+      </button>
+    </div>
+    <div id="keys-cfg" class="mt-2 p-2.5 rounded-xl" hidden style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)">
+      <div class="flex items-center justify-between gap-2">
+        <label for="instr-select" class="text-xs">Instrumento</label>
+        <select id="instr-select" class="ref-select"></select>
+      </div>
+      <div class="flex items-center justify-between gap-2 mt-2">
+        <span class="text-xs">Oitava <span class="text-[color:var(--muted)]">(Z / X)</span></span>
+        <div class="mini-seg"><button id="oct-down" aria-label="Oitava abaixo">−</button><span id="oct-val" class="px-2 text-xs self-center stat">4</span><button id="oct-up" aria-label="Oitava acima">+</button></div>
+      </div>
+      <p class="text-[10px] text-[color:var(--muted)] mt-2 leading-relaxed"><b class="text-white/80">Q W E R T Y U I O P</b> = Dó Ré Mi Fá Sol Lá Si Dó Ré Mi · <b class="text-white/80">2 3 5 6 7 9 0</b> = sustenidos. O teclado da tela também toca com clique ou toque.</p>
     </div>
     <div class="grid grid-cols-2 gap-2 mt-2" id="laudo-grid">
       <button class="btn" id="btn-analyze" disabled title="Gera o laudo da música inteira carregada no player">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 17v-3M12 17v-6M16 17v-2"/></svg>
         <span>Analisar música inteira</span>
       </button>
-      <button class="btn" id="btn-record" disabled title="Grava o microfone e gera o laudo da sessão ao parar">
+      <button class="btn" id="btn-record" disabled title="Grava o que está sendo analisado (microfone, teclado musical, demonstração) e gera o laudo ao parar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
         <span>Gravar sessão</span>
       </button>
@@ -327,13 +354,13 @@
       <div class="label mb-1">Opções visuais</div>
       <label class="toggle">Brilho néon (bloom)<input type="checkbox" id="opt-bloom" checked></label>
       <label class="toggle">Partículas matéria/antimatéria<input type="checkbox" id="opt-particles" checked></label>
-      <label class="toggle">Auto-rotação<input type="checkbox" id="opt-rotate" checked></label>
+      <label class="toggle">Auto-rotação da câmera<input type="checkbox" id="opt-rotate" checked></label>
       <label class="toggle">Rótulos no Sentirama<input type="checkbox" id="opt-labels" checked></label>
     </div>
 
     <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-[color:var(--muted)] leading-relaxed">
       <div class="label mb-1">Atalhos</div>
-      <span class="text-white/80">1 2 3</span> modos · <span class="text-white/80">Espaço</span> play/pause · <span class="text-white/80">H</span> ocultar interface · <span class="text-white/80">F</span> tela cheia · arraste para orbitar
+      <span class="text-white/80">1 2 3</span> modos (com o teclado musical desligado) · <span class="text-white/80">Espaço</span> play/pause · <span class="text-white/80">H</span> ocultar interface · <span class="text-white/80">F</span> tela cheia · arraste para orbitar
     </div>
     </div>
   </div>
@@ -356,10 +383,10 @@
       <div id="dom-sub" class="text-[11px] text-[color:var(--muted)] mt-0.5">aguardando áudio…</div>
     </div>
   </div>
-  <div id="hud-body" class="scroll-y" style="max-height: calc(100vh - 360px)">
+  <div id="hud-body" class="scroll-y" style="max-height: calc(100vh - 230px)">
     <div class="mt-3">
       <div class="label mb-1">Notas secundárias (harmônicos)</div>
-      <div id="secondary" class="flex gap-1.5 text-xs text-[color:var(--muted)]">—</div>
+      <div id="secondary" class="text-xs text-[color:var(--muted)]">—</div>
     </div>
     <div class="mt-3 grid grid-cols-2 gap-2">
       <div><div class="label">Acorde</div><div id="chord" class="text-sm mt-0.5">—</div></div>
@@ -509,6 +536,8 @@
         </div>
       </div>
     </div>
+    <h3>Teclado musical</h3>
+    <p>Ligue <strong>Teclado musical</strong> para tocar com o teclado do computador: <strong>Q W E R T Y U I O P</strong> são as teclas brancas (Dó Ré Mi Fá Sol Lá Si Dó Ré Mi) e <strong>2 3 · 5 6 7 · 9 0</strong> as pretas (sustenidos). <strong>Z</strong> e <strong>X</strong> descem e sobem a oitava. Há sete instrumentos sintetizados (piano elétrico, órgão, cordas, pad etéreo, flauta, harpa e sino de cristal), e o teclado na base da tela também toca com clique ou toque. O que você toca entra na análise em tempo real e pode ser gravado com <strong>Gravar sessão</strong> para gerar um laudo.</p>
     <h3>Laudo: a música inteira no modelo</h3>
     <p>Além do tempo real, o botão <strong>Analisar música inteira</strong> (ou <strong>Laudo</strong>, no player) processa o arquivo do começo ao fim, e <strong>Gravar sessão</strong> grava o microfone e analisa a gravação ao parar. O laudo mostra:</p>
     <ul class="list-disc pl-5 space-y-1 mt-2">
@@ -1037,6 +1066,8 @@ function ensureAudio() {
     A.analyser.minDecibels = -110;
     A.analyser.maxDecibels = -10;
     A.inGain.connect(A.analyser);
+    A.tap = A.ctx.createGain();   // tudo o que é analisado passa por aqui (antes do ganho de sensibilidade)
+    A.tap.connect(A.inGain);
     A.outGain = A.ctx.createGain();
     A.outGain.gain.value = 0.85;
     A.outGain.connect(A.ctx.destination);
@@ -1049,7 +1080,6 @@ function ensureAudio() {
 }
 
 function stopMic() {
-  if (REC.rec && REC.rec.state !== 'inactive') REC.rec.stop();
   if (A.micSrc) { try { A.micSrc.disconnect(); } catch (e) {} A.micSrc = null; }
   if (A.micStream) { A.micStream.getTracks().forEach(t => t.stop()); A.micStream = null; }
 }
@@ -1076,7 +1106,7 @@ async function startMic() {
     stopAll();
     A.micStream = stream;
     A.micSrc = A.ctx.createMediaStreamSource(stream);
-    A.micSrc.connect(A.inGain);
+    A.micSrc.connect(A.tap);
     A.source = 'mic';
     toast('Microfone ativo — cante, toque ou fale.');
   } catch (err) {
@@ -1098,7 +1128,7 @@ function loadFile(file) {
   stopMic(); stopDemo();
   if (!A.elSrc) {
     A.elSrc = A.ctx.createMediaElementSource(A.el);
-    A.elSrc.connect(A.inGain);
+    A.elSrc.connect(A.tap);
     A.elSrc.connect(A.outGain);
   }
   if (A.fileUrl) URL.revokeObjectURL(A.fileUrl);
@@ -1158,7 +1188,7 @@ function startDemo() {
   stopAll();
   A.demoBus = A.ctx.createGain();
   A.demoBus.gain.value = 0.35;
-  A.demoBus.connect(A.inGain);
+  A.demoBus.connect(A.tap);
   A.demoBus.connect(A.outGain);
   let step = 0, next = A.ctx.currentTime + 0.08;
   const tick = () => {
@@ -1210,7 +1240,7 @@ function estimateBpm() {
 }
 
 function analyse(dt, now) {
-  const running = A.ctx && A.source !== 'none' && !(A.source === 'file' && A.el.paused);
+  const running = A.ctx && ((A.source !== 'none' && !(A.source === 'file' && A.el.paused)) || KEYS.on || performance.now() - KEYS.lastNote < 4000);
   let active = false;
   if (running) {
     A.analyser.getFloatFrequencyData(freqDb);
@@ -2082,7 +2112,19 @@ function setMode(m) {
   if (bloom) bloom.strength = MODES[m].bloom;
   applyRotate();
 }
-function applyRotate() { controls.autoRotate = document.getElementById('opt-rotate').checked && MODES[mode].rotate; }
+// auto-rotação da câmera (órbita automática ao redor da cena)
+let AUTO_ROT = true;
+try { if (localStorage.getItem('croma.rotate') === '0') AUTO_ROT = false; } catch (e) { /* sem armazenamento */ }
+function applyRotate() { controls.autoRotate = AUTO_ROT && MODES[mode].rotate; }
+function setAutoRotate(on, save = true) {
+  AUTO_ROT = on;
+  $('opt-rotate').checked = on;
+  const b = $('btn-rotate');
+  b.classList.toggle('active', on); b.setAttribute('aria-pressed', on);
+  b.title = on ? 'Auto-rotação da câmera ligada — clique para parar' : 'Auto-rotação da câmera desligada — clique para ligar';
+  applyRotate();
+  if (save) { try { localStorage.setItem('croma.rotate', on ? '1' : '0'); } catch (e) { /* sem armazenamento */ } }
+}
 
 const clock = new THREE.Clock();
 let hudTimer = 0, kbTimer = 0, elapsed = 0;
@@ -2134,6 +2176,8 @@ function toast(msg, ms = 2600) {
 
 // teclado croma-sônico: C..B com os números Croma (referência = 0)
 const KB = [];
+// tecla do computador que toca cada nota na 1ª oitava do teclado musical (ver seção 8)
+const KEY_LETTER = ['Q', '2', 'W', '3', 'E', 'R', '5', 'T', '6', 'Y', '7', 'U'];
 function buildKeyboard() {
   const kb = $('keyboard');
   kb.innerHTML = ''; KB.length = 0;
@@ -2142,14 +2186,16 @@ function buildKeyboard() {
   whites.forEach((pc, i) => {
     const t = pcToTone(pc), el = document.createElement('div');
     el.className = 'white'; el.style.left = (i * W) + '%'; el.style.width = `calc(${W}% + 2px)`;
-    el.innerHTML = `<div class="fill"></div><div class="num">${t}</div><div class="nm">${TONES[t].pt}</div>`;
+    el.dataset.pc = pc;
+    el.innerHTML = `<div class="fill"></div><div class="kl">${KEY_LETTER[pc]}</div><div class="num">${t}</div><div class="nm">${TONES[t].pt}</div>`;
     el.title = `${toneLabel(t)} · ${TONES[t].name} ${t}`;
     kb.appendChild(el); KB[t] = el;
   });
   blacks.forEach(([pc, after]) => {
     const t = pcToTone(pc), el = document.createElement('div');
     el.className = 'black'; el.style.left = `calc(${(after + 1) * W}% - ${W * 0.33}%)`; el.style.width = (W * 0.66) + '%';
-    el.innerHTML = `<div class="fill"></div><div class="num" style="font-size:.8rem">${t}</div>`;
+    el.dataset.pc = pc;
+    el.innerHTML = `<div class="fill"></div><div class="kl">${KEY_LETTER[pc]}</div><div class="num" style="font-size:.8rem">${t}</div>`;
     el.title = `${toneLabel(t)} · ${TONES[t].name} (${TONES[t].code})`;
     kb.appendChild(el); KB[t] = el;
   });
@@ -2166,7 +2212,7 @@ function updateKeyboard() {
 }
 
 function chipFor(t) {
-  return `<span class="chip" title="${toneLabel(t)} · ${TONES[t].name} ${t}"><i style="background:${TONES[t].hex};${TONES[t].uv ? 'border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)' : ''}"></i>${TONES[t].pt} · ${t}</span>`;
+  return `<div class="sec"><b><i style="background:${TONES[t].hex};${TONES[t].uv ? 'border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)' : ''}"></i>${toneLabel(t)}</b><span>${TONES[t].name} ${t}</span></div>`;
 }
 function updateHUD() {
   const d = AN.dominant, sw = $('dom-swatch');
@@ -2219,10 +2265,10 @@ function updateSourceUI() {
   $('btn-mic').classList.toggle('active', A.source === 'mic');
   $('btn-mic').querySelector('span').textContent = A.source === 'mic' ? 'Parar Microfone' : 'Ativar Microfone';
   $('btn-demo').classList.toggle('active', A.source === 'demo');
-  $('btn-demo').querySelector('span').textContent = A.source === 'demo' ? 'Parar demonstração' : 'Demonstração (sintetizador)';
+  $('btn-demo').querySelector('span').textContent = A.source === 'demo' ? 'Parar demonstração' : 'Demonstração';
   $('btn-upload').classList.toggle('active', A.source === 'file');
-  const labels = { none: ['#666', 'sem entrada'], mic: ['#e8402c', 'microfone'], file: ['#2f9fe6', 'arquivo'], demo: ['#f7dc2f', 'demonstração'] };
-  const [c, l] = labels[A.source];
+  const labels = { none: ['#666', 'sem entrada'], mic: ['#e8402c', 'microfone'], file: ['#2f9fe6', 'arquivo'], demo: ['#f7dc2f', 'demonstração'], keys: ['#b47cf0', 'teclado'] };
+  const [c, l] = labels[A.source === 'none' && KEYS.on ? 'keys' : A.source];
   $('src-badge').innerHTML = `<i style="background:${c};box-shadow:0 0 8px ${c}"></i><span>${l}</span>`;
   if (A.source !== 'file') { $('player').classList.add('hidden'); $('player').classList.remove('flex'); }
   else { $('player').classList.remove('hidden'); $('player').classList.add('flex'); }
@@ -2263,7 +2309,9 @@ window.addEventListener('drop', e => {
 
 // modos e opções
 document.querySelectorAll('#mode-seg button').forEach(b => b.addEventListener('click', () => setMode(+b.dataset.mode)));
-$('opt-rotate').addEventListener('change', applyRotate);
+$('opt-rotate').addEventListener('change', e => setAutoRotate(e.target.checked));
+$('btn-rotate').addEventListener('click', () => { setAutoRotate(!AUTO_ROT); toast(AUTO_ROT ? 'Auto-rotação da câmera ligada' : 'Auto-rotação da câmera desligada'); });
+setAutoRotate(AUTO_ROT, false);
 $('opt-particles').addEventListener('change', e => { [particles1, particles2, particles3].forEach(p => p.visible = e.target.checked); });
 $('opt-labels').addEventListener('change', e => labelSprites.forEach(s => s.visible = e.target.checked));
 $('hud-collapse').addEventListener('click', () => { const b = $('hud-body'); b.classList.toggle('collapsed'); $('hud-collapse').textContent = b.classList.contains('collapsed') ? '+' : '–'; });
@@ -2320,6 +2368,7 @@ $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeMo
 
 window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox') return;
+  if (synthKey(e, true)) return;
   const k = e.key.toLowerCase();
   if ($('report').classList.contains('show')) {
     if (k === 'escape') closeReport();
@@ -2445,10 +2494,11 @@ function analyzeCurrentFile() {
 // ---------- gravação de sessão pelo microfone ----------
 function toggleRecord() {
   if (REC.rec) { REC.rec.stop(); return; }
-  if (A.source !== 'mic' || !A.micStream) { toast('Ative o microfone para gravar uma sessão.'); return; }
+  if (!A.ctx || (A.source === 'none' && !KEYS.on)) { toast('Ative o microfone, o teclado musical ou a demonstração para gravar uma sessão.', 4000); return; }
   if (!window.MediaRecorder) { toast('Este navegador não grava áudio (MediaRecorder indisponível).', 4000); return; }
   let rec;
-  try { rec = new MediaRecorder(A.micStream); } catch (e) { toast('Não foi possível iniciar a gravação: ' + e.message, 4000); return; }
+  if (!A.recDest) { A.recDest = A.ctx.createMediaStreamDestination(); A.tap.connect(A.recDest); }
+  try { rec = new MediaRecorder(A.recDest.stream); } catch (e) { toast('Não foi possível iniciar a gravação: ' + e.message, 4000); return; }
   REC.rec = rec; REC.chunks = []; REC.t0 = performance.now();
   rec.ondataavailable = e => { if (e.data && e.data.size) REC.chunks.push(e.data); };
   rec.onstop = () => {
@@ -2472,7 +2522,7 @@ function updateLaudoButtons() {
   const ba = $('btn-analyze'), br = $('btn-record');
   ba.disabled = !A.currentFile || R.busy;
   $('btn-analyze2').disabled = !A.currentFile || R.busy;
-  br.disabled = !(A.source === 'mic' || REC.rec) || R.busy;
+  br.disabled = !((A.ctx && (A.source !== 'none' || KEYS.on)) || REC.rec) || R.busy;
   br.classList.toggle('rec-on', !!REC.rec);
   br.querySelector('span').textContent = REC.rec ? `Parar e analisar (${mmss((performance.now() - REC.t0) / 1000)})` : 'Gravar sessão';
 }
@@ -3032,6 +3082,190 @@ $('r-body').addEventListener('click', e => {
 $('report').addEventListener('scroll', hideTip, { passive: true });
 let reportResizeT = 0;
 window.addEventListener('resize', () => { clearTimeout(reportResizeT); reportResizeT = setTimeout(drawAllCharts, 120); });
+
+/* =====================================================================
+   8. TECLADO MUSICAL — o teclado do computador como sintetizador
+   Layout de piano: Q W E R T Y U I O P = teclas brancas (Dó → Mi da oitava
+   seguinte); 2 3 · 5 6 7 · 9 0 = teclas pretas. Lido pela posição física da
+   tecla (e.code), então funciona em qualquer layout (ABNT, AZERTY…).
+   ===================================================================== */
+const KEYS = { on: false, instrument: 'epiano', octave: 4, voices: new Map(), lastNote: 0, bus: null, noise: null };
+const KEYMAP = {
+  KeyQ: 0, Digit2: 1, KeyW: 2, Digit3: 3, KeyE: 4, KeyR: 5, Digit5: 6, KeyT: 7, Digit6: 8, KeyY: 9, Digit7: 10, KeyU: 11,
+  KeyI: 12, Digit9: 13, KeyO: 14, Digit0: 15, KeyP: 16,
+};
+const MAX_VOICES = 16;
+
+function synthBus() {
+  ensureAudio();
+  if (!KEYS.bus) {
+    const c = A.ctx, comp = c.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.knee.value = 12; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.25;
+    KEYS.bus = c.createGain(); KEYS.bus.gain.value = 0.5;
+    KEYS.bus.connect(comp); comp.connect(A.tap); comp.connect(A.outGain);
+    const nb = c.createBuffer(1, c.sampleRate, c.sampleRate), d = nb.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    KEYS.noise = nb;
+  }
+  return KEYS.bus;
+}
+// ---- blocos de construção ----
+function vEnv(c, out, t, attack, peak) {
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + attack);
+  g.connect(out); return g;
+}
+function vOsc(c, type, f, t, dest, detune = 0) {
+  const o = c.createOscillator(); o.type = type; o.frequency.value = f; o.detune.value = detune;
+  o.connect(dest); o.start(t); return o;
+}
+function vRelease(g, srcs, t, rel) {
+  const p = g.gain;
+  if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(t);
+  else { p.cancelScheduledValues(t); p.setValueAtTime(Math.max(p.value, 0.0001), t); }
+  p.exponentialRampToValueAtTime(0.0001, t + rel);
+  srcs.forEach(o => { try { o.stop(t + rel + 0.05); } catch (e) { /* já parado */ } });
+}
+function vVibrato(c, t, srcs, rate, cents, delay) {
+  const lfo = c.createOscillator(), lg = c.createGain();
+  lfo.frequency.value = rate; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(cents, t + delay);
+  lfo.connect(lg); srcs.forEach(o => lg.connect(o.detune)); lfo.start(t);
+  return lfo;
+}
+// ---- instrumentos ----
+const INSTRUMENTS = {
+  epiano: { name: 'Piano elétrico', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.005, 0.34);
+    g.gain.exponentialRampToValueAtTime(0.12, t + 0.7); g.gain.exponentialRampToValueAtTime(0.002, t + 4.5);
+    const car = vOsc(c, 'sine', f, t, g);
+    const mod = c.createOscillator(), mg = c.createGain();
+    mod.frequency.value = f; mg.gain.setValueAtTime(f * 1.8, t); mg.gain.exponentialRampToValueAtTime(f * 0.2, t + 1.4);
+    mod.connect(mg); mg.connect(car.frequency); mod.start(t);
+    const tine = c.createOscillator(), tg = c.createGain();
+    tine.frequency.value = f * 14; tg.gain.setValueAtTime(f * 0.7, t); tg.gain.exponentialRampToValueAtTime(1, t + 0.08);
+    tine.connect(tg); tg.connect(car.frequency); tine.start(t);
+    return { release: rt => vRelease(g, [car, mod, tine], rt, 0.35) };
+  } },
+  organ: { name: 'Órgão', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.012, 0.16), srcs = [];
+    [[1, 1], [2, 0.7], [3, 0.5], [4, 0.35], [6, 0.22], [8, 0.15]].forEach(([h, a]) => {
+      const pg = c.createGain(); pg.gain.value = a; pg.connect(g); srcs.push(vOsc(c, 'sine', f * h, t, pg));
+    });
+    srcs.push(vVibrato(c, t, srcs.slice(), 6.2, 6, 0.15));
+    return { release: rt => vRelease(g, srcs, rt, 0.08) };
+  } },
+  strings: { name: 'Cordas', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.35, 0.2), lp = c.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = Math.min(9000, 2200 + f * 2); lp.Q.value = 0.5; lp.connect(g);
+    const srcs = [-9, 0, 8].map(d => vOsc(c, 'sawtooth', f, t, lp, d));
+    srcs.push(vVibrato(c, t, srcs.slice(), 5.4, 9, 0.5));
+    return { release: rt => vRelease(g, srcs, rt, 0.6) };
+  } },
+  pad: { name: 'Pad etéreo', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.9, 0.18), lp = c.createBiquadFilter();
+    lp.type = 'lowpass'; lp.Q.value = 3; lp.frequency.setValueAtTime(300, t); lp.frequency.exponentialRampToValueAtTime(Math.min(8000, 1500 + f * 2), t + 2);
+    lp.connect(g);
+    const srcs = [vOsc(c, 'sawtooth', f, t, lp, -12), vOsc(c, 'square', f, t, lp, 11), vOsc(c, 'sine', f / 2, t, lp)];
+    return { release: rt => vRelease(g, srcs, rt, 1.6) };
+  } },
+  flute: { name: 'Flauta', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.07, 0.26);
+    const srcs = [vOsc(c, 'sine', f, t, g)];
+    const h2 = c.createGain(); h2.gain.value = 0.12; h2.connect(g); srcs.push(vOsc(c, 'triangle', f * 2, t, h2));
+    const n = c.createBufferSource(), bp = c.createBiquadFilter(), ng = c.createGain();
+    n.buffer = KEYS.noise; n.loop = true; bp.type = 'bandpass'; bp.frequency.value = f * 2; bp.Q.value = 2;
+    ng.gain.setValueAtTime(0.09, t); ng.gain.exponentialRampToValueAtTime(0.025, t + 0.25);
+    n.connect(bp); bp.connect(ng); ng.connect(g); n.start(t, Math.random() * 0.5); srcs.push(n);
+    srcs.push(vVibrato(c, t, srcs.slice(0, 2), 5, 12, 0.35));
+    return { release: rt => vRelease(g, srcs, rt, 0.15) };
+  } },
+  harp: { name: 'Harpa', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.004, 0.32), lp = c.createBiquadFilter();
+    g.gain.exponentialRampToValueAtTime(0.002, t + 2.8);
+    lp.type = 'lowpass'; lp.Q.value = 1; lp.frequency.setValueAtTime(Math.min(12000, f * 10), t); lp.frequency.exponentialRampToValueAtTime(f * 1.5, t + 0.6);
+    lp.connect(g);
+    const srcs = [vOsc(c, 'sawtooth', f, t, lp), vOsc(c, 'triangle', f, t, lp, 4)];
+    return { release: rt => vRelease(g, srcs, rt, 0.9) };
+  } },
+  bell: { name: 'Sino de cristal', play(c, f, t, out) {
+    const g = c.createGain(); g.gain.value = 1; g.connect(out);
+    const srcs = [];
+    [[1, 0.3, 5], [2.0, 0.16, 3.6], [2.76, 0.12, 3], [5.4, 0.07, 1.8], [8.93, 0.04, 1.1]].forEach(([r, a, d]) => {
+      const pg = c.createGain();
+      pg.gain.setValueAtTime(0.0001, t); pg.gain.exponentialRampToValueAtTime(a, t + 0.004); pg.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      pg.connect(g); srcs.push(vOsc(c, 'sine', f * r, t, pg));
+    });
+    // o sino continua soando depois de soltar a tecla
+    return { release: rt => vRelease(g, srcs, rt, 1.8) };
+  } },
+};
+
+function noteOn(id, midi) {
+  if (KEYS.voices.has(id)) return;
+  const out = synthBus(), c = A.ctx, t = c.currentTime + 0.005;
+  if (KEYS.voices.size >= MAX_VOICES) { const [oldId] = KEYS.voices.keys(); noteOff(oldId); }
+  const f = A4_HZ * Math.pow(2, (midi - 69) / 12);
+  const v = INSTRUMENTS[KEYS.instrument].play(c, f, t, out);
+  v.pc = ((midi % 12) + 12) % 12;
+  KEYS.voices.set(id, v); KEYS.lastNote = performance.now();
+  markKey(v.pc, true);
+}
+function noteOff(id) {
+  const v = KEYS.voices.get(id);
+  if (!v) return;
+  KEYS.voices.delete(id); KEYS.lastNote = performance.now();
+  v.release(A.ctx.currentTime);
+  if (![...KEYS.voices.values()].some(o => o.pc === v.pc)) markKey(v.pc, false);
+}
+function allNotesOff() { [...KEYS.voices.keys()].forEach(noteOff); }
+function markKey(pc, on) { const el = KB[pcToTone(pc)]; if (el) el.classList.toggle('pressed', on); }
+
+function setKeysOn(on) {
+  KEYS.on = on;
+  if (on) synthBus(); else allNotesOff();
+  document.body.classList.toggle('keys-on', on);
+  $('btn-keys').classList.toggle('active', on);
+  $('btn-keys').querySelector('span').textContent = on ? 'Desligar teclado' : 'Teclado musical';
+  $('keys-cfg').hidden = !on;
+  if (on) toast('Toque com Q W E R T Y U I O P e 2 3 5 6 7 9 0 · Z / X mudam a oitava');
+  updateSourceUI();
+}
+function setOctave(o) { KEYS.octave = clamp(o, 1, 7); $('oct-val').textContent = KEYS.octave; }
+function synthKey(e, down) {
+  if (!KEYS.on || e.ctrlKey || e.metaKey || e.altKey) return false;
+  const tg = e.target;
+  if (tg && (tg.tagName === 'SELECT' || tg.tagName === 'TEXTAREA' || (tg.tagName === 'INPUT' && !['range', 'checkbox'].includes(tg.type)))) return false;
+  if (e.code === 'KeyZ' || e.code === 'KeyX') {
+    if (down && !e.repeat) { allNotesOff(); setOctave(KEYS.octave + (e.code === 'KeyX' ? 1 : -1)); }
+    return true;
+  }
+  // 1, 4 e 8 ficam onde o piano não tem tecla preta: mudas, mas não disparam atalhos
+  if (e.code === 'Digit1' || e.code === 'Digit4' || e.code === 'Digit8') { e.preventDefault(); return true; }
+  const idx = KEYMAP[e.code];
+  if (idx == null) return false;
+  e.preventDefault();
+  if (down) { if (!e.repeat) noteOn(e.code, 12 * (KEYS.octave + 1) + idx); }
+  else noteOff(e.code);
+  return true;
+}
+
+$('instr-select').innerHTML = Object.entries(INSTRUMENTS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('');
+$('instr-select').addEventListener('change', e => { allNotesOff(); KEYS.instrument = e.target.value; e.target.blur(); });
+$('btn-keys').addEventListener('click', () => setKeysOn(!KEYS.on));
+$('oct-down').addEventListener('click', () => { allNotesOff(); setOctave(KEYS.octave - 1); });
+$('oct-up').addEventListener('click', () => { allNotesOff(); setOctave(KEYS.octave + 1); });
+window.addEventListener('keyup', e => synthKey(e, false));
+window.addEventListener('blur', allNotesOff);
+// o teclado da tela também toca (clique ou toque), na oitava escolhida
+$('keyboard').addEventListener('pointerdown', e => {
+  const el = e.target.closest('[data-pc]');
+  if (!el) return;
+  e.preventDefault();
+  el.setPointerCapture && el.setPointerCapture(e.pointerId);
+  noteOn('ptr' + e.pointerId, 12 * (KEYS.octave + 1) + +el.dataset.pc);
+});
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => $('keyboard').addEventListener(ev, e => noteOff('ptr' + e.pointerId)));
+setOctave(4);
 
 // layout de celular: painéis recolhidos e painel de entrada logo acima do teclado
 if (window.matchMedia('(max-width: 767px)').matches) {

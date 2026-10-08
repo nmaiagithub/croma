@@ -10,6 +10,14 @@ Web app de arquivo único (HTML + Tailwind + Three.js via CDN) que transforma á
 - **Mapa:** as ultravioletas têm a mesma cor das naturais (Yellow[1] = Yeluv[1], Violet[4] = Viluv[4], Green[6] = Gruv[6], Orange[8] = Oruv[8], Blue[11] = Bluv[11]).
 - **Modos:** Cromasfera 3D (esfera + fita de 12 tons em curva de “bola de tênis”) · Flor Croma-Sônica (mandala de 12 pétalas) · Sentirama 3D (Plano Físico azul ↔ amarelo × Plano Espiritual vermelho ↔ rosa, cruzando-se na tônica).
 
+### Teclado musical
+
+**Teclado musical** transforma o teclado do computador num sintetizador: `Q W E R T Y U I O P` = Dó Ré Mi Fá Sol Lá Si Dó Ré Mi, `2 3 5 6 7 9 0` = sustenidos (layout de piano, lido pela posição física da tecla), `Z`/`X` = oitava. Sete instrumentos: piano elétrico, órgão, cordas, pad etéreo, flauta, harpa e sino de cristal. O teclado da tela também toca (clique ou toque). O som entra na análise e pode ser gravado com **Gravar sessão**, que agora grava tudo o que está sendo analisado (microfone, teclado musical ou demonstração).
+
+### Auto-rotação da câmera
+
+O botão ↻ na barra superior (ou a opção *Auto-rotação da câmera*) liga e desliga a órbita automática da câmera. A escolha fica salva no navegador.
+
 ### Calibração
 
 No painel de entrada, em **Calibração** (fica salva no navegador):
@@ -34,7 +42,7 @@ python3 -m http.server 8000
 # abra http://localhost:8000/cromasfera.html
 ```
 
-Atalhos: `1` `2` `3` modos · `Espaço` play/pause · `H` oculta a interface · `F` tela cheia · `?` teoria.
+Atalhos: `1` `2` `3` modos (com o teclado musical desligado) · `Espaço` play/pause · `H` oculta a interface · `F` tela cheia · `?` teoria.
 
 `assets/` contém as ilustrações de referência do livro exibidas no modal de teoria.
 
