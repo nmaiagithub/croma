@@ -140,6 +140,22 @@
     #player .vol { display: none; }
   }
 
+  /* ---------- diagnóstico com tamanho fixo ---------- */
+  #dom-text { font-size: 15px; height: 1.45em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #dom-sub { height: 2.7em; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  #secondary { height: 24px; overflow: hidden; flex-wrap: nowrap; align-items: center; }
+  #chord, #key { height: 2.7em; line-height: 1.3; overflow: hidden; }
+  #mode-text, #pol-text, #spi-text, #tension-text { white-space: nowrap; }
+  #hud-head { height: 34px; }
+  #hud-head .label { line-height: 1.35; }
+  #src-badge { white-space: nowrap; flex: none; }
+  /* ---------- calibração ---------- */
+  .mini-seg { display: inline-flex; padding: 3px; gap: 3px; border-radius: 10px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); }
+  .mini-seg button { padding: .3rem .6rem; border-radius: 7px; font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .mini-seg button:hover { color: var(--text); }
+  .mini-seg button.on { background: rgba(255,255,255,.15); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
+  .ref-select { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); color: var(--text); border-radius: 10px; padding: .35rem .5rem; font-size: .78rem; max-width: 160px; }
+  .ref-select option { background: #17131f; color: #ece6f5; }
   /* ---------- laudo ---------- */
   .btn:disabled { opacity: .4; cursor: not-allowed; }
   .btn.rec-on { border-color: #e8402c; color: #fff; background: rgba(232,64,44,.22); box-shadow: 0 0 0 1px #e8402c, 0 0 18px -4px #e8402c; animation: recpulse 1.4s ease-in-out infinite; }
@@ -292,6 +308,21 @@
       <input type="range" id="gain" min="0" max="100" value="50" class="mt-2" aria-label="Sensibilidade">
     </div>
 
+    <div class="mt-4 pt-3 border-t border-white/10">
+      <div class="label mb-2">Calibração</div>
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs">Afinação (Lá 4)</span>
+        <div class="mini-seg" id="tuning-seg" role="radiogroup" aria-label="Afinação do Lá 4">
+          <button data-a4="440" role="radio">440 Hz</button><button data-a4="432" role="radio">432 Hz</button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-2 mt-2.5">
+        <label for="ref-select" class="text-xs">Referência (Verde 0)</label>
+        <select id="ref-select" class="ref-select"></select>
+      </div>
+      <p class="text-[10px] text-[color:var(--muted)] mt-1.5 leading-relaxed">Padrão do método: Ré (D) = Verde 0, Lá 4 = 440 Hz. A escolha vale para o tempo real e para o laudo.</p>
+    </div>
+
     <div class="mt-4 pt-3 border-t border-white/10 space-y-1">
       <div class="label mb-1">Opções visuais</div>
       <label class="toggle">Brilho néon (bloom)<input type="checkbox" id="opt-bloom" checked></label>
@@ -310,7 +341,7 @@
 
 <!-- ============ HUD DIAGNÓSTICO SINESTÉSICO ============ -->
 <aside id="hud" class="glass fixed right-4 top-[84px] z-20 w-[330px] p-4">
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between gap-2" id="hud-head">
     <div class="label">Diagnóstico Sinestésico</div>
     <div class="flex items-center gap-2">
       <span id="src-badge" class="chip"><i style="background:#666"></i><span>sem entrada</span></span>
@@ -319,7 +350,7 @@
   </div>
   <div class="flex items-center gap-3 mt-3">
     <div id="dom-swatch" class="swatch" style="background:#333;color:#333"></div>
-    <div class="min-w-0">
+    <div class="min-w-0 flex-1">
       <div class="text-[13px] text-[color:var(--muted)]">Nota Detectada:</div>
       <div id="dom-text" class="text-base font-semibold leading-snug">—</div>
       <div id="dom-sub" class="text-[11px] text-[color:var(--muted)] mt-0.5">aguardando áudio…</div>
@@ -328,7 +359,7 @@
   <div id="hud-body" class="scroll-y" style="max-height: calc(100vh - 360px)">
     <div class="mt-3">
       <div class="label mb-1">Notas secundárias (harmônicos)</div>
-      <div id="secondary" class="flex flex-wrap gap-1.5 min-h-[24px] text-xs text-[color:var(--muted)]">—</div>
+      <div id="secondary" class="flex gap-1.5 text-xs text-[color:var(--muted)]">—</div>
     </div>
     <div class="mt-3 grid grid-cols-2 gap-2">
       <div><div class="label">Acorde</div><div id="chord" class="text-sm mt-0.5">—</div></div>
@@ -357,7 +388,7 @@
       <div class="flex justify-between text-[10px] text-[color:var(--muted)] mt-1"><span>Vermelho · denso · matéria</span><span>Rosa · sutil · leveza</span></div>
     </div>
     <div class="mt-3">
-      <div class="flex justify-between items-baseline"><span class="label">Tensão Fá ↔ Si (torção em S)</span><span id="tension-text" class="text-xs stat">0%</span></div>
+      <div class="flex justify-between items-baseline"><span class="label" id="tension-label">Tensão Fá ↔ Si (torção em S)</span><span id="tension-text" class="text-xs stat">0%</span></div>
       <div class="meter mt-2 bg-white/10"><div id="tension-bar" style="height:100%;width:0;background:linear-gradient(90deg,#e8402c,#f27bb8);transition:width .15s"></div></div>
     </div>
 
@@ -388,7 +419,7 @@
     <button class="btn !py-1.5 !px-2.5 text-xs" id="btn-analyze2" title="Gerar o laudo desta música">Laudo</button>
   </div>
   <div class="glass px-3 pt-2 pb-3">
-    <div class="flex justify-between items-baseline mb-1.5 px-1"><span class="label">Cromagrama · Teclado Croma-Sônico</span><span class="kb-legend text-[10px] text-[color:var(--muted)]">● naturais · ▲ ultravioletas</span></div>
+    <div class="flex justify-between items-baseline mb-1.5 px-1"><span class="label">Cromagrama · Teclado Croma-Sônico</span><span id="calib-text" class="text-[10px] text-[color:var(--muted)] stat">Lá 4 = 440 Hz · Verde 0 = Ré</span></div>
     <div id="keyboard"></div>
   </div>
 </div>
@@ -497,23 +528,35 @@
    ===================================================================== */
 const TAU = Math.PI * 2;
 const TONES = [
-  { t: 0,  en: 'D',  pt: 'Ré',   name: 'Verde',       code: 'Green 0',   hex: '#43c24a', uv: false, role: 'Ponto de Equilíbrio Central' },
-  { t: 1,  en: 'D#', pt: 'Ré#',  name: 'Amarelo-UV',  code: 'Yeluv 1',   hex: '#f7dc2f', uv: true,  role: 'Yellow[1] = Yeluv[1]' },
-  { t: 2,  en: 'E',  pt: 'Mi',   name: 'Laranja',     code: 'Orange 2',  hex: '#f7902f', uv: false, role: 'Natural' },
-  { t: 3,  en: 'F',  pt: 'Fá',   name: 'Vermelho',    code: 'Red 3',     hex: '#e8402c', uv: false, role: 'Plano Espiritual · denso · Terra' },
-  { t: 4,  en: 'F#', pt: 'Fá#',  name: 'Violeta-UV',  code: 'Viluv 4',   hex: '#8f4fd0', uv: true,  role: 'Violet[4] = Viluv[4]' },
-  { t: 5,  en: 'G',  pt: 'Sol',  name: 'Azul',        code: 'Blue 5',    hex: '#2f9fe6', uv: false, role: 'Plano Físico · frio (−)' },
-  { t: 6,  en: 'G#', pt: 'Sol#', name: 'Verde-UV',    code: 'Gruv 6',    hex: '#43c24a', uv: true,  role: 'Green[6] = Gruv[6] · Oposto ao Verde 0' },
-  { t: 7,  en: 'A',  pt: 'Lá',   name: 'Amarelo',     code: 'Yellow 7',  hex: '#f7dc2f', uv: false, role: 'Plano Físico · quente (+) · Reagrupamento Harmônico' },
-  { t: 8,  en: 'A#', pt: 'Lá#',  name: 'Laranja-UV',  code: 'Oruv 8',    hex: '#f7902f', uv: true,  role: 'Orange[8] = Oruv[8]' },
-  { t: 9,  en: 'B',  pt: 'Si',   name: 'Rosa',        code: 'Pink 9',    hex: '#f27bb8', uv: false, role: 'Plano Espiritual · sutil · Ar' },
-  { t: 10, en: 'C',  pt: 'Dó',   name: 'Violeta',     code: 'Violet 10', hex: '#8f4fd0', uv: false, role: 'Natural' },
-  { t: 11, en: 'C#', pt: 'Dó#',  name: 'Azul-UV',     code: 'Bluv 11',   hex: '#2f9fe6', uv: true,  role: 'Blue[11] = Bluv[11]' },
+  { t: 0,  name: 'Verde',       code: 'Green 0',   hex: '#43c24a', uv: false, role: 'Ponto de Equilíbrio Central' },
+  { t: 1,  name: 'Amarelo-UV',  code: 'Yeluv 1',   hex: '#f7dc2f', uv: true,  role: 'Yellow[1] = Yeluv[1]' },
+  { t: 2,  name: 'Laranja',     code: 'Orange 2',  hex: '#f7902f', uv: false, role: 'Natural' },
+  { t: 3,  name: 'Vermelho',    code: 'Red 3',     hex: '#e8402c', uv: false, role: 'Plano Espiritual · denso · Terra' },
+  { t: 4,  name: 'Violeta-UV',  code: 'Viluv 4',   hex: '#8f4fd0', uv: true,  role: 'Violet[4] = Viluv[4]' },
+  { t: 5,  name: 'Azul',        code: 'Blue 5',    hex: '#2f9fe6', uv: false, role: 'Plano Físico · frio (−)' },
+  { t: 6,  name: 'Verde-UV',    code: 'Gruv 6',    hex: '#43c24a', uv: true,  role: 'Green[6] = Gruv[6] · Oposto ao Verde 0' },
+  { t: 7,  name: 'Amarelo',     code: 'Yellow 7',  hex: '#f7dc2f', uv: false, role: 'Plano Físico · quente (+) · Reagrupamento Harmônico' },
+  { t: 8,  name: 'Laranja-UV',  code: 'Oruv 8',    hex: '#f7902f', uv: true,  role: 'Orange[8] = Oruv[8]' },
+  { t: 9,  name: 'Rosa',        code: 'Pink 9',    hex: '#f27bb8', uv: false, role: 'Plano Espiritual · sutil · Ar' },
+  { t: 10, name: 'Violeta',     code: 'Violet 10', hex: '#8f4fd0', uv: false, role: 'Natural' },
+  { t: 11, name: 'Azul-UV',     code: 'Bluv 11',   hex: '#2f9fe6', uv: true,  role: 'Blue[11] = Bluv[11]' },
 ];
-TONES.forEach(o => { o.color = new THREE.Color(o.hex); });
-// classe de altura padrão (C=0) → tom Croma (D=0)
-const pcToTone = pc => (pc + 10) % 12;
-const toneToPc = t => (t + 2) % 12;
+// Referência (qual nota é o Verde 0) e afinação do Lá 4. Padrão do método: Ré = Verde 0, A4 = 440 Hz.
+const PC_EN = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const PC_PT = ['Dó', 'Dó#', 'Ré', 'Ré#', 'Mi', 'Fá', 'Fá#', 'Sol', 'Sol#', 'Lá', 'Lá#', 'Si'];
+let REF_PC = 2, A4_HZ = 440;
+let NAME_REF = null;   // referência temporária ao desenhar um laudo gerado com outra referência
+const refNow = () => (NAME_REF != null ? NAME_REF : REF_PC);
+function withNames(ref, fn) { const prev = NAME_REF; NAME_REF = ref; try { return fn(); } finally { NAME_REF = prev; } }
+// a cor, o número e a forma pertencem ao tom; o nome da nota depende da referência
+TONES.forEach(o => {
+  o.color = new THREE.Color(o.hex);
+  Object.defineProperty(o, 'en', { get: () => PC_EN[(o.t + refNow()) % 12] });
+  Object.defineProperty(o, 'pt', { get: () => PC_PT[(o.t + refNow()) % 12] });
+});
+// classe de altura (C = 0) → tom Croma (referência = 0)
+const pcToTone = pc => (pc - REF_PC + 12) % 12;
+const toneToPc = t => (t + REF_PC) % 12;
 const NATURALS = [0, 2, 3, 5, 7, 9, 10];
 const toneLabel = t => `${TONES[t].en} (${TONES[t].pt})`;
 // espelho em torno da tônica (Verde 0): k ↔ −k. Liga cores complementares do Sentirama:
@@ -543,8 +586,15 @@ const ICO_DIRS = (() => {
    ===================================================================== */
 function dspCore() {
   'use strict';
-  const VERSION = 'croma-dsp 1.0';
-  const pcToTone = pc => (pc + 10) % 12;
+  const VERSION = 'croma-dsp 1.1';
+  // referência do método: a classe de altura (C = 0) que vira o Verde 0 (padrão Ré = 2) e a afinação do Lá 4
+  let REF = 2, A4 = 440;
+  function configure(o = {}) {
+    if (o.ref != null) REF = ((o.ref % 12) + 12) % 12;
+    if (o.a4) A4 = +o.a4;
+    return { ref: REF, a4: A4 };
+  }
+  const pcToTone = pc => (pc - REF + 12) % 12;
   const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
   const smoothK = (dt, rate) => 1 - Math.exp(-dt * rate);
   const KMAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
@@ -587,6 +637,7 @@ function dspCore() {
     }
     // cromagrama por picos espectrais com interpolação parabólica (A4 = 440 Hz)
     const raw = new Float32Array(12), peakF = new Float32Array(12), peakM = new Float32Array(12);
+    let tc = 0, ts = 0;
     const lo = Math.max(2, Math.floor(50 / binHz)), hi = Math.min(nb - 2, Math.ceil(5000 / binHz));
     let maxDb = -200;
     for (let i = lo; i <= hi; i++) if (freqDb[i] > maxDb) maxDb = freqDb[i];
@@ -600,19 +651,21 @@ function dspCore() {
       const p = den2 !== 0 ? clamp(0.5 * (a - c) / den2, -0.5, 0.5) : 0;
       const f = (i + p) * binHz;
       if (f < 50) continue;
-      const midi = 69 + 12 * Math.log2(f / 440);
-      const r = Math.round(midi), dev = Math.abs(midi - r);
+      const midi = 69 + 12 * Math.log2(f / A4);
+      const r = Math.round(midi), sdev = midi - r, dev = Math.abs(sdev);
       const tuneW = Math.pow(Math.cos(dev * Math.PI), 2);
       const bandW = f < 120 ? 0.6 : (f > 2500 ? 0.55 : 1);
-      const w = Math.pow(10, b / 20) * tuneW * bandW;
+      const amp = Math.pow(10, b / 20), w = amp * tuneW * bandW;
       const t = pcToTone(((r % 12) + 12) % 12);
       raw[t] += w;
       if (w > peakM[t]) { peakM[t] = w; peakF[t] = f; }
+      // desvio de afinação (média circular, em fração de semitom)
+      tc += amp * Math.cos(2 * Math.PI * sdev); ts += amp * Math.sin(2 * Math.PI * sdev);
     }
     let maxRaw = 0;
     for (let k = 0; k < 12; k++) if (raw[k] > maxRaw) maxRaw = raw[k];
     return {
-      rms, rmsDb: 20 * Math.log10(rms + 1e-9), centroid: den > 0 ? num / den : 0, flux, maxDb, raw, peakF, maxRaw,
+      rms, rmsDb: 20 * Math.log10(rms + 1e-9), centroid: den > 0 ? num / den : 0, flux, maxDb, raw, peakF, maxRaw, tc, ts,
       active: rms > 0.0025 && maxDb > -85 && maxRaw > 0,
     };
   }
@@ -748,6 +801,7 @@ function dspCore() {
       chroma: new Float32Array(T * 12), raw: new Float32Array(T * 12), chord: new Int16Array(T),
     };
     const chordIndex = new Map(), chordList = [];
+    let tuneC = 0, tuneS = 0;
     const chroma = new Float32Array(12), lin = new Float32Array(12), vis = new Float32Array(12);
     let level = 0, dom = -1, tension = 0;
     for (let fi = 0; fi < T; fi++) {
@@ -789,13 +843,18 @@ function dspCore() {
           ci = chordIndex.get(key);
         }
       }
+      if (f.active) { tuneC += f.tc; tuneS += f.ts; }
       tl.t[fi] = (off + N / 2) / sampleRate; tl.rmsDb[fi] = f.rmsDb; tl.centroid[fi] = f.centroid; tl.flux[fi] = f.flux;
       tl.level[fi] = level; tl.active[fi] = f.active ? 1 : 0; tl.dom[fi] = dom; tl.tension[fi] = tension; tl.chord[fi] = ci;
       for (let k = 0; k < 12; k++) { tl.chroma[fi * 12 + k] = chroma[k]; tl.raw[fi * 12 + k] = f.maxRaw > 0 ? f.raw[k] / f.maxRaw : 0; }
       if (onProgress && fi % 150 === 0) onProgress(fi / T);
     }
-    const params = { fftSize: N, hop, sampleRate, frameDt: dt, window: 'Blackman (α = 0,16)', smoothing: +tau.toFixed(3), A4: 440, method: VERSION };
-    return { params, timeline: tl, chords: chordList, summary: summarize(tl, chordList, dt, samples.length / sampleRate) };
+    const params = { fftSize: N, hop, sampleRate, frameDt: dt, window: 'Blackman (α = 0,16)', smoothing: +tau.toFixed(3), A4, ref: REF, method: VERSION };
+    const summary = summarize(tl, chordList, dt, samples.length / sampleRate);
+    // afinação estimada da gravação: desvio médio dos picos em relação à grade de A4
+    const cents = (tuneC || tuneS) ? Math.atan2(tuneS, tuneC) / (2 * Math.PI) * 100 : 0;
+    summary.tuning = { a4Used: A4, cents, a4Estimated: A4 * Math.pow(2, cents / 1200), strength: Math.hypot(tuneC, tuneS) };
+    return { params, timeline: tl, chords: chordList, summary };
   }
 
   // ---- resumo (laudo) a partir da linha do tempo ----
@@ -941,12 +1000,18 @@ function dspCore() {
   }
 
   return {
-    VERSION, NATURALS, FAMILIES, SENT_XYZ, KMAJ, KMIN,
+    VERSION, NATURALS, FAMILIES, SENT_XYZ, KMAJ, KMIN, configure, pcToTone,
     extractFrame, keyFromChroma, detectChord, bpmFromFlux, sentiramaPos, airIndex, tensionOf, rotateChroma,
     fft, blackman, analyzeBuffer, summarize,
   };
 }
 const CORE = dspCore();
+try {
+  const c = JSON.parse(localStorage.getItem('croma.calib') || 'null');
+  if (c && Number.isInteger(c.ref) && c.ref >= 0 && c.ref < 12) REF_PC = c.ref;
+  if (c && (c.a4 === 432 || c.a4 === 440)) A4_HZ = c.a4;
+} catch (e) { /* armazenamento indisponível: usa o padrão */ }
+CORE.configure({ ref: REF_PC, a4: A4_HZ });
 // Posições no Sentirama como vetores (ver SENT_XYZ no núcleo)
 const SENT_POS = CORE.SENT_XYZ.map(p => new THREE.Vector3(p[0], p[1], p[2]));
 
@@ -1059,7 +1124,7 @@ const DEMO = [
   { notes: [40, 52, 64, 68, 71], bass: 40 },   // E maior  → Laranja 2
   { notes: [47, 59, 71, 74, 78, 83], bass: 47 }, // B menor agudo → Rosa 9 / Ar
 ];
-const midiHz = m => 440 * Math.pow(2, (m - 69) / 12);
+const midiHz = m => A4_HZ * Math.pow(2, (m - 69) / 12);
 function playDemoChord(ch, t0, dur) {
   const c = A.ctx;
   ch.notes.forEach((m, i) => {
@@ -2067,10 +2132,11 @@ function toast(msg, ms = 2600) {
   clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms);
 }
 
-// teclado croma-sônico: C..B com os números Croma (D = 0)
+// teclado croma-sônico: C..B com os números Croma (referência = 0)
 const KB = [];
-(function buildKeyboard() {
+function buildKeyboard() {
   const kb = $('keyboard');
+  kb.innerHTML = ''; KB.length = 0;
   const whites = [0, 2, 4, 5, 7, 9, 11], blacks = [[1, 0], [3, 1], [6, 3], [8, 4], [10, 5]];
   const W = 100 / 7;
   whites.forEach((pc, i) => {
@@ -2088,7 +2154,8 @@ const KB = [];
     kb.appendChild(el); KB[t] = el;
   });
   KB.forEach((el, t) => el.style.setProperty('--kc', TONES[t].hex));
-})();
+}
+buildKeyboard();
 function updateKeyboard() {
   for (let t = 0; t < 12; t++) {
     const el = KB[t], v = AN.vis[t], c = TONES[t].color;
@@ -2099,7 +2166,7 @@ function updateKeyboard() {
 }
 
 function chipFor(t) {
-  return `<span class="chip"><i style="background:${TONES[t].hex};${TONES[t].uv ? 'border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)' : ''}"></i>${toneLabel(t)} · ${TONES[t].name} ${t}</span>`;
+  return `<span class="chip" title="${toneLabel(t)} · ${TONES[t].name} ${t}"><i style="background:${TONES[t].hex};${TONES[t].uv ? 'border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)' : ''}"></i>${TONES[t].pt} · ${t}</span>`;
 }
 function updateHUD() {
   const d = AN.dominant, sw = $('dom-swatch');
@@ -2208,7 +2275,7 @@ function toggleFull() {
 $('btn-full').addEventListener('click', toggleFull);
 
 // modal de teoria
-(function buildToneGrid() {
+function buildToneGrid() {
   $('tone-grid').innerHTML = TONES.map(o => `
     <div class="tone-card">
       <div class="sw ${o.uv ? 'tri' : ''}" style="background:${o.hex}"></div>
@@ -2217,7 +2284,34 @@ $('btn-full').addEventListener('click', toggleFull);
         <div class="text-[11px] text-[color:var(--muted)]">${o.code} · ${o.uv ? '▲ ultravioleta' : '● natural'}${o.role && !/^(Natural|Ultravioleta)$/.test(o.role) ? ' · ' + o.role : ''}</div>
       </div>
     </div>`).join('');
-})();
+}
+buildToneGrid();
+
+// ---------- calibração: afinação e referência (Verde 0) ----------
+function applyCalibration(c = {}, save = true) {
+  if (c.ref != null) REF_PC = ((c.ref % 12) + 12) % 12;
+  if (c.a4) A4_HZ = c.a4;
+  CORE.configure({ ref: REF_PC, a4: A4_HZ });
+  // o significado das cores mudou: recomeça o que estava acumulado
+  AN.chroma.fill(0); AN.lin.fill(0); AN.slow.fill(0); AN.vis.fill(0);
+  AN.dominant = -1; AN.keyRoot = -1; AN.keyMode = ''; AN.chord = null; AN.lastChord = null;
+  buildKeyboard(); buildToneGrid();
+  document.querySelectorAll('#tuning-seg button').forEach(b => { const on = +b.dataset.a4 === A4_HZ; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); });
+  $('ref-select').value = String(REF_PC);
+  $('calib-text').textContent = `Lá 4 = ${A4_HZ} Hz · Verde 0 = ${TONES[0].pt}`;
+  $('tension-label').textContent = `Tensão ${TONES[3].pt} ↔ ${TONES[9].pt} (torção em S)`;
+  if (save) { try { localStorage.setItem('croma.calib', JSON.stringify({ ref: REF_PC, a4: A4_HZ })); } catch (e) { /* sem armazenamento */ } }
+}
+$('ref-select').innerHTML = PC_PT.map((n, pc) => `<option value="${pc}">${n} (${PC_EN[pc]})${pc === 2 ? ' · padrão' : ''}</option>`).join('');
+$('ref-select').addEventListener('change', e => {
+  applyCalibration({ ref: +e.target.value });
+  toast(`Referência: ${TONES[0].pt} (${TONES[0].en}) = Verde 0`);
+});
+document.querySelectorAll('#tuning-seg button').forEach(b => b.addEventListener('click', () => {
+  applyCalibration({ a4: +b.dataset.a4 });
+  toast(`Afinação: Lá 4 = ${A4_HZ} Hz`);
+}));
+applyCalibration({}, false);
 const openModal = () => $('modal').classList.add('show');
 const closeModal = () => $('modal').classList.remove('show');
 $('btn-info').addEventListener('click', openModal);
@@ -2288,7 +2382,8 @@ function getWorker() {
   const src = `${dspCore.toString()}
 const CORE = dspCore();
 self.onmessage = e => {
-  const { samples, sampleRate } = e.data;
+  const { samples, sampleRate, ref, a4 } = e.data;
+  CORE.configure({ ref, a4 });
   try {
     const r = CORE.analyzeBuffer(samples, sampleRate, {}, p => self.postMessage({ type: 'progress', p }));
     self.postMessage({ type: 'done', result: r });
@@ -2312,7 +2407,7 @@ function runAnalysis(samples, sampleRate, onProgress) {
       else reject(new Error(m.message));
     };
     w.onerror = e => { e.preventDefault && e.preventDefault(); R.worker = null; reject(new Error(e.message || 'falha no processamento')); };
-    w.postMessage({ samples, sampleRate }, [samples.buffer]);
+    w.postMessage({ samples, sampleRate, ref: REF_PC, a4: A4_HZ }, [samples.buffer]);
   });
 }
 async function analyzeBlob(blob, meta) {
@@ -2404,10 +2499,10 @@ function readingText(rd, S, rel) {
     .map(t => rel ? `grau ${t} = ${relNote(t, tonic)}` : `${TONES[t].pt} ${t}`).join(', ');
   const head = rel
     ? `<h3>Leitura relativa <span>(tônica ${TONES[tonic].pt} = Verde 0)</span></h3>`
-    : `<h3>Leitura absoluta <span>(Ré = Verde 0)</span></h3>`;
+    : `<h3>Leitura de referência <span>(${TONES[0].pt} = Verde 0)</span></h3>`;
   const stab = rel
     ? `A tônica (${TONES[tonic].pt}) é a nota dominante em <b>${pctS(rd.tonicStability)}</b> do tempo.`
-    : `Ré (Verde 0) é a nota dominante em <b>${pctS(rd.tonicStability)}</b> do tempo.`;
+    : `${TONES[0].pt} (Verde 0) é a nota dominante em <b>${pctS(rd.tonicStability)}</b> do tempo.`;
   return `<div>${head}
     <p>A cor que mais domina é <b>${dot(FAMILY_HEX[fam.name])}${fam.name}</b> (${pctS(fam.share)} do tempo${tonesOf ? `; ${tonesOf}` : ''}).
     No Sentirama a música passa mais tempo no quadrante <b>${QUAD_LABEL[q[0]]}</b> (${pctS(q[1])}); seu centro de gravidade é ${posWords(rd.sentirama.mean)}
@@ -2416,7 +2511,9 @@ function readingText(rd, S, rel) {
 }
 function airWord(a) { return a > 0.08 ? 'Modo Ar' : a < -0.08 ? 'Modo Terra' : 'Equilíbrio'; }
 
-function renderReport(res) {
+function renderReport(res) { return withNames(laudoRef(res), () => renderReportBody(res)); }
+const laudoRef = res => (res && res.params && res.params.ref != null ? res.params.ref : 2);
+function renderReportBody(res) {
   const S = res.summary, src = res.source || {}, k = S.key, a = S.air, T0 = k.tone;
   $('r-title').textContent = src.name || 'Áudio';
   $('r-rec').hidden = !(R.blob && src.kind === 'gravação');
@@ -2429,6 +2526,12 @@ function renderReport(res) {
   if (!S.bpm) alerts.push('Andamento não detectado: o índice Ar/Terra usa apenas modo e brilho.');
   if (S.chords.coverage < 0.2) alerts.push(`Poucas tríades reconhecidas (${pctS(S.chords.coverage)} do tempo com som): comum em melodia solo, fala ou percussão.`);
   const same = T0 === 0;
+  const tu = S.tuning;
+  if (tu && tu.strength > 0 && Math.abs(tu.cents) > 15) {
+    const other = tu.a4Used === 440 ? 432 : 440, toOther = 1200 * Math.log2(other / tu.a4Used);
+    const hint = Math.abs(tu.cents - toOther) < Math.abs(tu.cents) ? ` Considere refazer a análise com a afinação ${other} Hz.` : '';
+    alerts.push(`A gravação parece afinada em Lá 4 ≈ ${num(tu.a4Estimated, 1)} Hz (${sgn(tu.cents, 0)} cents em relação a ${tu.a4Used} Hz).${hint}`);
+  }
   const keyRows = S.keyTimeline.map(w => `<tr><td>${mmss(w.t0)}–${mmss(w.t1)}</td><td>${w.tone < 0 ? '<span class="r-mut">silêncio</span>' : dot(TONES[w.tone].hex) + keyLabel(w.tone, w.mode)}</td><td>${w.tone < 0 ? '' : num(w.r)}</td><td>${w.tone < 0 ? '' : sgn(w.air)}</td></tr>`).join('');
   const chordRows = S.chords.top.map(c => `<tr><td>${dot(TONES[c.root].hex)}${TONES[c.root].pt} ${c.quality}</td><td>${c.tones.map(t => dot(TONES[t].hex)).join('')}<span class="r-mut">${c.tones.join('·')}</span></td><td>${num(c.seconds, 1)} s</td><td>${pctS(c.share)}</td><td>${c.consonant ? 'consonante' : '<b>dissonante</b>'}</td></tr>`).join('');
   const seq = S.chords.sequence.slice(0, 80).map(c => `<span class="r-chip">${dot(TONES[c.root].hex)}${TONES[c.root].pt}${c.quality === 'maior' ? '' : c.quality === 'menor' ? 'm' : c.quality === 'diminuto' ? '°' : '+'} <span class="r-mut">${mmss(c.t0)}</span></span>`).join('');
@@ -2442,18 +2545,19 @@ function renderReport(res) {
   <section class="r-card r-hero">
     <h2>Enquadramento no modelo</h2>
     <p class="r-sub">Síntese gerada a partir das medidas abaixo. ${esc(src.kind || 'áudio')} de ${mmss(src.duration)} · ${pctS(S.activeDuration / src.duration)} com som.</p>
-    <p class="r-verdict">${airWord(a.air)} <b>${sgn(a.air)}</b> · tônica <b>${keyLabel(T0, k.mode)}</b> · cor <b>${famA.name}</b> (absoluta)${same ? '' : ` / <b>${famR.name}</b> (relativa)`} · quadrante <b>${QUAD_LABEL[qA[0]]}</b></p>
+    <p class="r-verdict">${airWord(a.air)} <b>${sgn(a.air)}</b> · tônica <b>${keyLabel(T0, k.mode)}</b> · cor <b>${famA.name}</b> (referência)${same ? '' : ` / <b>${famR.name}</b> (relativa)`} · quadrante <b>${QUAD_LABEL[qA[0]]}</b></p>
     <div class="r-stats">
       ${statCard('Tônica estimada', keyLabel(T0, k.mode), `confiança ${conf} (r = ${num(k.r)}) · 2ª hipótese ${keyLabel(k.second.tone, k.second.mode)}`, TONES[T0].hex)}
       ${statCard('Índice Ar / Terra', `${sgn(a.air)} · ${airWord(a.air)}`, `modo ${sgn(a.mode)} · brilho ${sgn(a.bright)} · andamento ${sgn(a.tempo)}`)}
       ${statCard('Cor predominante', `${famA.name} ${pctS(famA.share)}`, same ? 'mesma nas duas leituras' : `relativa: ${famR.name} ${pctS(famR.share)}`, FAMILY_HEX[famA.name])}
-      ${statCard('Estabilidade', `Ré ${pctS(S.stabilityD)}`, `tônica dominante ${pctS(S.relative.tonicStability)} do tempo`, TONES[0].hex)}
-      ${statCard('Tensão Fá ↔ Si', `média ${pctS(S.tension.mean)}`, `acima de 50% em ${pctS(S.tension.above50)} do tempo`, TONES[3].hex)}
+      ${statCard('Estabilidade', `${TONES[0].pt} ${pctS(S.stabilityD)}`, `tônica dominante ${pctS(S.relative.tonicStability)} do tempo`, TONES[0].hex)}
+      ${statCard(`Tensão ${TONES[3].pt} ↔ ${TONES[9].pt}`, `média ${pctS(S.tension.mean)}`, `acima de 50% em ${pctS(S.tension.above50)} do tempo`, TONES[3].hex)}
       ${statCard('Acordes consonantes', pctS(S.chords.consonantShare), `tríades em ${pctS(S.chords.coverage)} do tempo com som`)}
       ${statCard('Andamento', S.bpm ? `${Math.round(S.bpm)} BPM` : 'não detectado', S.bpm ? `${S.bpmWindows} janelas de 8 s` : '')}
       ${statCard('Brilho (centroide)', `${Math.round(S.centroid.median)} Hz`, `faixa dinâmica ${num(S.dynamics.p95 - S.dynamics.p10, 0)} dB`)}
+      ${tu ? statCard('Afinação estimada', `Lá 4 ≈ ${num(tu.a4Estimated, 1)} Hz`, `${sgn(tu.cents, 0)} cents em relação a ${tu.a4Used} Hz (usado na análise)`) : ''}
     </div>
-    <div class="r-two r-text">${readingText(S.absolute, S, false)}${same ? `<div><h3>Leitura relativa</h3><p>A tônica estimada é Ré: as duas leituras coincidem.</p></div>` : readingText(S.relative, S, true)}</div>
+    <div class="r-two r-text">${readingText(S.absolute, S, false)}${same ? `<div><h3>Leitura relativa</h3><p>A tônica estimada é ${TONES[0].pt}, a própria referência: as duas leituras coincidem.</p></div>` : readingText(S.relative, S, true)}</div>
     <p class="r-text r-air">Índice Ar/Terra ${sgn(a.air)} = 0,5 × modo (${sgn(a.mode)}, ${k.rMaj >= k.rMin ? 'perfil mais maior' : 'perfil mais menor'}) + 0,32 × brilho (${sgn(a.bright)}, centroide ${Math.round(S.centroid.median)} Hz) + 0,18 × andamento (${sgn(a.tempo)}${S.bpm ? `, ${Math.round(S.bpm)} BPM` : ''}).</p>
     ${alerts.length ? `<div class="r-alerts">${alerts.map(t => `<div class="r-alert">${t}</div>`).join('')}</div>` : ''}
   </section>
@@ -2461,11 +2565,11 @@ function renderReport(res) {
   <section class="r-card">
     <h2>A música no tempo</h2>
     <p class="r-sub">Passe o cursor para ler cada instante; clique para ouvir aquele trecho.</p>
-    <div class="r-lbl">Nota dominante · leitura absoluta (Ré = Verde 0)</div>${cw('stripAbs', 30)}
+    <div class="r-lbl">Nota dominante · leitura de referência (${TONES[0].pt} = Verde 0)</div>${cw('stripAbs', 30)}
     <div class="r-lbl">Nota dominante · leitura relativa (tônica ${TONES[T0].pt} = Verde 0)</div>${cw('stripRel', 30)}
     <div class="r-lbl">Tonalidade em janelas de 10 s</div>${cw('keys', 34)}
     <div class="r-lbl">Índice Ar (+) / Terra (−) por janela</div>${cw('air', 96)}
-    <div class="r-lbl">Tensão Fá ↔ Si</div>${cw('tension', 80)}
+    <div class="r-lbl">Tensão ${TONES[3].pt} (Vermelho 3) ↔ ${TONES[9].pt} (Rosa 9)</div>${cw('tension', 80)}
     <div class="r-lbl">Dinâmica (RMS em dB)</div>${cw('rms', 92)}
   </section>
 
@@ -2473,16 +2577,16 @@ function renderReport(res) {
     <section class="r-card">
       <h2>Perfil cromático</h2>
       <p class="r-sub">Energia de cada tom no áudio inteiro (média ponderada pelo volume). Números = tom Croma; abaixo, a nota.</p>
-      <div class="r-lbl">Absoluto (Ré = Verde 0)</div>${cw('profileAbs', 150)}
+      <div class="r-lbl">Referência (${TONES[0].pt} = Verde 0)</div>${cw('profileAbs', 150)}
       <div class="r-lbl">Relativo (tônica ${TONES[T0].pt} = Verde 0)</div>${cw('profileRel', 150)}
-      <details class="r-table"><summary>Ver tabela</summary><div class="r-scroll"><table class="r-tab"><thead><tr><th>Tom</th><th>Nota</th><th>Energia abs.</th><th>Dominante abs.</th><th>Nota no grau rel.</th><th>Energia rel.</th><th>Dominante rel.</th></tr></thead><tbody>${profRows}</tbody></table></div></details>
+      <details class="r-table"><summary>Ver tabela</summary><div class="r-scroll"><table class="r-tab"><thead><tr><th>Tom</th><th>Nota</th><th>Energia ref.</th><th>Dominante ref.</th><th>Nota no grau rel.</th><th>Energia rel.</th><th>Dominante rel.</th></tr></thead><tbody>${profRows}</tbody></table></div></details>
     </section>
     <section class="r-card">
       <h2>Paleta da música</h2>
       <p class="r-sub">Tempo em que cada cor é a da nota dominante. As ultravioletas somam à cor da sua natural.</p>
       ${cw('palette', 92)}
-      <div class="r-scroll"><table class="r-tab"><thead><tr><th>Cor</th><th>Absoluta</th><th>Relativa</th></tr></thead><tbody>${famRows}</tbody></table></div>
-      <p class="r-sub" style="margin-top:10px">Naturais × ultravioletas (energia): absoluta ${pctS(S.absolute.naturalsEnergy)} × ${pctS(1 - S.absolute.naturalsEnergy)} · relativa ${pctS(S.relative.naturalsEnergy)} × ${pctS(1 - S.relative.naturalsEnergy)}.</p>
+      <div class="r-scroll"><table class="r-tab"><thead><tr><th>Cor</th><th>Referência</th><th>Relativa</th></tr></thead><tbody>${famRows}</tbody></table></div>
+      <p class="r-sub" style="margin-top:10px">Naturais × ultravioletas (energia): referência ${pctS(S.absolute.naturalsEnergy)} × ${pctS(1 - S.absolute.naturalsEnergy)} · relativa ${pctS(S.relative.naturalsEnergy)} × ${pctS(1 - S.relative.naturalsEnergy)}.</p>
     </section>
   </div>
 
@@ -2490,10 +2594,10 @@ function renderReport(res) {
     <h2>Sentirama</h2>
     <p class="r-sub">Cada ponto é um instante da música no cruzamento dos dois planos (cor = nota dominante). O anel marca o centro de gravidade.</p>
     <div class="r-two">
-      <div><div class="r-lbl">Leitura absoluta (Ré = Verde 0)</div>${cw('sentAbs', 300)}</div>
+      <div><div class="r-lbl">Leitura de referência (${TONES[0].pt} = Verde 0)</div>${cw('sentAbs', 300)}</div>
       <div><div class="r-lbl">Leitura relativa (tônica ${TONES[T0].pt} = Verde 0)</div>${cw('sentRel', 300)}</div>
     </div>
-    <div class="r-scroll"><table class="r-tab"><thead><tr><th>Quadrante</th><th>Absoluta</th><th>Relativa</th></tr></thead><tbody>${quadRows}</tbody></table></div>
+    <div class="r-scroll"><table class="r-tab"><thead><tr><th>Quadrante</th><th>Referência</th><th>Relativa</th></tr></thead><tbody>${quadRows}</tbody></table></div>
   </section>
 
   <div class="r-two">
@@ -2514,9 +2618,9 @@ function renderReport(res) {
   <div class="r-two">
     <section class="r-card">
       <h2>Tensão e estabilidade</h2>
-      <p class="r-text">Tensão Fá (Vermelho 3) ↔ Si (Rosa 9): média ${pctS(S.tension.mean)}; acima de 50% em ${pctS(S.tension.above50)} do tempo.</p>
+      <p class="r-text">Tensão ${TONES[3].pt} (Vermelho 3) ↔ ${TONES[9].pt} (Rosa 9): média ${pctS(S.tension.mean)}; acima de 50% em ${pctS(S.tension.above50)} do tempo.</p>
       <div class="r-lbl">Picos de tensão (clique para ouvir)</div><div class="r-chips">${peaks}</div>
-      <p class="r-text" style="margin-top:12px">Ré (Verde 0) dominante em ${pctS(S.stabilityD)} do tempo · tônica ${TONES[T0].pt} dominante em ${pctS(S.relative.tonicStability)}.</p>
+      <p class="r-text" style="margin-top:12px">${TONES[0].pt} (Verde 0) dominante em ${pctS(S.stabilityD)} do tempo · tônica ${TONES[T0].pt} dominante em ${pctS(S.relative.tonicStability)}.</p>
       <p class="r-text">Dinâmica: RMS mediano ${num(S.dynamics.p50, 1)} dB (p10 ${num(S.dynamics.p10, 1)} · p95 ${num(S.dynamics.p95, 1)}).</p>
     </section>
     <section class="r-card">
@@ -2525,7 +2629,8 @@ function renderReport(res) {
         <tr><th>Fonte</th><td id="r-src-name"></td></tr>
         <tr><th>Tipo</th><td>${esc(src.kind || '')}${src.mime ? ` · ${esc(src.mime)}` : ''}</td></tr>
         <tr><th>Duração</th><td>${mmss(src.duration)} (${num(src.duration, 1)} s) · ${S.frames} quadros</td></tr>
-        <tr><th>Análise</th><td>${src.sampleRate} Hz mono · FFT ${res.params.fftSize} · salto ${res.params.hop} (${num(res.params.frameDt * 1000, 1)} ms) · janela ${esc(res.params.window)} · A4 = ${res.params.A4} Hz</td></tr>
+        <tr><th>Calibração</th><td>Lá 4 = ${res.params.A4} Hz · Verde 0 = ${TONES[0].pt} (${TONES[0].en})${(res.params.ref != null ? res.params.ref : 2) === 2 ? ', padrão do método' : ', referência manual'}</td></tr>
+        <tr><th>Análise</th><td>${src.sampleRate} Hz mono · FFT ${res.params.fftSize} · salto ${res.params.hop} (${num(res.params.frameDt * 1000, 1)} ms) · janela ${esc(res.params.window)}</td></tr>
         <tr><th>Método</th><td>${esc(res.params.method)} · suavização ${num(res.params.smoothing, 3)}</td></tr>
         <tr><th>Gerado em</th><td>${res.app ? new Date(res.app.generatedAt).toLocaleString('pt-BR') : ''}${res.app && res.app.elapsedMs ? ` · ${num(res.app.elapsedMs / 1000, 1)} s de processamento` : ''}</td></tr>
       </tbody></table></div>
@@ -2535,11 +2640,11 @@ function renderReport(res) {
   <section class="r-card r-method">
     <h2>Método e limitações</h2>
     <ul>
-      <li><b>Cromagrama</b> por picos espectrais (FFT de 4096 pontos, janela Blackman, salto de ~46 ms, A4 = 440 Hz). Cada pico soma sua amplitude ao tom mais próximo, com peso pela proximidade da afinação; o tom Croma é a nota com Ré = 0.</li>
+      <li><b>Cromagrama</b> por picos espectrais (FFT de 4096 pontos, janela Blackman, salto de ~46 ms, Lá 4 = ${res.params.A4} Hz). Cada pico soma sua amplitude ao tom mais próximo, com peso pela proximidade da afinação; o tom Croma conta os semitons a partir da referência (${TONES[0].pt} = Verde 0).</li>
       <li><b>Harmônicos</b>: oitava, quinta e terça naturais de cada nota também somam energia. Instrumentos ricos em harmônicos puxam o perfil para a quinta e a terça da nota tocada.</li>
       <li><b>Percussão e ruído</b> espalham energia por vários tons; trechos só de bateria tendem ao centro do Sentirama.</li>
-      <li><b>Afinação</b>: gravações fora de 440 Hz (ex.: 432 Hz) deslocam até um terço de semitom; desvios acima de meio semitom caem no tom vizinho.</li>
-      <li><b>Tonalidade</b> por correlação com os perfis de Krumhansl–Kessler; r ≥ 0,75 indica ajuste alto. A leitura relativa gira todo o cromagrama para que a tônica estimada vire o Verde 0.</li>
+      <li><b>Afinação</b>: gravações afinadas diferente da escolhida (ex.: 432 × 440 Hz, cerca de um terço de semitom) perdem peso no cromagrama; desvios acima de meio semitom caem no tom vizinho. A afinação estimada (média circular do desvio dos picos) indica qual escolher.</li>
+      <li><b>Tonalidade</b> por correlação com os perfis de Krumhansl–Kessler; r ≥ 0,75 indica ajuste alto. A leitura de referência usa a nota escolhida como Verde 0 (padrão: Ré); a leitura relativa gira o cromagrama para que a tônica estimada vire o Verde 0.</li>
       <li><b>Índice Ar/Terra</b> = 0,5 · modo + 0,32 · brilho + 0,18 · andamento (cada componente entre −1 e +1). Os pesos são definidos por este aplicativo; calibrá-los com um conjunto de músicas é parte da pesquisa.</li>
       <li><b>Sentirama</b>: a posição de cada instante é a média das posições dos tons ponderada pelo quadrado do cromagrama. As posições de laranjas, violetas e do Verde 6 são interpretação deste aplicativo.</li>
       <li><b>Reprodutibilidade</b>: todo áudio é reamostrado para 44,1 kHz mono antes da análise, então o mesmo arquivo gera o mesmo laudo em qualquer aparelho. O JSON exportado guarda os parâmetros e a linha do tempo completa.</li>
@@ -2604,7 +2709,7 @@ function drawDomStrip(cv, res, rel) {
     g.fillStyle = TONES[best].hex; g.fillRect(TL_PAD_L + c, 4, 1.05, h - 8);
   }
   g.fillStyle = rcss('--r-ink2'); g.textAlign = 'right'; g.font = '600 10px Inter, system-ui, sans-serif';
-  g.fillText(rel ? 'REL.' : 'ABS.', TL_PAD_L - 8, h / 2 + 3.5);
+  g.fillText(rel ? 'REL.' : 'REF.', TL_PAD_L - 8, h / 2 + 3.5);
 }
 function keySegments(res) {
   const kt = res.summary.keyTimeline, { dur } = tlInfo(res);
@@ -2699,7 +2804,7 @@ function drawProfile(cv, res, rel) {
 function drawPalette(cv, res) {
   const S = res.summary, { g, w, h } = prepCanvas(cv), lab = 70, bh = 24;
   cv._segs = [];
-  [['Absoluta', S.absolute.families, 10], ['Relativa', S.relative.families, 52]].forEach(([name, fams, y]) => {
+  [['Referência', S.absolute.families, 10], ['Relativa', S.relative.families, 52]].forEach(([name, fams, y]) => {
     g.fillStyle = rcss('--r-ink2'); g.textAlign = 'left'; g.font = '600 11px Inter, system-ui, sans-serif';
     g.fillText(name, 0, y + bh / 2 + 4);
     const total = fams.reduce((s, f) => s + f.share, 0) || 1, W = w - lab;
@@ -2788,9 +2893,9 @@ const CHARTS = {
 };
 function drawAllCharts() {
   if (!R.result || !$('report').classList.contains('show')) return;
-  document.querySelectorAll('#r-body canvas[data-chart]').forEach(cv => {
+  withNames(laudoRef(R.result), () => document.querySelectorAll('#r-body canvas[data-chart]').forEach(cv => {
     try { CHARTS[cv.dataset.chart](cv, R.result); } catch (e) { console.error('gráfico', cv.dataset.chart, e); }
-  });
+  }));
 }
 
 // ---------- leitura por hover e clique ----------
@@ -2906,7 +3011,7 @@ window.addEventListener('afterprint', () => { if (document.body.classList.contai
 $('r-body').addEventListener('pointermove', e => {
   const cv = e.target.closest && e.target.closest('canvas[data-chart]');
   if (!cv || !R.result) { hideTip(); return; }
-  const r = chartReadout(cv, e), tip = $('rtip'), xl = cv.parentElement.querySelector('.r-x');
+  const r = withNames(laudoRef(R.result), () => chartReadout(cv, e)), tip = $('rtip'), xl = cv.parentElement.querySelector('.r-x');
   if (!r) { hideTip(); return; }
   tip.innerHTML = r.html; tip.style.display = 'block';
   const tw = tip.offsetWidth;
