@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cromasfera Audio-Visualizer</title>
+<meta name="description" content="Visualizador áudio-cromático baseado no método Croma-Sônica do livro Cromasfera: The Seed of Interdisciplinary Harmony (Vigmorã / CromaSomos).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<style>
+  :root {
+    --bg: #07060d;
+    --panel: rgba(17, 13, 28, 0.66);
+    --panel-border: rgba(255, 255, 255, 0.09);
+    --text: #ece6f5;
+    --muted: #a39cb5;
+    --accent: #43c24a;
+    --ink: #0b0710;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0; overflow: hidden; background: var(--bg); color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { display: block; }
+  /* granulação de papel de aquarela por cima da cena */
+  #grain {
+    position: fixed; inset: 0; pointer-events: none; opacity: .13; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.2 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  #vignette {
+    position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
+  }
+  .glass {
+    background: var(--panel); border: 1px solid var(--panel-border);
+    backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-radius: 18px; box-shadow: 0 10px 40px rgba(0,0,0,.35);
+  }
+  .title-font { font-family: 'Cinzel', serif; letter-spacing: .14em; }
+  .rainbow-text {
+    background: linear-gradient(90deg,#43c24a,#dcf04a,#f7902f,#e8402c,#b47cf0,#2f9fe6,#86f07c,#f7dc2f,#ffb062,#f27bb8,#8f4fd0,#5fd2f7);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    padding: .55rem .9rem; border-radius: 12px; font-size: .85rem; font-weight: 500;
+    border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: var(--text);
+    transition: background .2s, border-color .2s, box-shadow .2s, transform .1s; cursor: pointer; user-select: none;
+  }
+  .btn:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.22); }
+  .btn:active { transform: scale(.98); }
+  .btn.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 18px -4px var(--accent); background: rgba(67,194,74,.12); }
+  .btn svg { width: 16px; height: 16px; flex: none; }
+  .seg { display: flex; padding: 4px; gap: 4px; border-radius: 14px; }
+  .seg button {
+    padding: .5rem .9rem; border-radius: 10px; font-size: .8rem; color: var(--muted); font-weight: 500;
+    transition: all .25s; white-space: nowrap;
+  }
+  .seg button:hover { color: var(--text); background: rgba(255,255,255,.06); }
+  .seg button.on { color: #0b0710; background: linear-gradient(135deg, #f7dc2f, #f27bb8 55%, #b47cf0); box-shadow: 0 0 22px -6px #f27bb8; }
+  .label { font-size: .68rem; text-transform: uppercase; letter-spacing: .16em; color: var(--muted); }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 4px; background: rgba(255,255,255,.14); outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px var(--accent); cursor: pointer; }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 10px var(--accent); cursor: pointer; }
+  .toggle { display: flex; align-items: center; justify-content: space-between; font-size: .8rem; color: var(--text); cursor: pointer; padding: .2rem 0; }
+  .toggle input { accent-color: #43c24a; width: 15px; height: 15px; }
+  .meter { position: relative; height: 8px; border-radius: 8px; overflow: hidden; }
+  .meter .needle { position: absolute; top: -3px; width: 4px; height: 14px; border-radius: 3px; background: #fff; box-shadow: 0 0 10px #fff; transform: translateX(-50%); transition: left .15s linear; }
+  .swatch { width: 54px; height: 54px; border-radius: 50%; border: 3px solid var(--ink); box-shadow: 0 0 24px -2px currentColor, inset 0 0 12px rgba(0,0,0,.35); flex: none; }
+  .swatch.tri { border-radius: 6px; clip-path: polygon(50% 4%, 97% 92%, 3% 92%); border: 0; }
+  .chip { display: inline-flex; align-items: center; gap: .35rem; font-size: .72rem; padding: .18rem .5rem; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
+  .chip i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .stat { font-variant-numeric: tabular-nums; }
+
+  /* teclado cromático (cromagrama) */
+  #keyboard { position: relative; height: 92px; width: min(560px, calc(100vw - 32px)); }
+  #keyboard .white, #keyboard .black {
+    position: absolute; bottom: 0; border: 2px solid var(--ink); border-radius: 0 0 8px 8px;
+    display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 5px;
+    transition: box-shadow .12s; overflow: hidden;
+  }
+  #keyboard .white { height: 92px; z-index: 1; }
+  #keyboard .black { height: 56px; z-index: 2; top: 0; bottom: auto; }
+  #keyboard .num { font-weight: 700; font-size: .95rem; color: #120c18; line-height: 1; }
+  #keyboard .nm { font-size: .6rem; color: rgba(18,12,24,.75); margin-top: 2px; font-weight: 600; }
+  #keyboard .fill { position: absolute; inset: 0; z-index: -1; }
+  #keyboard .dom { box-shadow: 0 0 24px 2px var(--kc); }
+
+  #dropzone { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: rgba(7,6,13,.75); backdrop-filter: blur(6px); }
+  #dropzone.show { display: flex; }
+  #dropzone .box { border: 2px dashed rgba(255,255,255,.35); border-radius: 28px; padding: 3rem 4rem; text-align: center; }
+  #modal { position: fixed; inset: 0; z-index: 70; display: none; align-items: center; justify-content: center; background: rgba(4,3,8,.7); padding: 16px; }
+  #modal.show { display: flex; }
+  #modal .card { max-width: 920px; width: 100%; max-height: calc(100vh - 32px); overflow-y: auto; }
+  #modal h3 { font-family: 'Cinzel', serif; letter-spacing: .1em; font-size: 1rem; margin: 1.4rem 0 .6rem; color: #fff; }
+  #modal p, #modal li { font-size: .88rem; line-height: 1.6; color: #d5cfe2; }
+  .tone-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .5rem; }
+  .tone-card { display: flex; gap: .6rem; align-items: center; padding: .5rem .6rem; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); }
+  .tone-card .sw { width: 30px; height: 30px; flex: none; border: 2px solid var(--ink); border-radius: 50%; }
+  .tone-card .sw.tri { border: 0; border-radius: 0; clip-path: polygon(50% 6%, 96% 92%, 4% 92%); }
+  .ref-img { border-radius: 14px; background: #f4f0e8; padding: 6px; }
+  #toast { position: fixed; left: 50%; top: 84px; transform: translateX(-50%) translateY(-10px); opacity: 0; z-index: 80; transition: all .3s; pointer-events: none; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .hidden-ui #panel-left, .hidden-ui #hud, .hidden-ui #topbar, .hidden-ui #bottom { opacity: 0; pointer-events: none; }
+  #panel-left, #hud, #topbar, #bottom { transition: opacity .35s; }
+  .scroll-y { overflow-y: auto; scrollbar-width: thin; }
+  #hud-body.collapsed { display: none; }
+  @media (max-width: 900px) {
+    #panel-left { width: calc(100vw - 32px) !important; top: auto !important; bottom: 150px; max-height: 42vh; }
+    #panel-left.collapsed .panel-body { display: none; }
+    #hud { width: calc(100vw - 32px) !important; top: 64px !important; right: 16px !important; }
+    #hud-body { max-height: 30vh; }
+    .seg button { padding: .45rem .55rem; font-size: .72rem; }
+    #brand .sub { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="vignette"></div>
+<div id="grain"></div>
+
+<!-- ============ BARRA SUPERIOR ============ -->
+<div id="topbar" class="fixed top-4 left-4 right-4 z-30 flex items-center justify-between gap-3 pointer-events-none">
+  <div id="brand" class="pointer-events-auto flex items-center gap-3">
+    <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
+      <defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f27bb8"/><stop offset=".5" stop-color="#f7dc2f"/><stop offset="1" stop-color="#2f9fe6"/></linearGradient></defs>
+      <circle cx="20" cy="20" r="17" fill="none" stroke="url(#lg)" stroke-width="3"/>
+      <circle cx="20" cy="20" r="5" fill="#43c24a" stroke="#0b0710" stroke-width="1.5"/>
+      <path d="M6 22 C 12 10, 28 30, 34 18" fill="none" stroke="#fff" stroke-width="1.6" opacity=".8"/>
+    </svg>
+    <div>
+      <div class="title-font text-lg font-bold leading-none rainbow-text">CROMASFERA</div>
+      <div class="sub text-[11px] text-[color:var(--muted)] tracking-wider mt-1">Audio-Visualizer · método Croma-Sônica</div>
+    </div>
+  </div>
+  <div class="glass seg pointer-events-auto" id="mode-seg" role="tablist" aria-label="Modo visual">
+    <button data-mode="0" class="on" role="tab">Cromasfera 3D</button>
+    <button data-mode="1" role="tab">Flor Croma-Sônica</button>
+    <button data-mode="2" role="tab">Sentirama 3D</button>
+  </div>
+  <div class="pointer-events-auto flex items-center gap-2">
+    <button class="btn" id="btn-full" title="Tela cheia (F)" aria-label="Tela cheia">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    </button>
+    <button class="btn" id="btn-info" title="Teoria da Cromasfera" aria-label="Informações" style="font-weight:700;width:40px">?</button>
+  </div>
+</div>
+
+<!-- ============ PAINEL DE CONTROLE ============ -->
+<aside id="panel-left" class="glass fixed left-4 top-[84px] z-20 w-[290px] p-4 scroll-y" style="max-height: calc(100vh - 240px)">
+  <div class="flex items-center justify-between mb-3">
+    <div class="label">Entrada de Áudio</div>
+    <button class="text-xs text-[color:var(--muted)] md:hidden" id="panel-collapse">recolher</button>
+  </div>
+  <div class="panel-body">
+    <div class="grid grid-cols-2 gap-2">
+      <button class="btn" id="btn-mic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg>
+        <span>Ativar Microfone</span>
+      </button>
+      <button class="btn" id="btn-upload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
+        <span>Upload de Áudio</span>
+      </button>
+      <button class="btn col-span-2" id="btn-demo" title="Toca uma progressão sintetizada para demonstrar o mapeamento">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span>Demonstração (sintetizador)</span>
+      </button>
+    </div>
+    <input type="file" id="file-input" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" class="hidden">
+    <p class="text-[11px] text-[color:var(--muted)] mt-2 leading-relaxed">Ou arraste um arquivo .mp3 / .wav / .m4a / .ogg para a tela.</p>
+
+    <div class="mt-4">
+      <div class="flex justify-between items-baseline"><span class="label">Sensibilidade / Ganho</span><span class="text-xs stat" id="gain-val">×1.00</span></div>
+      <input type="range" id="gain" min="0" max="100" value="50" class="mt-2" aria-label="Sensibilidade">
+    </div>
+
+    <div class="mt-4 pt-3 border-t border-white/10 space-y-1">
+      <div class="label mb-1">Opções visuais</div>
+      <label class="toggle">Brilho néon (bloom)<input type="checkbox" id="opt-bloom" checked></label>
+      <label class="toggle">Partículas matéria/antimatéria<input type="checkbox" id="opt-particles" checked></label>
+      <label class="toggle">Auto-rotação<input type="checkbox" id="opt-rotate" checked></label>
+      <label class="toggle">Rótulos no Sentirama<input type="checkbox" id="opt-labels" checked></label>
+    </div>
+
+    <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-[color:var(--muted)] leading-relaxed">
+      <div class="label mb-1">Atalhos</div>
+      <span class="text-white/80">1 2 3</span> modos · <span class="text-white/80">Espaço</span> play/pause · <span class="text-white/80">H</span> ocultar interface · <span class="text-white/80">F</span> tela cheia · arraste para orbitar
+    </div>
+  </div>
+</aside>
+
+<!-- ============ HUD DIAGNÓSTICO SINESTÉSICO ============ -->
+<aside id="hud" class="glass fixed right-4 top-[84px] z-20 w-[330px] p-4">
+  <div class="flex items-center justify-between">
+    <div class="label">Diagnóstico Sinestésico</div>
+    <div class="flex items-center gap-2">
+      <span id="src-badge" class="chip"><i style="background:#666"></i><span>sem entrada</span></span>
+      <button id="hud-collapse" class="text-xs text-[color:var(--muted)]" aria-label="Recolher painel">–</button>
+    </div>
+  </div>
+  <div class="flex items-center gap-3 mt-3">
+    <div id="dom-swatch" class="swatch" style="background:#333;color:#333"></div>
+    <div class="min-w-0">
+      <div class="text-[13px] text-[color:var(--muted)]">Nota Detectada:</div>
+      <div id="dom-text" class="text-base font-semibold leading-snug">—</div>
+      <div id="dom-sub" class="text-[11px] text-[color:var(--muted)] mt-0.5">aguardando áudio…</div>
+    </div>
+  </div>
+  <div id="hud-body" class="scroll-y" style="max-height: calc(100vh - 360px)">
+    <div class="mt-3">
+      <div class="label mb-1">Notas secundárias (harmônicos)</div>
+      <div id="secondary" class="flex flex-wrap gap-1.5 min-h-[24px] text-xs text-[color:var(--muted)]">—</div>
+    </div>
+    <div class="mt-3 grid grid-cols-2 gap-2">
+      <div><div class="label">Acorde</div><div id="chord" class="text-sm mt-0.5">—</div></div>
+      <div><div class="label">Tonalidade est.</div><div id="key" class="text-sm mt-0.5">—</div></div>
+    </div>
+
+    <div class="mt-4">
+      <div class="flex justify-between items-baseline"><span class="label">Modo Ar / Terra</span><span id="mode-text" class="text-xs font-semibold">—</span></div>
+      <div class="meter mt-2" style="background: linear-gradient(90deg,#e8402c,#2f9fe6 35%,#43c24a 50%,#f7dc2f 65%,#f27bb8)">
+        <div class="needle" id="air-needle" style="left:50%"></div>
+      </div>
+      <div class="flex justify-between text-[10px] text-[color:var(--muted)] mt-1"><span>Terra · Menor · denso</span><span>Ar · Maior · sublimado</span></div>
+    </div>
+    <div class="mt-3">
+      <div class="flex justify-between items-baseline"><span class="label">Polaridade Sentirama</span><span id="pol-text" class="text-xs font-semibold">—</span></div>
+      <div class="meter mt-2" style="background: linear-gradient(90deg,#8f4fd0,#2f9fe6 30%,#43c24a 50%,#f7902f 70%,#f7dc2f)">
+        <div class="needle" id="pol-needle" style="left:50%"></div>
+      </div>
+      <div class="flex justify-between text-[10px] text-[color:var(--muted)] mt-1"><span>Negativo · Físico (Lua)</span><span>Positivo · Espiritual (Sol)</span></div>
+    </div>
+    <div class="mt-3">
+      <div class="flex justify-between items-baseline"><span class="label">Tensão Fá ↔ Si (torção em S)</span><span id="tension-text" class="text-xs stat">0%</span></div>
+      <div class="meter mt-2 bg-white/10"><div id="tension-bar" style="height:100%;width:0;background:linear-gradient(90deg,#e8402c,#f27bb8);transition:width .15s"></div></div>
+    </div>
+
+    <div class="mt-4 grid grid-cols-4 gap-2 text-center">
+      <div class="rounded-xl bg-white/5 py-2"><div class="label" style="font-size:.58rem">Centroide</div><div id="centroid" class="text-sm stat mt-0.5">—</div></div>
+      <div class="rounded-xl bg-white/5 py-2"><div class="label" style="font-size:.58rem">RMS</div><div id="rms" class="text-sm stat mt-0.5">—</div></div>
+      <div class="rounded-xl bg-white/5 py-2"><div class="label" style="font-size:.58rem">BPM</div><div id="bpm" class="text-sm stat mt-0.5">—</div></div>
+      <div class="rounded-xl bg-white/5 py-2"><div class="label" style="font-size:.58rem">Freq.</div><div id="freq" class="text-sm stat mt-0.5">—</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ BASE: TECLADO CROMÁTICO + PLAYER ============ -->
+<div id="bottom" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3">
+  <div id="player" class="glass hidden items-center gap-3 px-4 py-2.5" style="width:min(560px, calc(100vw - 32px))">
+    <button class="btn !p-2" id="btn-play" aria-label="Play/Pause">
+      <svg id="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>
+      <svg id="ico-pause" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+    </button>
+    <div class="flex-1 min-w-0">
+      <div class="flex justify-between text-[11px] text-[color:var(--muted)]"><span id="track-name" class="truncate max-w-[60%]">—</span><span class="stat" id="track-time">0:00 / 0:00</span></div>
+      <input type="range" id="seek" min="0" max="1000" value="0" class="mt-1.5" aria-label="Linha do tempo">
+    </div>
+    <div class="flex items-center gap-1.5 w-[90px]">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="text-[color:var(--muted)] flex-none"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7"/></svg>
+      <input type="range" id="volume" min="0" max="100" value="85" aria-label="Volume">
+    </div>
+  </div>
+  <div class="glass px-3 pt-2 pb-3">
+    <div class="flex justify-between items-baseline mb-1.5 px-1"><span class="label">Cromagrama · Teclado Croma-Sônico</span><span class="text-[10px] text-[color:var(--muted)]">● naturais · ▲ ultravioletas</span></div>
+    <div id="keyboard"></div>
+  </div>
+</div>
+
+<audio id="audio-el" preload="auto"></audio>
+
+<div id="dropzone"><div class="box glass"><div class="title-font text-xl rainbow-text">Solte o arquivo de áudio</div><div class="text-sm text-[color:var(--muted)] mt-2">.mp3 · .wav · .m4a · .ogg</div></div></div>
+<div id="toast" class="glass px-4 py-2 text-sm"></div>
+
+<!-- ============ MODAL TEORIA ============ -->
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="card glass p-6 md:p-8">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <div id="modal-title" class="title-font text-2xl rainbow-text font-bold">A Cromasfera</div>
+        <div class="text-sm text-[color:var(--muted)] mt-1">baseado em <em>Cromasfera: The Seed of Interdisciplinary Harmony</em> — Vigmorã (CromaSomos)</div>
+      </div>
+      <button class="btn" id="modal-close" aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="grid md:grid-cols-[1fr_260px] gap-6 mt-4">
+      <div>
+        <p>O método <strong>Croma-Sônica</strong> une som e cor numa mesma esfera de relações. Os 12 semitons da escala cromática são dispostos num círculo de 12 cores, tendo como centro de equilíbrio a nota <strong>Ré (D) = Verde 0</strong>. As <strong>sete naturais</strong> (teclas brancas: Ré, Mi, Fá, Sol, Lá, Si, Dó) são representadas por círculos; as <strong>cinco ultravioletas</strong> (teclas pretas) por triângulos.</p>
+        <p class="mt-2">Este visualizador escuta o áudio em tempo real, extrai o <em>cromagrama</em> (energia de cada classe de nota, afinação A4 = 440 Hz), identifica a nota dominante e seus harmônicos, e traduz tudo em cor, forma e movimento.</p>
+      </div>
+      <img src="assets/mandala-croma-sonica.webp" alt="Mandala Croma-Sônica de 12 pétalas" class="ref-img w-full">
+    </div>
+
+    <h3>Mapa dos 12 tons</h3>
+    <div class="tone-grid" id="tone-grid"></div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <h3>Modo Ar × Modo Terra</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong style="color:#f27bb8">Modo Ar (Maior)</strong> — frequências agudas, andamento rápido e tonalidades maiores. Rosa/Amarelo: partículas mais velozes, vibração expansiva, brilho sublimado.</li>
+          <li><strong style="color:#e8402c">Modo Terra (Menor)</strong> — graves, tons densos e tonalidades menores. Vermelho/Azul: maior densidade, distorção de malha e opacidade.</li>
+        </ul>
+        <p class="mt-2 text-[13px] text-[color:var(--muted)]">O índice Ar/Terra combina: correlação maior × menor do perfil tonal (Krumhansl), centroide espectral (brilho) e BPM.</p>
+        <h3>Polaridade Sentirama</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong style="color:#f7dc2f">Direita · Positivo · Espiritual</strong> — Amarelo / Laranja (Sol, Fogo).</li>
+          <li><strong style="color:#2f9fe6">Esquerda · Negativo · Físico</strong> — Azul / Violeta (Lua, Água).</li>
+          <li>Eixo vertical: <strong style="color:#f27bb8">Ar (Rosa 9, topo)</strong> ↔ <strong style="color:#e8402c">Terra (Vermelho 3, base)</strong>.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Os três modos visuais</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Cromasfera 3D</strong> — esfera orgânica envolta pela fita cromática de 12 nós. Em <em>Ré (Verde 0)</em> ela se aquieta em simetria perfeita; a tensão entre <em>Fá (Vermelho 3)</em> e <em>Si (Rosa 9)</em> torce a fita em “S”. Partículas de matéria (saindo) e antimatéria (entrando) pulsam com os ataques.</li>
+          <li><strong>Flor Croma-Sônica</strong> — mandala de 12 pétalas; cada pétala se ilumina com a intensidade da sua nota. Acordes consonantes acendem as conexões das <em>Sete Naturais</em>.</li>
+          <li><strong>Sentirama 3D</strong> — cruz de eixos de polaridade; um orbe de luz orbita conforme a predominância harmônica e emocional do som.</li>
+        </ul>
+        <div class="grid grid-cols-3 gap-2 mt-4">
+          <img src="assets/teclado-cromatico.webp" alt="Teclado cromático" class="ref-img w-full h-32 object-cover object-top">
+          <img src="assets/elementos.png" alt="Os elementos básicos" class="ref-img w-full h-32 object-contain">
+          <img src="assets/sol-e-lua.png" alt="O Sol e a Lua" class="ref-img w-full h-32 object-contain">
+        </div>
+      </div>
+    </div>
+    <p class="mt-6 text-[12px] text-[color:var(--muted)]">Nota: o microfone exige contexto seguro — abra a página via <code>https://</code> ou <code>http://localhost</code> (ex.: <code>python3 -m http.server</code>). As posições 3D das tonalidades ultravioletas no Sentirama são uma interpretação visual deste aplicativo.</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   1. TEORIA CROMA-SÔNICA — mapeamento som → cor
+   ===================================================================== */
+const TAU = Math.PI * 2;
+const TONES = [
+  { t: 0,  en: 'D',  pt: 'Ré',   name: 'Verde',       code: 'Green 0',   hex: '#43c24a', uv: false, role: 'Ponto de Equilíbrio Central' },
+  { t: 1,  en: 'D#', pt: 'Ré#',  name: 'Amarelo-UV',  code: 'Yeluv 1',   hex: '#dcf04a', uv: true,  role: 'Ultravioleta' },
+  { t: 2,  en: 'E',  pt: 'Mi',   name: 'Laranja',     code: 'Orange 2',  hex: '#f7902f', uv: false, role: 'Natural' },
+  { t: 3,  en: 'F',  pt: 'Fá',   name: 'Vermelho',    code: 'Red 3',     hex: '#e8402c', uv: false, role: 'Tensão Solar · Terra · Denso' },
+  { t: 4,  en: 'F#', pt: 'Fá#',  name: 'Violeta-UV',  code: 'Viluv 4',   hex: '#b47cf0', uv: true,  role: 'Ultravioleta' },
+  { t: 5,  en: 'G',  pt: 'Sol',  name: 'Azul',        code: 'Blue 5',    hex: '#2f9fe6', uv: false, role: 'Natural' },
+  { t: 6,  en: 'G#', pt: 'Sol#', name: 'Verde-UV',    code: 'Gruv 6',    hex: '#86f07c', uv: true,  role: 'Oposto ao Verde 0' },
+  { t: 7,  en: 'A',  pt: 'Lá',   name: 'Amarelo',     code: 'Yellow 7',  hex: '#f7dc2f', uv: false, role: 'Reagrupamento Harmônico' },
+  { t: 8,  en: 'A#', pt: 'Lá#',  name: 'Laranja-UV',  code: 'Oruv 8',    hex: '#ffb062', uv: true,  role: 'Ultravioleta' },
+  { t: 9,  en: 'B',  pt: 'Si',   name: 'Rosa',        code: 'Pink 9',    hex: '#f27bb8', uv: false, role: 'Tensão Lunar · Ar · Sublimado' },
+  { t: 10, en: 'C',  pt: 'Dó',   name: 'Violeta',     code: 'Violet 10', hex: '#8f4fd0', uv: false, role: 'Natural' },
+  { t: 11, en: 'C#', pt: 'Dó#',  name: 'Azul-UV',     code: 'Bluv 11',   hex: '#5fd2f7', uv: true,  role: 'Ultravioleta' },
+];
+TONES.forEach(o => { o.color = new THREE.Color(o.hex); });
+// classe de altura padrão (C=0) → tom Croma (D=0)
+const pcToTone = pc => (pc + 10) % 12;
+const toneToPc = t => (t + 2) % 12;
+const NATURALS = [0, 2, 3, 5, 7, 9, 10];
+const toneLabel = t => `${TONES[t].en} (${TONES[t].pt})`;
+
+// Direções dos 12 tons na Cromasfera: os 12 vértices do icosaedro.
+// Pares antipodais = trítonos (Verde 0 ↔ Verde-UV 6, Vermelho 3 ↔ Rosa 9).
+// Rosa 9 (Ar) no topo, Vermelho 3 (Terra) na base; naturais no hemisfério superior, UV no inferior.
+const ICO_DIRS = (() => {
+  const d = new Array(12), y = 1 / Math.sqrt(5), r = 2 / Math.sqrt(5);
+  d[9] = new THREE.Vector3(0, 1, 0); d[3] = new THREE.Vector3(0, -1, 0);
+  const upper = { 7: 18, 0: 90, 5: 162, 10: 234, 2: 306 };
+  for (const k in upper) {
+    const a = upper[k] * Math.PI / 180, t = +k;
+    d[t] = new THREE.Vector3(r * Math.cos(a), y, r * Math.sin(a));
+    d[(t + 6) % 12] = new THREE.Vector3(-r * Math.cos(a), -y, -r * Math.sin(a));
+  }
+  return d;
+})();
+
+// Posições no Sentirama: x = polaridade (+ Sol/Amarelo, − Lua/Azul), y = Ar(Rosa) ↔ Terra(Vermelho), z = Verde 0 ↔ Verde-UV 6
+const SENT_POS = [
+  [0, 0, 1], [0.6, 0.55, -0.55], [0.8, -0.55, 0.2], [0, -1, 0], [-0.55, -0.6, -0.55], [-1, 0, 0.15],
+  [0, 0, -1], [1, 0.15, 0.15], [0.55, -0.6, -0.55], [0, 1, 0], [-0.75, 0.55, 0.2], [-0.55, 0.5, -0.55],
+].map(p => new THREE.Vector3(p[0], p[1], p[2]));
+
+/* =====================================================================
+   2. MOTOR DE ÁUDIO (Web Audio API)
+   ===================================================================== */
+const FFT_SIZE = 4096;
+const A = {
+  ctx: null, analyser: null, inGain: null, outGain: null,
+  micStream: null, micSrc: null, elSrc: null, demoBus: null, demoTimer: null,
+  el: document.getElementById('audio-el'), source: 'none', fileUrl: null,
+};
+let freqDb, timeBuf, mag, prevMag;
+
+function ensureAudio() {
+  if (!A.ctx) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    A.ctx = new Ctx();
+    A.inGain = A.ctx.createGain();
+    A.analyser = A.ctx.createAnalyser();
+    A.analyser.fftSize = FFT_SIZE;
+    A.analyser.smoothingTimeConstant = 0.55;
+    A.analyser.minDecibels = -110;
+    A.analyser.maxDecibels = -10;
+    A.inGain.connect(A.analyser);
+    A.outGain = A.ctx.createGain();
+    A.outGain.gain.value = 0.85;
+    A.outGain.connect(A.ctx.destination);
+    freqDb = new Float32Array(A.analyser.frequencyBinCount);
+    timeBuf = new Float32Array(A.analyser.fftSize);
+    mag = new Float32Array(A.analyser.frequencyBinCount);
+    prevMag = new Float32Array(A.analyser.frequencyBinCount);
+    applyGain();
+  }
+  if (A.ctx.state === 'suspended') A.ctx.resume();
+}
+
+function stopMic() {
+  if (A.micSrc) { try { A.micSrc.disconnect(); } catch (e) {} A.micSrc = null; }
+  if (A.micStream) { A.micStream.getTracks().forEach(t => t.stop()); A.micStream = null; }
+}
+function stopDemo() {
+  if (A.demoTimer) { clearInterval(A.demoTimer); A.demoTimer = null; }
+  if (A.demoBus) {
+    const bus = A.demoBus; A.demoBus = null;
+    bus.gain.setTargetAtTime(0, A.ctx.currentTime, 0.05);
+    setTimeout(() => { try { bus.disconnect(); } catch (e) {} }, 400);
+  }
+}
+function stopFile() { if (!A.el.paused) A.el.pause(); }
+function stopAll() { stopMic(); stopDemo(); stopFile(); A.source = 'none'; }
+
+async function startMic() {
+  if (A.source === 'mic') { stopAll(); updateSourceUI(); return; }
+  if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    toast('O microfone exige https:// ou http://localhost. Use o Upload de Áudio ou a Demonstração.', 5000);
+    return;
+  }
+  ensureAudio();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    stopAll();
+    A.micStream = stream;
+    A.micSrc = A.ctx.createMediaStreamSource(stream);
+    A.micSrc.connect(A.inGain);
+    A.source = 'mic';
+    toast('Microfone ativo — cante, toque ou fale.');
+  } catch (err) {
+    let msg = 'Não foi possível acessar o microfone. ';
+    if (err.name === 'NotAllowedError') msg += 'Permissão negada.';
+    else if (err.name === 'NotFoundError') msg += 'Nenhum microfone encontrado.';
+    else msg += err.message;
+    toast(msg, 5000);
+  }
+  updateSourceUI();
+}
+
+function loadFile(file) {
+  if (!file) return;
+  if (!(file.type.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|oga|flac|aac|webm)$/i.test(file.name))) {
+    toast('Formato não suportado. Use .mp3, .wav, .m4a ou .ogg.', 4000); return;
+  }
+  ensureAudio();
+  stopMic(); stopDemo();
+  if (!A.elSrc) {
+    A.elSrc = A.ctx.createMediaElementSource(A.el);
+    A.elSrc.connect(A.inGain);
+    A.elSrc.connect(A.outGain);
+  }
+  if (A.fileUrl) URL.revokeObjectURL(A.fileUrl);
+  A.fileUrl = URL.createObjectURL(file);
+  A.el.src = A.fileUrl;
+  A.source = 'file';
+  document.getElementById('track-name').textContent = file.name;
+  document.getElementById('player').classList.remove('hidden');
+  document.getElementById('player').classList.add('flex');
+  A.el.play().catch(() => toast('Clique em play para iniciar.'));
+  updateSourceUI();
+}
+
+// --- Demonstração: progressão sintetizada que percorre o mapa cromático ---
+const DEMO = [
+  { notes: [38, 50, 62, 66, 69], bass: 38 },   // D maior  → Verde 0 (estabilidade)
+  { notes: [43, 55, 59, 62, 67], bass: 43 },   // G maior  → Azul 5
+  { notes: [45, 57, 61, 64, 69], bass: 45 },   // A maior  → Amarelo 7
+  { notes: [41, 53, 65, 71, 77], bass: 41 },   // F + B    → tensão Vermelho 3 ↔ Rosa 9
+  { notes: [38, 50, 62, 65, 69], bass: 38 },   // D menor  → Modo Terra
+  { notes: [36, 48, 60, 64, 67], bass: 36 },   // C maior  → Violeta 10
+  { notes: [40, 52, 64, 68, 71], bass: 40 },   // E maior  → Laranja 2
+  { notes: [47, 59, 71, 74, 78, 83], bass: 47 }, // B menor agudo → Rosa 9 / Ar
+];
+const midiHz = m => 440 * Math.pow(2, (m - 69) / 12);
+function playDemoChord(ch, t0, dur) {
+  const c = A.ctx;
+  ch.notes.forEach((m, i) => {
+    const o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
+    o.type = i === 0 ? 'triangle' : 'sawtooth';
+    o.frequency.value = midiHz(m);
+    o.detune.value = (Math.random() - 0.5) * 6;
+    f.type = 'lowpass'; f.frequency.value = 2400; f.Q.value = 0.6;
+    const peak = (i === 0 ? 0.32 : 0.14);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + 0.06);
+    g.gain.exponentialRampToValueAtTime(peak * 0.6, t0 + 0.5);
+    g.gain.setValueAtTime(peak * 0.6, t0 + dur - 0.25);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(f); f.connect(g); g.connect(A.demoBus);
+    o.start(t0); o.stop(t0 + dur + 0.05);
+  });
+  // pulso de bumbo a 120 BPM para alimentar a detecção de andamento
+  for (let b = 0; b < 4; b++) {
+    const tk = t0 + b * 0.5;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(120, tk); o.frequency.exponentialRampToValueAtTime(45, tk + 0.12);
+    g.gain.setValueAtTime(0.0001, tk); g.gain.exponentialRampToValueAtTime(0.55, tk + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, tk + 0.18);
+    o.connect(g); g.connect(A.demoBus); o.start(tk); o.stop(tk + 0.2);
+  }
+}
+function startDemo() {
+  if (A.source === 'demo') { stopAll(); updateSourceUI(); return; }
+  ensureAudio();
+  stopAll();
+  A.demoBus = A.ctx.createGain();
+  A.demoBus.gain.value = 0.35;
+  A.demoBus.connect(A.inGain);
+  A.demoBus.connect(A.outGain);
+  let step = 0, next = A.ctx.currentTime + 0.08;
+  const tick = () => {
+    if (!A.demoBus) return;
+    while (next < A.ctx.currentTime + 0.6) { playDemoChord(DEMO[step % DEMO.length], next, 2.0); step++; next += 2.0; }
+  };
+  tick();
+  A.demoTimer = setInterval(tick, 120);
+  A.source = 'demo';
+  toast('Demonstração: D · G · A · F/B (tensão) · Dm · C · E · Bm');
+  updateSourceUI();
+}
+
+function gainFromSlider(v) { return Math.pow(10, (v - 50) / 33); }
+function applyGain() {
+  const g = gainFromSlider(+document.getElementById('gain').value);
+  document.getElementById('gain-val').textContent = '×' + (g < 10 ? g.toFixed(2) : g.toFixed(1));
+  if (A.inGain) A.inGain.gain.setTargetAtTime(g, A.ctx.currentTime, 0.05);
+}
+
+/* =====================================================================
+   3. ANÁLISE (DSP): cromagrama, nota dominante, centroide, RMS, BPM,
+      tonalidade (Krumhansl-Schmuckler), acordes, Ar/Terra, polaridade
+   ===================================================================== */
+const AN = {
+  active: false, level: 0, rms: 0, rmsDb: -Infinity, centroid: 0, smoothCentroid: 0,
+  chroma: new Float32Array(12),   // cromagrama suavizado (ordem Croma: D=0)
+  slow: new Float32Array(12),     // cromagrama lento (para tonalidade)
+  vis: new Float32Array(12),      // intensidade visual (cromagrama × nível)
+  peakF: new Float32Array(12),
+  dominant: -1, secondary: [], domFreq: 0,
+  keyRoot: -1, keyMode: '', modeScore: 0,
+  air: 0, polarity: 0, vertical: 0, depth: 0,
+  tension: 0, stability: 0, pulse: 0, bpm: 0,
+  chord: null, chordStrength: 0, lastChord: null,
+  color: new THREE.Color(0.55, 0.55, 0.6),
+};
+const raw = new Float32Array(12), peakM = new Float32Array(12), peakFr = new Float32Array(12);
+const KMAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
+const KMIN = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+const fluxHist = [], fluxTime = [];
+let fluxAvg = 0, lastOnset = 0, lastBpmCalc = 0;
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const smoothK = (dt, rate) => 1 - Math.exp(-dt * rate);
+
+function pearson(x, prof, root) {
+  let mx = 0, my = 0;
+  for (let i = 0; i < 12; i++) { mx += x[i]; my += prof[i]; }
+  mx /= 12; my /= 12;
+  let num = 0, dx = 0, dy = 0;
+  for (let i = 0; i < 12; i++) {
+    const a = x[i] - mx, b = prof[(i - root + 12) % 12] - my;
+    num += a * b; dx += a * a; dy += b * b;
+  }
+  return dx > 0 ? num / Math.sqrt(dx * dy) : 0;
+}
+
+function estimateBpm(now) {
+  const n = fluxHist.length;
+  if (n < 180) return;
+  const dtAvg = (fluxTime[n - 1] - fluxTime[0]) / (n - 1);
+  if (!(dtAvg > 0)) return;
+  // envelope de onsets: fluxo menos média local, retificado
+  const env = new Float32Array(n), half = Math.max(2, Math.round(0.15 / dtAvg));
+  let energy = 0;
+  for (let i = 0; i < n; i++) {
+    let s = 0, c = 0;
+    for (let j = Math.max(0, i - half); j <= Math.min(n - 1, i + half); j++) { s += fluxHist[j]; c++; }
+    env[i] = Math.max(0, fluxHist[i] - s / c);
+    energy += env[i] * env[i];
+  }
+  if (energy <= 1e-12) return;
+  let best = 0, bestScore = 0;
+  for (let bpm = 60; bpm <= 190; bpm += 1) {
+    const lag = 60 / bpm / dtAvg, li = Math.floor(lag), fr = lag - li;
+    if (li + 1 >= n - 10) continue;
+    let s = 0;
+    for (let i = 0; i + li + 1 < n; i++) s += env[i] * ((1 - fr) * env[i + li] + fr * env[i + li + 1]);
+    s /= (n - li);
+    const prior = Math.exp(-0.5 * Math.pow(Math.log2(bpm / 120) / 0.9, 2));
+    const score = s * prior;
+    if (score > bestScore) { bestScore = score; best = bpm; }
+  }
+  const strength = bestScore / (energy / n);
+  if (best && strength > 0.25) AN.bpm = AN.bpm ? AN.bpm + (best - AN.bpm) * 0.35 : best;
+}
+
+function analyse(dt, now) {
+  const running = A.ctx && A.source !== 'none' && !(A.source === 'file' && A.el.paused);
+  let active = false;
+  if (running) {
+    A.analyser.getFloatFrequencyData(freqDb);
+    A.analyser.getFloatTimeDomainData(timeBuf);
+    let s = 0;
+    for (let i = 0; i < timeBuf.length; i++) s += timeBuf[i] * timeBuf[i];
+    const rms = Math.sqrt(s / timeBuf.length);
+    AN.rms = rms; AN.rmsDb = 20 * Math.log10(rms + 1e-9);
+
+    const sr = A.ctx.sampleRate, binHz = sr / FFT_SIZE, nb = freqDb.length;
+    let num = 0, den = 0, flux = 0;
+    for (let i = 1; i < nb; i++) {
+      const db = freqDb[i];
+      const m = db > -150 ? Math.pow(10, db / 20) : 0;
+      const f = i * binHz;
+      if (f > 30 && f < 12000) { num += f * m; den += m; }
+      const d = m - prevMag[i];
+      if (d > 0 && f < 8000) flux += d;
+      prevMag[i] = m; mag[i] = m;
+    }
+    AN.centroid = den > 0 ? num / den : 0;
+
+    // ---- Cromagrama por picos espectrais com interpolação parabólica ----
+    const lo = Math.max(2, Math.floor(50 / binHz)), hi = Math.min(nb - 2, Math.ceil(5000 / binHz));
+    let maxDb = -200;
+    for (let i = lo; i <= hi; i++) if (freqDb[i] > maxDb) maxDb = freqDb[i];
+    const gate = Math.max(-90, maxDb - 40);
+    raw.fill(0); peakM.fill(0); peakFr.fill(0);
+    for (let i = lo; i <= hi; i++) {
+      const b = freqDb[i];
+      if (b < gate) continue;
+      const a = freqDb[i - 1], c = freqDb[i + 1];
+      if (!(b > a && b >= c)) continue;
+      const den2 = a - 2 * b + c;
+      const p = den2 !== 0 ? clamp(0.5 * (a - c) / den2, -0.5, 0.5) : 0;
+      const f = (i + p) * binHz;
+      if (f < 50) continue;
+      const midi = 69 + 12 * Math.log2(f / 440);
+      const r = Math.round(midi), dev = Math.abs(midi - r);
+      const tuneW = Math.pow(Math.cos(dev * Math.PI), 2);
+      const bandW = f < 120 ? 0.6 : (f > 2500 ? 0.55 : 1);
+      const w = Math.pow(10, b / 20) * tuneW * bandW;
+      const t = pcToTone(((r % 12) + 12) % 12);
+      raw[t] += w;
+      if (w > peakM[t]) { peakM[t] = w; peakFr[t] = f; }
+    }
+    let maxRaw = 0;
+    for (let k = 0; k < 12; k++) if (raw[k] > maxRaw) maxRaw = raw[k];
+    active = rms > 0.0025 && maxDb > -85 && maxRaw > 0;
+
+    // ---- nível (RMS → 0..1) ----
+    const lvlT = active ? clamp((AN.rmsDb + 58) / 44, 0, 1) : 0;
+    AN.level += (lvlT - AN.level) * smoothK(dt, lvlT > AN.level ? 18 : 4);
+
+    if (active) {
+      const kf = smoothK(dt, 9), ks = smoothK(dt, 1 / 3.5);
+      for (let k = 0; k < 12; k++) {
+        const v = Math.pow(raw[k] / maxRaw, 1.4);
+        AN.chroma[k] += (v - AN.chroma[k]) * kf;
+        AN.slow[k] += (raw[k] / maxRaw - AN.slow[k]) * ks;
+        if (peakFr[k] > 0) AN.peakF[k] = peakFr[k];
+      }
+      AN.smoothCentroid += (AN.centroid - AN.smoothCentroid) * smoothK(dt, 3);
+    }
+
+    // ---- fluxo espectral → onsets e BPM ----
+    fluxHist.push(flux); fluxTime.push(now);
+    while (fluxTime.length && now - fluxTime[0] > 8) { fluxTime.shift(); fluxHist.shift(); }
+    fluxAvg += (flux - fluxAvg) * smoothK(dt, 2.5);
+    if (active && flux > fluxAvg * 1.7 && now - lastOnset > 0.12 && AN.level > 0.08) { AN.pulse = 1; lastOnset = now; }
+    if (now - lastBpmCalc > 0.5) { lastBpmCalc = now; if (active) estimateBpm(now); }
+  }
+  AN.active = active;
+  if (!active) {
+    const kd = smoothK(dt, 1.6);
+    for (let k = 0; k < 12; k++) AN.chroma[k] -= AN.chroma[k] * kd;
+    AN.level -= AN.level * smoothK(dt, 3);
+  }
+  AN.pulse *= Math.exp(-dt * 6);
+
+  // ---- nota dominante (com histerese) e secundárias ----
+  let best = -1, bv = 0;
+  for (let k = 0; k < 12; k++) if (AN.chroma[k] > bv) { bv = AN.chroma[k]; best = k; }
+  if (bv < 0.25 || AN.level < 0.04) AN.dominant = -1;
+  else if (AN.dominant < 0 || AN.chroma[best] > AN.chroma[AN.dominant] * 1.12) AN.dominant = best;
+  AN.domFreq = AN.dominant >= 0 ? AN.peakF[AN.dominant] : 0;
+  AN.secondary = [];
+  if (AN.dominant >= 0) {
+    AN.secondary = [...Array(12).keys()].filter(k => k !== AN.dominant && AN.chroma[k] > 0.42)
+      .sort((a, b) => AN.chroma[b] - AN.chroma[a]).slice(0, 3);
+  }
+
+  // ---- intensidade visual ----
+  for (let k = 0; k < 12; k++) AN.vis[k] = clamp(AN.chroma[k] * (0.35 + 0.65 * AN.level) * 1.1, 0, 1);
+
+  // ---- tonalidade (Krumhansl-Schmuckler) ----
+  let sumSlow = 0;
+  for (let k = 0; k < 12; k++) sumSlow += AN.slow[k];
+  if (sumSlow > 0.5) {
+    const x = new Array(12);
+    for (let pc = 0; pc < 12; pc++) x[pc] = AN.slow[pcToTone(pc)];
+    let bMaj = -2, rMaj = 0, bMin = -2, rMin = 0;
+    for (let r = 0; r < 12; r++) {
+      const cM = pearson(x, KMAJ, r), cm = pearson(x, KMIN, r);
+      if (cM > bMaj) { bMaj = cM; rMaj = r; }
+      if (cm > bMin) { bMin = cm; rMin = r; }
+    }
+    const conf = Math.max(bMaj, bMin);
+    if (conf > 0.35) {
+      if (bMaj >= bMin) { AN.keyRoot = rMaj; AN.keyMode = 'maior'; } else { AN.keyRoot = rMin; AN.keyMode = 'menor'; }
+      AN.modeScore = clamp((bMaj - bMin) * 5, -1, 1);
+    }
+  }
+
+  // ---- acorde instantâneo ----
+  AN.chord = null;
+  if (AN.level > 0.06) {
+    let bestScore = 0;
+    const Q = [['maior', 4, 7, true], ['menor', 3, 7, true], ['diminuto', 3, 6, false], ['aumentado', 4, 8, false]];
+    for (let r = 0; r < 12; r++) for (const q of Q) {
+      const ts = [r, (r + q[1]) % 12, (r + q[2]) % 12].map(pcToTone);
+      if (ts.every(t => AN.chroma[t] > 0.4)) {
+        const sc = ts.reduce((s, t) => s + AN.chroma[t], 0) + (q[3] ? 0.05 : 0);
+        if (sc > bestScore) { bestScore = sc; AN.chord = { root: pcToTone(r), quality: q[0], consonant: q[3], tones: ts }; }
+      }
+    }
+  }
+  if (AN.chord) AN.lastChord = AN.chord;
+  const chordT = AN.chord && AN.chord.consonant ? 1 : 0;
+  AN.chordStrength += (chordT - AN.chordStrength) * smoothK(dt, chordT ? 6 : 2);
+
+  // ---- Ar/Terra, polaridade, tensão Fá↔Si, estabilidade em Ré ----
+  if (active) {
+    const cS = AN.smoothCentroid > 0 ? clamp(Math.log2(AN.smoothCentroid / 1500) / 1.6, -1, 1) : 0;
+    const bS = AN.bpm ? clamp((AN.bpm - 110) / 50, -1, 1) : 0;
+    const airT = clamp(0.5 * AN.modeScore + 0.32 * cS + 0.18 * bS, -1, 1);
+    AN.air += (airT - AN.air) * smoothK(dt, 1.2);
+    let wx = 0, wy = 0, wz = 0, ws = 0;
+    for (let k = 0; k < 12; k++) {
+      const w = AN.chroma[k] * AN.chroma[k];
+      wx += SENT_POS[k].x * w; wy += SENT_POS[k].y * w; wz += SENT_POS[k].z * w; ws += w;
+    }
+    if (ws > 0) {
+      const ks = smoothK(dt, 2.5);
+      AN.polarity += (wx / ws - AN.polarity) * ks;
+      AN.vertical += (wy / ws - AN.vertical) * ks;
+      AN.depth += (wz / ws - AN.depth) * ks;
+    }
+  } else {
+    const k = smoothK(dt, 0.6);
+    AN.air -= AN.air * k; AN.polarity -= AN.polarity * k; AN.vertical -= AN.vertical * k; AN.depth -= AN.depth * k;
+  }
+  const tensT = clamp(Math.sqrt(AN.vis[3] * AN.vis[9]) * 2.0, 0, 1);
+  AN.tension += (tensT - AN.tension) * smoothK(dt, tensT > AN.tension ? 5 : 1.5);
+  const stabT = (AN.dominant === 0 && AN.chroma[0] > 0.55) ? 1 : 0;
+  AN.stability += (stabT - AN.stability) * smoothK(dt, stabT ? 2.5 : 1.5);
+
+  // ---- cor global (mistura ponderada) ----
+  let r = 0, g = 0, b = 0, ws = 0;
+  for (let k = 0; k < 12; k++) {
+    const w = AN.vis[k] * AN.vis[k];
+    r += TONES[k].color.r * w; g += TONES[k].color.g * w; b += TONES[k].color.b * w; ws += w;
+  }
+  const target = ws > 0.0005 ? new THREE.Color(r / ws, g / ws, b / ws) : new THREE.Color(0.5, 0.5, 0.58);
+  AN.color.lerp(target, smoothK(dt, 4));
+}
+
+/* =====================================================================
+   4. RENDERIZAÇÃO (Three.js)
+   ===================================================================== */
+const stage = document.getElementById('stage');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+} catch (e) {
+  document.body.insertAdjacentHTML('beforeend', '<div class="fixed inset-0 flex items-center justify-center text-center p-8 z-[90]"><div class="glass p-6">WebGL não está disponível neste navegador.</div></div>');
+  throw e;
+}
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+renderer.setPixelRatio(DPR);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x07060d, 1);
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(0, 1.2, 9);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.06;
+controls.enablePan = false; controls.minDistance = 3.5; controls.maxDistance = 22;
+controls.autoRotateSpeed = 0.45;
+
+// Pós-processamento (brilho néon)
+let composer = null, bloom = null;
+try {
+  if (THREE.EffectComposer && THREE.UnrealBloomPass) {
+    composer = new THREE.EffectComposer(renderer);
+    composer.addPass(new THREE.RenderPass(scene, camera));
+    bloom = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.7, 0.5, 0.62);
+    composer.addPass(bloom);
+  }
+} catch (e) { composer = null; console.warn('Bloom indisponível', e); }
+
+// ---------- GLSL compartilhado ----------
+const NOISE_GLSL = `
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}`;
+
+// uniforms globais compartilhados por vários shaders
+const U = {
+  uTime: { value: 0 },
+  uLevel: { value: 0 },
+  uAir: { value: 0 },
+  uPulse: { value: 0 },
+  uTension: { value: 0 },
+  uStability: { value: 0 },
+  uChroma: { value: AN.vis },
+  uCol: { value: TONES.map(o => new THREE.Vector3(o.color.r, o.color.g, o.color.b)) },
+  uDir: { value: ICO_DIRS },
+  uTint: { value: new THREE.Color() },
+};
+
+// ---------- texturas procedurais (papel de aquarela, brilho, ícones) ----------
+function makePaperTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 260; i++) {
+    const r = 6 + Math.random() * 40, px = Math.random() * 256, py = Math.random() * 256;
+    const g = x.createRadialGradient(px, py, 0, px, py, r);
+    const a = 0.03 + Math.random() * 0.07;
+    g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g;
+    for (const ox of [-256, 0, 256]) for (const oy of [-256, 0, 256]) { x.save(); x.translate(ox, oy); x.beginPath(); x.arc(px, py, r, 0, TAU); x.fill(); x.restore(); }
+  }
+  const id = x.getImageData(0, 0, 256, 256);
+  for (let i = 0; i < id.data.length; i += 4) { const n = (Math.random() - 0.5) * 26; id.data[i] += n; id.data[i + 1] += n; id.data[i + 2] += n; }
+  x.putImageData(id, 0, 0);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+}
+function makeGlowTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(c);
+}
+function makeIconTexture(type) {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d');
+  x.lineJoin = 'round'; x.lineCap = 'round'; x.strokeStyle = '#0b0710'; x.lineWidth = 6;
+  if (type === 'air') {
+    const cs = [[44, 72, 26], [84, 72, 26], [64, 50, 28], [64, 84, 24]];
+    cs.forEach(([a, b, r]) => { x.beginPath(); x.arc(a, b, r, 0, TAU); x.stroke(); });
+    const g = x.createRadialGradient(56, 54, 6, 64, 70, 50); g.addColorStop(0, '#ffd3ea'); g.addColorStop(1, '#f27bb8');
+    x.fillStyle = g; cs.forEach(([a, b, r]) => { x.beginPath(); x.arc(a, b, r - 2.5, 0, TAU); x.fill(); });
+  } else if (type === 'fire') {
+    const flame = (s, col) => {
+      x.save(); x.translate(64, 120); x.scale(s, s); x.translate(-64, -120);
+      x.beginPath(); x.moveTo(64, 120);
+      x.bezierCurveTo(28, 116, 24, 76, 46, 52); x.bezierCurveTo(48, 70, 56, 72, 58, 62);
+      x.bezierCurveTo(52, 40, 66, 22, 76, 8); x.bezierCurveTo(78, 34, 104, 54, 98, 90);
+      x.bezierCurveTo(94, 110, 80, 120, 64, 120); x.closePath();
+      x.fillStyle = col; x.fill(); if (s === 1) x.stroke(); x.restore();
+    };
+    flame(1, '#f7dc2f'); flame(0.55, '#f7902f');
+  } else if (type === 'earth') {
+    x.beginPath(); x.moveTo(14, 26); x.lineTo(114, 26); x.lineTo(64, 114); x.closePath();
+    x.fillStyle = '#e8402c'; x.fill(); x.stroke();
+    x.lineWidth = 3.5; x.beginPath(); x.moveTo(64, 58); x.lineTo(14, 26); x.moveTo(64, 58); x.lineTo(114, 26); x.moveTo(64, 58); x.lineTo(64, 114); x.stroke();
+  } else if (type === 'water') {
+    x.beginPath(); x.moveTo(64, 10);
+    x.bezierCurveTo(84, 46, 104, 62, 102, 86); x.bezierCurveTo(98, 114, 30, 114, 26, 86); x.bezierCurveTo(24, 62, 44, 46, 64, 10); x.closePath();
+    const g = x.createLinearGradient(30, 20, 100, 110); g.addColorStop(0, '#9ad8ff'); g.addColorStop(1, '#2f9fe6');
+    x.fillStyle = g; x.fill(); x.stroke();
+    x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 4; x.beginPath(); x.arc(56, 82, 16, Math.PI * 0.6, Math.PI * 1.2); x.stroke();
+  } else if (type === 'sun') {
+    x.fillStyle = '#f7c43a';
+    for (let i = 0; i < 12; i++) {
+      x.save(); x.translate(64, 64); x.rotate(i * TAU / 12);
+      x.beginPath(); x.moveTo(-6, -30); x.quadraticCurveTo(-12, -44, 0, -60); x.quadraticCurveTo(6, -44, 6, -30); x.closePath(); x.fill(); x.stroke(); x.restore();
+    }
+    x.beginPath(); x.arc(64, 64, 30, 0, TAU); x.fillStyle = '#f7dc2f'; x.fill(); x.stroke();
+  } else if (type === 'moon') {
+    x.beginPath(); x.arc(64, 64, 44, 0, TAU); x.fillStyle = '#2f9fe6'; x.fill(); x.stroke();
+    x.globalCompositeOperation = 'destination-out';
+    x.beginPath(); x.arc(46, 56, 40, 0, TAU); x.fill();
+    x.globalCompositeOperation = 'source-over';
+  }
+  const t = new THREE.CanvasTexture(c); return t;
+}
+function makeTextSprite(text, color, scale = 1) {
+  const c = document.createElement('canvas'), x = c.getContext('2d');
+  const font = '600 44px Cinzel, Georgia, serif';
+  x.font = font;
+  const w = Math.ceil(x.measureText(text).width) + 40;
+  c.width = w; c.height = 72;
+  x.font = font; x.textBaseline = 'middle'; x.textAlign = 'center';
+  x.shadowColor = color; x.shadowBlur = 16; x.fillStyle = color;
+  x.fillText(text, w / 2, 38);
+  const t = new THREE.CanvasTexture(c);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, depthTest: false }));
+  s.scale.set(w / 72 * 0.32 * scale, 0.32 * scale, 1);
+  s.renderOrder = 10;
+  return s;
+}
+const PAPER = makePaperTexture();
+const GLOW = makeGlowTexture();
+const ICONS = {};
+['air', 'fire', 'earth', 'water', 'sun', 'moon'].forEach(k => ICONS[k] = makeIconTexture(k));
+function iconSprite(type, size) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: ICONS[type], transparent: true, depthWrite: false }));
+  s.scale.set(size, size, 1); return s;
+}
+function glowSprite(color, size, opacity = 1) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false }));
+  s.scale.set(size, size, 1); return s;
+}
+
+// ---------- fundo: nebulosa aquarelada tingida pela cor do som ----------
+const bgMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false,
+  uniforms: { uTime: U.uTime, uLevel: U.uLevel, uTint: U.uTint },
+  vertexShader: `varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `uniform float uTime,uLevel; uniform vec3 uTint; varying vec3 vP; ${NOISE_GLSL}
+    void main(){ vec3 d=normalize(vP);
+      float n=snoise(d*1.8+vec3(0.0,uTime*0.015,0.0))*0.5+0.5;
+      float n2=snoise(d*4.5-vec3(uTime*0.02))*0.5+0.5;
+      float n3=snoise(d*14.0)*0.5+0.5;
+      vec3 base=vec3(0.028,0.022,0.05);
+      vec3 c=base + uTint*(0.045+0.10*uLevel)*pow(n*n2,1.2)*2.2 + vec3(0.035,0.012,0.05)*n*(0.8+0.2*n3);
+      float star=smoothstep(0.92,1.0,snoise(d*90.0))*0.5;
+      gl_FragColor=vec4(c+star*vec3(0.8,0.8,1.0)*(0.3+0.2*n2),1.0); }`,
+});
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(80, 48, 32), bgMat));
+
+/* ---------------------------------------------------------------------
+   MODO 1 — A CROMASFERA 3D (onda-partícula)
+   --------------------------------------------------------------------- */
+const M1 = new THREE.Group(); scene.add(M1);
+const sphereVS = `
+uniform float uTime,uLevel,uAir,uTension,uPulse,uStability,uOutline;
+uniform float uChroma[12]; uniform vec3 uDir[12];
+varying vec3 vN; varying vec3 vWorld;
+${NOISE_GLSL}
+float displace(vec3 n){
+  float lobes=0.0;
+  for(int k=0;k<12;k++){ float a=max(dot(n,uDir[k]),0.0); lobes+=uChroma[k]*pow(a,7.0); }
+  float sym=1.0-0.88*uStability;
+  float d=lobes*0.5*sym;
+  float speed=0.16+0.45*max(uAir,0.0);
+  float freq=1.3+1.6*max(-uAir,0.0);
+  float chaos=(0.05+0.2*uLevel+0.12*max(-uAir,0.0))*sym;
+  d+=snoise(n*freq+vec3(0.0,uTime*speed,uTime*speed*0.5))*chaos;
+  float ang=atan(n.z,n.x);
+  d+=uTension*0.2*sin(2.0*ang-uTime*2.2)*n.y*2.0;
+  d+=uPulse*0.06+uStability*0.04*sin(uTime*2.0);
+  return d;
+}
+void main(){
+  vec3 n=normalize(position);
+  float d=displace(n);
+  vec3 p=n*(1.3+d+uOutline);
+  vN=n;
+  vec4 w=modelMatrix*vec4(p,1.0); vWorld=w.xyz;
+  gl_Position=projectionMatrix*viewMatrix*w;
+}`;
+const sphereFS = `
+uniform float uTime,uLevel,uStability,uAir;
+uniform float uChroma[12]; uniform vec3 uDir[12]; uniform vec3 uCol[12];
+varying vec3 vN; varying vec3 vWorld;
+${NOISE_GLSL}
+void main(){
+#ifdef OUTLINE
+  gl_FragColor=vec4(0.03,0.02,0.05,1.0);
+#else
+  vec3 nrm=normalize(cross(dFdx(vWorld),dFdy(vWorld)));
+  vec3 n=normalize(vN);
+  vec3 col=vec3(0.0); float ws=0.0;
+  for(int k=0;k<12;k++){ float a=max(dot(n,uDir[k]),0.0); float w=pow(a,3.0)*(0.12+1.8*uChroma[k]); col+=uCol[k]*w; ws+=w; }
+  col/=max(ws,1e-4);
+  // pigmento de aquarela: granulação e manchas
+  float g1=snoise(vWorld*5.5)*0.5+0.5;
+  float g2=snoise(n*2.2+vec3(uTime*0.04))*0.5+0.5;
+  col*=0.78+0.32*g2;
+  col=mix(col,col*col*1.35,0.3*g1);
+  vec3 L=normalize(vec3(0.4,0.9,0.7));
+  float diff=0.5+0.5*max(dot(nrm,L),0.0);
+  vec3 V=normalize(cameraPosition-vWorld);
+  float fr=pow(1.0-max(dot(nrm,V),0.0),2.2);
+  vec3 c=col*diff*(0.34+0.5*uLevel)+col*fr*(0.25+0.75*uLevel)*(1.0+0.5*max(uAir,0.0));
+  c=mix(c,c+vec3(0.12,0.55,0.18)*fr,uStability*0.7);
+  gl_FragColor=vec4(c,1.0);
+#endif
+}`;
+const sphereUniforms = Object.assign({}, U, { uOutline: { value: 0 } });
+const sphereGeo = new THREE.IcosahedronGeometry(1, 30);
+const sphereMat = new THREE.ShaderMaterial({ uniforms: sphereUniforms, vertexShader: sphereVS, fragmentShader: sphereFS, extensions: { derivatives: true } });
+const outlineUniforms = Object.assign({}, U, { uOutline: { value: 0.045 } });
+const outlineMat = new THREE.ShaderMaterial({ uniforms: outlineUniforms, vertexShader: sphereVS, fragmentShader: sphereFS, side: THREE.BackSide, defines: { OUTLINE: '' } });
+const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+const outlineMesh = new THREE.Mesh(sphereGeo, outlineMat);
+M1.add(outlineMesh, sphereMesh);
+const coreGlow = glowSprite(0xffffff, 5.5, 0.1); M1.add(coreGlow);
+
+// Fita cromática de 12 nós (meia-torção à la Möbius + torção em S sob tensão Fá↔Si)
+const RIB_N = 600;
+const ribbon = new THREE.Group(); ribbon.rotation.set(0.38, 0, 0.16); M1.add(ribbon);
+const ribPos = new Float32Array((RIB_N + 1) * 2 * 3), ribCol = new Float32Array((RIB_N + 1) * 2 * 3);
+const ribGeo = new THREE.BufferGeometry();
+ribGeo.setAttribute('position', new THREE.BufferAttribute(ribPos, 3));
+ribGeo.setAttribute('color', new THREE.BufferAttribute(ribCol, 3));
+{
+  const idx = [];
+  for (let i = 0; i < RIB_N; i++) { const a = i * 2, b = a + 1, c = a + 2, d = a + 3; idx.push(a, b, c, b, d, c); }
+  ribGeo.setIndex(idx);
+}
+const ribMesh = new THREE.Mesh(ribGeo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.92, map: PAPER }));
+ribbon.add(ribMesh);
+{ // uv para a textura de papel
+  const uv = new Float32Array((RIB_N + 1) * 4);
+  for (let i = 0; i <= RIB_N; i++) { uv[i * 4] = i / RIB_N * 24; uv[i * 4 + 1] = 0; uv[i * 4 + 2] = i / RIB_N * 24; uv[i * 4 + 3] = 0.25; }
+  ribGeo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+}
+const edgeA = new Float32Array((RIB_N + 1) * 3), edgeB = new Float32Array((RIB_N + 1) * 3);
+const edgeMat = new THREE.LineBasicMaterial({ color: 0x0b0710, transparent: true, opacity: 0.9 });
+const edgeGeoA = new THREE.BufferGeometry(); edgeGeoA.setAttribute('position', new THREE.BufferAttribute(edgeA, 3));
+const edgeGeoB = new THREE.BufferGeometry(); edgeGeoB.setAttribute('position', new THREE.BufferAttribute(edgeB, 3));
+ribbon.add(new THREE.Line(edgeGeoA, edgeMat), new THREE.Line(edgeGeoB, edgeMat));
+// nós: círculos (naturais) e triângulos/tetraedros (ultravioletas)
+const ribNodes = TONES.map(o => {
+  const g = new THREE.Group();
+  const geo = o.uv ? new THREE.TetrahedronGeometry(0.12) : new THREE.SphereGeometry(0.095, 20, 14);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: o.color.clone() }));
+  const ink = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x0b0710, side: THREE.BackSide }));
+  ink.scale.setScalar(1.25);
+  const glow = glowSprite(o.color, 0.6, 0.0);
+  g.add(ink, m, glow); g.userData = { m, glow };
+  ribbon.add(g); return g;
+});
+const _P = new THREE.Vector3(), _W = new THREE.Vector3(), _R = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0);
+function updateRibbon(time) {
+  const R = 2.3, T = AN.tension, S = AN.stability, lvl = AN.level;
+  const hw = 0.1 + 0.07 * lvl + 0.03 * AN.pulse;
+  for (let i = 0; i <= RIB_N; i++) {
+    const s = i / RIB_N, th = s * TAU;
+    const calm = 1 - 0.8 * S;
+    const y = (0.12 * Math.sin(3 * th + time * 0.7) * calm) + T * 0.8 * Math.sin(2 * th - time * 2.0) + AN.pulse * 0.04 * Math.sin(12 * th);
+    const rr = R + 0.12 * Math.sin(6 * th + time * 0.5) * calm + T * 0.3 * Math.cos(2 * th - time * 2.0);
+    _P.set(rr * Math.cos(th), y, rr * Math.sin(th));
+    _R.set(Math.cos(th), 0, Math.sin(th));
+    const tw = 0.5 * th + T * 2.6 * Math.sin(2 * th - time * 2.0);
+    _W.copy(_Y).multiplyScalar(Math.cos(tw)).addScaledVector(_R, Math.sin(tw));
+    const o = i * 6;
+    ribPos[o] = _P.x + _W.x * hw; ribPos[o + 1] = _P.y + _W.y * hw; ribPos[o + 2] = _P.z + _W.z * hw;
+    ribPos[o + 3] = _P.x - _W.x * hw; ribPos[o + 4] = _P.y - _W.y * hw; ribPos[o + 5] = _P.z - _W.z * hw;
+    edgeA[i * 3] = ribPos[o]; edgeA[i * 3 + 1] = ribPos[o + 1]; edgeA[i * 3 + 2] = ribPos[o + 2];
+    edgeB[i * 3] = ribPos[o + 3]; edgeB[i * 3 + 1] = ribPos[o + 4]; edgeB[i * 3 + 2] = ribPos[o + 5];
+    const tf = s * 12, k0 = Math.floor(tf) % 12, k1 = (k0 + 1) % 12;
+    let f = tf - Math.floor(tf); f = f * f * (3 - 2 * f);
+    const c0 = TONES[k0].color, c1 = TONES[k1].color;
+    const br = 0.4 + 0.95 * (AN.vis[k0] * (1 - f) + AN.vis[k1] * f) + 0.15 * S;
+    const r = (c0.r + (c1.r - c0.r) * f) * br, g = (c0.g + (c1.g - c0.g) * f) * br, b = (c0.b + (c1.b - c0.b) * f) * br;
+    ribCol[o] = ribCol[o + 3] = r; ribCol[o + 1] = ribCol[o + 4] = g; ribCol[o + 2] = ribCol[o + 5] = b;
+    if (i % (RIB_N / 12) === 0 && i < RIB_N) {
+      const node = ribNodes[i / (RIB_N / 12)], v = AN.vis[i / (RIB_N / 12)];
+      node.position.copy(_P);
+      node.scale.setScalar(1 + v * 1.8 + AN.pulse * 0.3);
+      node.rotation.y = time * 0.8; node.rotation.x = time * 0.5;
+      node.userData.glow.material.opacity = 0.15 + v * 0.85;
+    }
+  }
+  ribGeo.attributes.position.needsUpdate = true;
+  ribGeo.attributes.color.needsUpdate = true;
+  edgeGeoA.attributes.position.needsUpdate = true;
+  edgeGeoB.attributes.position.needsUpdate = true;
+}
+
+// Partículas: matéria (espirala para fora, cor do tom) × antimatéria (espirala para dentro, tom oposto)
+const PART_N = 5200;
+function makeParticles(rMin, rMax, flat) {
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(PART_N * 3), seed = new Float32Array(PART_N * 4), tone = new Float32Array(PART_N);
+  for (let i = 0; i < PART_N; i++) {
+    seed[i * 4] = Math.random(); seed[i * 4 + 1] = Math.random(); seed[i * 4 + 2] = Math.random(); seed[i * 4 + 3] = Math.random();
+    tone[i] = Math.floor(Math.random() * 12);
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 4));
+  geo.setAttribute('aTone', new THREE.BufferAttribute(tone, 1));
+  const mat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: Object.assign({}, U, { uScale: { value: 9 * DPR }, uRMin: { value: rMin }, uRMax: { value: rMax }, uFlat: { value: flat } }),
+    vertexShader: `
+      attribute vec4 aSeed; attribute float aTone;
+      uniform float uTime,uAir,uLevel,uPulse,uScale,uRMin,uRMax,uFlat;
+      uniform float uChroma[12]; uniform vec3 uCol[12];
+      varying vec3 vCol; varying float vA;
+      void main(){
+        float c=0.0; vec3 col=vec3(1.0); vec3 anti=vec3(1.0);
+        float opp=mod(aTone+6.0,12.0);
+        for(int k=0;k<12;k++){ float fk=float(k); if(fk==aTone){ c=uChroma[k]; col=uCol[k]; } if(fk==opp){ anti=uCol[k]; } }
+        bool matter=aSeed.x<0.5;
+        float sp=0.03*(1.0+1.8*max(uAir,0.0))*(0.6+aSeed.z);
+        float f=fract(aSeed.w+uTime*sp);
+        float t=matter?f:1.0-f;
+        float dens=1.0-0.28*max(-uAir,0.0);
+        float r=mix(uRMin,uRMax*dens,t)+uPulse*0.55*aSeed.z;
+        float dir=matter?1.0:-1.0;
+        float th=aSeed.y*6.2831853+uTime*0.22*dir*(0.5+aSeed.z)+t*3.0*dir;
+        float ph=acos(clamp(fract(aSeed.x*7.13)*2.0-1.0,-1.0,1.0));
+        vec3 p=r*vec3(sin(ph)*cos(th),cos(ph)*uFlat,sin(ph)*sin(th));
+        vCol=matter?col:mix(anti,vec3(0.85,0.9,1.0),0.35);
+        float fade=sin(3.14159*t);
+        vA=fade*(0.08+0.92*c)*(0.2+0.8*uLevel)*(matter?1.0:0.75);
+        vec4 mv=modelViewMatrix*vec4(p,1.0);
+        gl_PointSize=(1.6+6.5*c*uLevel+uPulse*2.5)*(1.0+0.35*max(-uAir,0.0))*uScale/(-mv.z);
+        gl_Position=projectionMatrix*mv;
+      }`,
+    fragmentShader: `varying vec3 vCol; varying float vA;
+      void main(){ float d=length(gl_PointCoord-0.5); float a=smoothstep(0.5,0.0,d); gl_FragColor=vec4(vCol*a*vA*1.1,a*vA); }`,
+  });
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false;
+  return pts;
+}
+const particles1 = makeParticles(1.7, 5.2, 0.6); M1.add(particles1);
+
+/* ---------------------------------------------------------------------
+   MODO 2 — A FLOR CROMA-SÔNICA (mandala de 12 pétalas)
+   --------------------------------------------------------------------- */
+const M2 = new THREE.Group(); scene.add(M2);
+const INK = 0x0b0710;
+const inkMat = new THREE.LineBasicMaterial({ color: INK });
+const toneAngle = t => Math.PI / 2 - t * Math.PI / 6;   // tom 0 no topo, sentido horário
+const petalCenter = (t, r = 2.6) => new THREE.Vector3(Math.cos(toneAngle(t)) * r, Math.sin(toneAngle(t)) * r, 0.3);
+
+function naturalPetalShape() {
+  const s = new THREE.Shape();
+  s.moveTo(-0.3, 1.55);
+  s.bezierCurveTo(-1.0, 2.0, -1.05, 3.05, -0.45, 3.6);
+  s.bezierCurveTo(-0.15, 3.85, 0.1, 3.95, 0.36, 4.05);
+  s.bezierCurveTo(0.2, 3.85, 0.45, 3.65, 0.62, 3.35);
+  s.bezierCurveTo(1.0, 2.8, 0.95, 1.95, 0.3, 1.55);
+  s.quadraticCurveTo(0, 1.45, -0.3, 1.55);
+  return s;
+}
+function diamondShape(sc = 1, cy = 2.45) {
+  const s = new THREE.Shape(), P = (x, y) => [x * sc, cy + (y - 2.45) * sc];
+  s.moveTo(...P(0, 1.6));
+  s.quadraticCurveTo(...P(0.44, 2.1), ...P(0.37, 2.42));
+  s.quadraticCurveTo(...P(0.26, 2.9), ...P(0, 3.38));
+  s.quadraticCurveTo(...P(-0.26, 2.9), ...P(-0.37, 2.42));
+  s.quadraticCurveTo(...P(-0.44, 2.1), ...P(0, 1.6));
+  return s;
+}
+const shapeLine = (shape, n = 64) => {
+  const pts = shape.getPoints(n).map(p => new THREE.Vector3(p.x, p.y, 0.02));
+  return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), inkMat);
+};
+const petals = TONES.map(o => {
+  const g = new THREE.Group();
+  g.rotation.z = -o.t * Math.PI / 6;
+  const inner = new THREE.Group(); g.add(inner);
+  const shape = o.uv ? diamondShape() : naturalPetalShape();
+  const geo = new THREE.ShapeGeometry(shape, 24);
+  const mat = new THREE.MeshBasicMaterial({ color: o.color.clone(), map: PAPER });
+  inner.add(new THREE.Mesh(geo, mat));
+  inner.add(shapeLine(shape));
+  if (o.uv) {
+    inner.add(shapeLine(diamondShape(0.5)));
+  } else {
+    const pts = [];
+    for (let i = 0; i <= 48; i++) {
+      const y = 1.85 + 1.75 * i / 48, env = Math.sin(Math.PI * i / 48);
+      pts.push(new THREE.Vector3(0.05 + 0.3 * env * Math.sin(i / 48 * TAU * 2.3), y, 0.02));
+    }
+    inner.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), inkMat));
+  }
+  g.position.z = o.uv ? 0.0 : 0.05;
+  g.userData = { t: o.t, inner, mat, I: 0 };
+  M2.add(g); return g;
+});
+// anel de escamas
+const scalesMat = new THREE.ShaderMaterial({
+  uniforms: Object.assign({}, U, { uPaper: { value: PAPER } }),
+  vertexShader: `varying vec2 vP; void main(){ vP=position.xy; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `uniform float uChroma[12]; uniform vec3 uCol[12]; uniform float uLevel,uTime; uniform sampler2D uPaper; varying vec2 vP;
+    void main(){
+      float r=length(vP); float a=atan(vP.x,vP.y); float u=fract(a/6.2831853+1.0);
+      float tf=u*12.0+0.5; float k0f=mod(floor(tf),12.0); float k1f=mod(k0f+1.0,12.0); float fk=fract(tf);
+      vec3 c0=vec3(0.0),c1=vec3(0.0); float h0=0.0,h1=0.0;
+      for(int k=0;k<12;k++){ float fk2=float(k); if(fk2==k0f){c0=uCol[k];h0=uChroma[k];} if(fk2==k1f){c1=uCol[k];h1=uChroma[k];} }
+      float sm=smoothstep(0.0,1.0,fk);
+      vec3 base=mix(c0,c1,sm); float ch=mix(h0,h1,sm);
+      float rows=7.0; float rn=(r-3.15)/(4.25-3.15)*rows; float row=floor(rn);
+      float cu=u*110.0+mod(row,2.0)*0.5;
+      vec2 cell=vec2(fract(cu),fract(rn));
+      float d=length((cell-vec2(0.5,0.0))*vec2(1.0,1.15));
+      float line=smoothstep(0.08,0.0,abs(d-0.55));
+      float paper=texture2D(uPaper,vP*0.3).r;
+      vec3 col=base*(0.22+0.9*ch*(0.4+0.6*uLevel)+0.12)*(0.8+0.25*paper);
+      col=mix(col,vec3(0.03,0.02,0.04),line*0.85);
+      gl_FragColor=vec4(col,1.0);
+    }`,
+});
+const scalesRing = new THREE.Mesh(new THREE.RingGeometry(3.15, 4.25, 192, 4), scalesMat);
+scalesRing.position.z = -0.05; M2.add(scalesRing);
+const band = new THREE.Mesh(new THREE.RingGeometry(4.25, 4.5, 192, 1), new THREE.MeshBasicMaterial({ color: 0x8c7d3b, map: PAPER }));
+band.position.z = -0.04; M2.add(band);
+[1.5, 3.15, 4.25, 4.5].forEach(r => {
+  const pts = []; for (let i = 0; i <= 192; i++) pts.push(new THREE.Vector3(Math.cos(i / 192 * TAU) * r, Math.sin(i / 192 * TAU) * r, 0.01));
+  M2.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), inkMat));
+});
+// disco central: roda de cores do Sentirama
+function makeWheelGradient() {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 2;
+  const x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 512, 0);
+  [[0, '#f27bb8'], [0.17, '#f7902f'], [0.27, '#f7dc2f'], [0.4, '#f7902f'], [0.5, '#e8402c'], [0.62, '#e0508f'], [0.75, '#2f9fe6'], [0.88, '#8f4fd0'], [1, '#f27bb8']]
+    .forEach(([o, col]) => g.addColorStop(o, col));
+  x.fillStyle = g; x.fillRect(0, 0, 512, 2);
+  return new THREE.CanvasTexture(c);
+}
+const wheelMat = new THREE.ShaderMaterial({
+  uniforms: { uGrad: { value: makeWheelGradient() }, uPaper: { value: PAPER }, uLevel: U.uLevel, uTime: U.uTime, uStability: U.uStability },
+  vertexShader: `varying vec2 vP; void main(){ vP=position.xy; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `uniform sampler2D uGrad,uPaper; uniform float uLevel,uTime,uStability; varying vec2 vP;
+    void main(){ float r=length(vP)/1.5; float a=atan(vP.x,vP.y); float u=fract(a/6.2831853+1.0);
+      vec3 c=texture2D(uGrad,vec2(u,0.5)).rgb;
+      float paper=texture2D(uPaper,vP*0.4+vec2(uTime*0.004,0.0)).r;
+      vec3 grey=vec3(0.78,0.79,0.84)*(0.8+0.2*paper);
+      grey=mix(grey,vec3(0.55,0.95,0.6),uStability*0.35);
+      float k=smoothstep(0.38,0.82,r);
+      vec3 col=mix(grey,c,k)*(0.72+0.3*paper);
+      col*=0.5+0.4*uLevel;
+      gl_FragColor=vec4(col,1.0); }`,
+});
+const wheel = new THREE.Mesh(new THREE.CircleGeometry(1.5, 128), wheelMat);
+wheel.position.z = 0.02; M2.add(wheel);
+const elemIcons = [['air', 0, 1.13], ['fire', 1.13, 0], ['earth', 0, -1.13], ['water', -1.13, 0]].map(([k, x, y]) => {
+  const s = iconSprite(k, 0.42); s.position.set(x, y, 0.1); M2.add(s); return s;
+});
+// símbolo central de Ré (Verde 0) e “molécula” dos 12 tons
+const dCore = new THREE.Group(); dCore.position.z = 0.12; M2.add(dCore);
+const dDisc = new THREE.Mesh(new THREE.CircleGeometry(0.2, 48), new THREE.MeshBasicMaterial({ color: TONES[0].color.clone() }));
+const dRing = new THREE.Mesh(new THREE.RingGeometry(0.2, 0.235, 48), new THREE.MeshBasicMaterial({ color: INK }));
+const dGlow = glowSprite(TONES[0].color, 1.4, 0.3);
+dCore.add(dGlow, dDisc, dRing);
+const molecule = new THREE.Group(); dCore.add(molecule);
+const molDots = TONES.map(o => {
+  const a = toneAngle(o.t), r = 0.62;
+  const geo = o.uv ? new THREE.CircleGeometry(0.075, 3) : new THREE.CircleGeometry(0.06, 24);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: o.color.clone(), transparent: true }));
+  m.position.set(Math.cos(a) * r, Math.sin(a) * r, 0.01);
+  if (o.uv) m.rotation.z = a - Math.PI / 2 + Math.PI;
+  molecule.add(m); return m;
+});
+{
+  const pts = []; for (let i = 0; i <= 96; i++) pts.push(new THREE.Vector3(Math.cos(i / 96 * TAU) * 0.62, Math.sin(i / 96 * TAU) * 0.62, 0));
+  molecule.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x0b0710, transparent: true, opacity: 0.6 })));
+}
+// conexões das Sete Naturais (heptagrama {7/3}) + triângulo do acorde
+const heptaPts = [];
+for (let i = 0; i < 7; i++) { heptaPts.push(petalCenter(NATURALS[i], 2.55), petalCenter(NATURALS[(i + 3) % 7], 2.55)); }
+const heptaMat = new THREE.LineBasicMaterial({ color: 0xfff3c4, transparent: true, opacity: 0.05, blending: THREE.AdditiveBlending, depthWrite: false });
+const hepta = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(heptaPts), heptaMat);
+M2.add(hepta);
+const chordPos = new Float32Array(12 * 3);
+const chordGeo = new THREE.BufferGeometry(); chordGeo.setAttribute('position', new THREE.BufferAttribute(chordPos, 3));
+const chordMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+const chordLines = new THREE.LineSegments(chordGeo, chordMat); chordLines.frustumCulled = false; M2.add(chordLines);
+const chordGlows = [0, 1, 2].map(() => { const s = glowSprite(0xffffff, 1.2, 0); M2.add(s); return s; });
+const particles2 = makeParticles(1.6, 5.6, 0.08); M2.add(particles2);
+
+function updateFlower(dt, time) {
+  for (const p of petals) {
+    const o = TONES[p.userData.t];
+    const v = AN.vis[o.t];
+    p.userData.I += (v - p.userData.I) * smoothK(dt, 10);
+    const I = p.userData.I;
+    const dull = o.color.clone().lerp(new THREE.Color(0.16, 0.15, 0.2), 0.62);
+    const bright = o.color.clone().multiplyScalar(1.05 + 0.25 * I);
+    p.userData.mat.color.copy(dull.lerp(bright, clamp(I * 1.3 + 0.08 * AN.level, 0, 1)));
+    const s = 0.94 + 0.14 * I + 0.03 * AN.pulse;
+    p.userData.inner.scale.set(s, s, 1);
+    p.userData.inner.position.z = I * 0.45;
+  }
+  const g0 = AN.vis[0];
+  dDisc.material.color.copy(TONES[0].color).multiplyScalar(0.5 + 0.8 * g0 + 0.3 * AN.stability);
+  dGlow.material.opacity = 0.1 + 0.6 * g0 + 0.4 * AN.stability;
+  dGlow.scale.setScalar(1.0 + 1.4 * AN.stability + 0.6 * g0);
+  molecule.rotation.z = -time * 0.1 * (1 + AN.air);
+  molDots.forEach((m, k) => { m.scale.setScalar(0.7 + AN.vis[k] * 1.8); m.material.opacity = 0.35 + 0.65 * AN.vis[k]; });
+  elemIcons.forEach((s, i) => { const b = 0.4 + 0.25 * Math.sin(time * 1.3 + i * 1.6); s.scale.setScalar(0.4 + 0.04 * b + 0.05 * AN.pulse); });
+  heptaMat.opacity = 0.05 + 0.38 * AN.chordStrength;
+  const ch = AN.lastChord;
+  if (ch) {
+    const P = ch.tones.map(t => petalCenter(t, 2.55));
+    const segs = [P[0], P[1], P[1], P[2], P[2], P[0], new THREE.Vector3(0, 0, 0.3), P[0], new THREE.Vector3(0, 0, 0.3), P[1], new THREE.Vector3(0, 0, 0.3), P[2]];
+    segs.forEach((v, i) => { chordPos[i * 3] = v.x; chordPos[i * 3 + 1] = v.y; chordPos[i * 3 + 2] = v.z + 0.4; });
+    chordGeo.attributes.position.needsUpdate = true;
+    chordGlows.forEach((s, i) => { s.position.copy(P[i]).setZ(0.8); s.material.color.copy(TONES[ch.tones[i]].color); s.material.opacity = AN.chordStrength * 0.9; });
+  }
+  chordMat.opacity = AN.chordStrength * 0.85;
+  M2.scale.setScalar(1 + AN.pulse * 0.015);
+}
+
+/* ---------------------------------------------------------------------
+   MODO 3 — O SENTIRAMA 3D (eixos de polaridade)
+   --------------------------------------------------------------------- */
+const M3 = new THREE.Group(); scene.add(M3);
+const AX_L = 3.2;
+function gradientAxis(axis, cNeg, cMid, cPos) {
+  const geo = new THREE.CylinderGeometry(0.045, 0.045, AX_L * 2, 16, 64, true);
+  const pos = geo.attributes.position, cols = new Float32Array(pos.count * 3);
+  const a = new THREE.Color(cNeg), m = new THREE.Color(cMid), b = new THREE.Color(cPos), tmp = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const t = pos.getY(i) / AX_L;
+    if (t < 0) tmp.copy(m).lerp(a, -t); else tmp.copy(m).lerp(b, t);
+    cols[i * 3] = tmp.r; cols[i * 3 + 1] = tmp.g; cols[i * 3 + 2] = tmp.b;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true }));
+  if (axis === 'x') mesh.rotation.z = -Math.PI / 2;
+  if (axis === 'z') mesh.rotation.x = Math.PI / 2;
+  return mesh;
+}
+const axY = gradientAxis('y', '#e8402c', '#43c24a', '#f27bb8');
+const axX = gradientAxis('x', '#2f9fe6', '#43c24a', '#f7dc2f');
+const axZ = gradientAxis('z', '#86f07c', '#43c24a', '#43c24a'); axZ.material.transparent = true; axZ.material.opacity = 0.35;
+M3.add(axY, axX, axZ);
+// anéis (cruz astrológica)
+function ring(r, color, opacity, rotX = 0, rotY = 0) {
+  const pts = []; for (let i = 0; i <= 160; i++) pts.push(new THREE.Vector3(Math.cos(i / 160 * TAU) * r, Math.sin(i / 160 * TAU) * r, 0));
+  const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color, transparent: true, opacity }));
+  l.rotation.set(rotX, rotY, 0); return l;
+}
+const sentRing = new THREE.Mesh(new THREE.TorusGeometry(AX_L, 0.02, 8, 160), new THREE.MeshBasicMaterial({ color: 0xd9c98a, transparent: true, opacity: 0.55 }));
+M3.add(sentRing, ring(AX_L, 0xffffff, 0.12, Math.PI / 2), ring(AX_L, 0xffffff, 0.12, 0, Math.PI / 2), ring(AX_L * 0.5, 0xffffff, 0.08));
+// pólos: elementos, sol e lua
+const poles = [
+  { icon: 'air', pos: [0, AX_L + 0.55, 0], label: 'AR · ROSA 9', col: '#f27bb8', lp: [0, AX_L + 1.05, 0] },
+  { icon: 'earth', pos: [0, -AX_L - 0.55, 0], label: 'TERRA · VERMELHO 3', col: '#e8402c', lp: [0, -AX_L - 1.05, 0] },
+  { icon: 'fire', pos: [AX_L + 0.55, 0, 0], label: 'POSITIVO · SOL', col: '#f7dc2f', lp: [AX_L + 0.55, -0.62, 0] },
+  { icon: 'water', pos: [-AX_L - 0.55, 0, 0], label: 'NEGATIVO · LUA', col: '#2f9fe6', lp: [-AX_L - 0.55, -0.62, 0] },
+];
+const labelSprites = [];
+const poleSprites = poles.map(p => {
+  const s = iconSprite(p.icon, 0.7); s.position.set(...p.pos); M3.add(s);
+  const g = glowSprite(new THREE.Color(p.col), 1.6, 0.25); g.position.set(...p.pos); M3.add(g);
+  return { s, g };
+});
+const sunS = iconSprite('sun', 0.5); sunS.position.set(AX_L + 0.55, 0.55, 0); M3.add(sunS);
+const moonS = iconSprite('moon', 0.45); moonS.position.set(-AX_L - 0.55, 0.55, 0); M3.add(moonS);
+function buildLabels() {
+  labelSprites.forEach(s => M3.remove(s)); labelSprites.length = 0;
+  poles.forEach(p => { const s = makeTextSprite(p.label, p.col, 0.9); s.position.set(...p.lp); M3.add(s); labelSprites.push(s); });
+  const v = makeTextSprite('VERDE 0 · EQUILÍBRIO', '#43c24a', 0.75); v.position.set(0, -0.55, AX_L + 0.35); M3.add(v); labelSprites.push(v);
+  labelSprites.forEach(s => s.visible = document.getElementById('opt-labels').checked);
+}
+// nós dos tons
+const sentNodes = TONES.map(o => {
+  const g = new THREE.Group();
+  const geo = o.uv ? new THREE.TetrahedronGeometry(0.13) : new THREE.SphereGeometry(0.1, 20, 14);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: o.color.clone() }));
+  const ink = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })); ink.scale.setScalar(1.25);
+  const glow = glowSprite(o.color, 0.8, 0.1);
+  g.add(ink, m, glow);
+  g.position.copy(SENT_POS[o.t]).multiplyScalar(AX_L * 0.82);
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), g.position.clone()]),
+    new THREE.LineBasicMaterial({ color: o.color, transparent: true, opacity: 0.08, blending: THREE.AdditiveBlending, depthWrite: false }));
+  M3.add(line, g);
+  g.userData = { glow, line, m };
+  return g;
+});
+// orbe de luz + rastro
+const orb = new THREE.Group(); M3.add(orb);
+const orbCore = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 20), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+const orbGlow = glowSprite(0xffffff, 2.0, 0.9);
+const orbHalo = glowSprite(0xffffff, 4.2, 0.12);
+orb.add(orbHalo, orbGlow, orbCore);
+const TRAIL_N = 260;
+const trailPos = new Float32Array(TRAIL_N * 3), trailCol = new Float32Array(TRAIL_N * 3);
+const trailGeo = new THREE.BufferGeometry();
+trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
+trailGeo.setAttribute('color', new THREE.BufferAttribute(trailCol, 3));
+const trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+trail.frustumCulled = false; M3.add(trail);
+const orbTarget = new THREE.Vector3(), orbPos = new THREE.Vector3();
+const particles3 = makeParticles(2.0, 6.5, 1.0); M3.add(particles3);
+
+function updateSentirama(dt, time) {
+  const R = AX_L * 0.85;
+  const yv = clamp(0.6 * AN.vertical + 0.45 * AN.air, -1, 1);
+  orbTarget.set(clamp(AN.polarity, -1, 1) * R, yv * R, clamp(AN.depth, -1, 1) * R * 0.8);
+  // órbita: o orbe circula ao redor do seu ponto de atração; raio cresce com a energia
+  const orbitR = 0.25 + 0.6 * AN.level, sp = 1.1 + 1.6 * Math.max(AN.air, 0);
+  orbTarget.x += Math.cos(time * sp) * orbitR; orbTarget.z += Math.sin(time * sp) * orbitR;
+  orbTarget.y += Math.sin(time * sp * 0.5) * orbitR * 0.4;
+  orbPos.lerp(orbTarget, smoothK(dt, 3));
+  orb.position.copy(orbPos);
+  const c = AN.color;
+  orbCore.material.color.copy(c).lerp(new THREE.Color(1, 1, 1), 0.35);
+  orbGlow.material.color.copy(c); orbHalo.material.color.copy(c);
+  const s = 1 + AN.level * 0.9 + AN.pulse * 0.5;
+  orbCore.scale.setScalar(s); orbGlow.scale.setScalar(2.0 * s); orbHalo.scale.setScalar(4.2 * s);
+  // rastro
+  trailPos.copyWithin(3, 0, (TRAIL_N - 1) * 3);
+  trailPos[0] = orbPos.x; trailPos[1] = orbPos.y; trailPos[2] = orbPos.z;
+  trailCol.copyWithin(3, 0, (TRAIL_N - 1) * 3);
+  const a = 0.4 + 0.6 * AN.level;
+  trailCol[0] = c.r * a; trailCol[1] = c.g * a; trailCol[2] = c.b * a;
+  for (let i = 1; i < TRAIL_N; i++) { const f = 0.985; trailCol[i * 3] *= f; trailCol[i * 3 + 1] *= f; trailCol[i * 3 + 2] *= f; }
+  trailGeo.attributes.position.needsUpdate = true; trailGeo.attributes.color.needsUpdate = true;
+  sentNodes.forEach((g, k) => {
+    const v = AN.vis[k];
+    g.scale.setScalar(1 + v * 2.2);
+    g.userData.glow.material.opacity = 0.08 + v * 0.9;
+    g.userData.line.material.opacity = 0.06 + v * 0.6;
+    g.rotation.y = time * 0.7;
+  });
+  // pólos acendem com a polaridade/ar-terra
+  const pw = [Math.max(yv, 0), Math.max(-yv, 0), Math.max(AN.polarity, 0), Math.max(-AN.polarity, 0)];
+  poleSprites.forEach((p, i) => { p.g.material.opacity = 0.15 + pw[i] * 0.9; p.s.scale.setScalar(0.7 + pw[i] * 0.25); });
+  sunS.material.rotation = time * 0.2;
+  sentRing.rotation.z = time * 0.05;
+  M3.rotation.y = Math.sin(time * 0.08) * 0.25;
+}
+
+/* =====================================================================
+   5. MODOS, CÂMERA E LOOP
+   ===================================================================== */
+const MODES = [
+  { group: M1, cam: new THREE.Vector3(0, 1.4, 8.6), bloom: 0.75, rotate: true },
+  { group: M2, cam: new THREE.Vector3(0, -0.6, 11.2), bloom: 0.3, rotate: false },
+  { group: M3, cam: new THREE.Vector3(6.2, 3.4, 8.4), bloom: 0.7, rotate: true },
+];
+let mode = 0, camTween = null;
+function setMode(m) {
+  mode = m;
+  MODES.forEach((o, i) => o.group.visible = i === m);
+  document.querySelectorAll('#mode-seg button').forEach(b => b.classList.toggle('on', +b.dataset.mode === m));
+  camTween = { from: camera.position.clone(), to: MODES[m].cam.clone(), t: 0 };
+  controls.target.set(0, 0, 0);
+  if (bloom) bloom.strength = MODES[m].bloom;
+  applyRotate();
+}
+function applyRotate() { controls.autoRotate = document.getElementById('opt-rotate').checked && MODES[mode].rotate; }
+
+const clock = new THREE.Clock();
+let hudTimer = 0, kbTimer = 0, elapsed = 0;
+function frame() {
+  requestAnimationFrame(frame);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  elapsed += dt;
+  const now = performance.now() / 1000;
+  analyse(dt, now);
+
+  U.uTime.value = elapsed;
+  U.uLevel.value = AN.level;
+  U.uAir.value = AN.air;
+  U.uPulse.value = AN.pulse;
+  U.uTension.value = AN.tension;
+  U.uStability.value = AN.stability;
+  U.uTint.value.copy(AN.color);
+
+  if (camTween) {
+    camTween.t = Math.min(1, camTween.t + dt / 1.2);
+    const e = 1 - Math.pow(1 - camTween.t, 3);
+    camera.position.lerpVectors(camTween.from, camTween.to, e);
+    if (camTween.t >= 1) camTween = null;
+  }
+  if (mode === 0) {
+    M1.rotation.y += dt * (0.05 + 0.25 * Math.max(AN.air, 0)) * (1 - 0.7 * AN.stability);
+    updateRibbon(elapsed);
+    coreGlow.material.color.copy(AN.color);
+    coreGlow.material.opacity = 0.05 + 0.15 * AN.level + 0.2 * AN.stability;
+  } else if (mode === 1) updateFlower(dt, elapsed);
+  else updateSentirama(dt, elapsed);
+
+  controls.update();
+  if (composer && document.getElementById('opt-bloom').checked) composer.render(); else renderer.render(scene, camera);
+
+  kbTimer += dt; if (kbTimer > 1 / 30) { kbTimer = 0; updateKeyboard(); }
+  hudTimer += dt; if (hudTimer > 0.1) { hudTimer = 0; updateHUD(); }
+}
+
+/* =====================================================================
+   6. INTERFACE (HUD, teclado, player, modal)
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const hex = c => '#' + c.getHexString();
+function toast(msg, ms = 2600) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+// teclado croma-sônico: C..B com os números Croma (D = 0)
+const KB = [];
+(function buildKeyboard() {
+  const kb = $('keyboard');
+  const whites = [0, 2, 4, 5, 7, 9, 11], blacks = [[1, 0], [3, 1], [6, 3], [8, 4], [10, 5]];
+  const W = 100 / 7;
+  whites.forEach((pc, i) => {
+    const t = pcToTone(pc), el = document.createElement('div');
+    el.className = 'white'; el.style.left = (i * W) + '%'; el.style.width = `calc(${W}% + 2px)`;
+    el.innerHTML = `<div class="fill"></div><div class="num">${t}</div><div class="nm">${TONES[t].pt}</div>`;
+    el.title = `${toneLabel(t)} · ${TONES[t].name} ${t}`;
+    kb.appendChild(el); KB[t] = el;
+  });
+  blacks.forEach(([pc, after]) => {
+    const t = pcToTone(pc), el = document.createElement('div');
+    el.className = 'black'; el.style.left = `calc(${(after + 1) * W}% - ${W * 0.33}%)`; el.style.width = (W * 0.66) + '%';
+    el.innerHTML = `<div class="fill"></div><div class="num" style="font-size:.8rem">${t}</div>`;
+    el.title = `${toneLabel(t)} · ${TONES[t].name} (${TONES[t].code})`;
+    kb.appendChild(el); KB[t] = el;
+  });
+  KB.forEach((el, t) => el.style.setProperty('--kc', TONES[t].hex));
+})();
+function updateKeyboard() {
+  for (let t = 0; t < 12; t++) {
+    const el = KB[t], v = AN.vis[t], c = TONES[t].color;
+    const a = 0.22 + 0.78 * Math.min(1, v * 1.25);
+    el.firstChild.style.background = `rgba(${c.r * 255 | 0},${c.g * 255 | 0},${c.b * 255 | 0},${a.toFixed(3)})`;
+    el.classList.toggle('dom', t === AN.dominant);
+  }
+}
+
+function chipFor(t) {
+  return `<span class="chip"><i style="background:${TONES[t].hex};${TONES[t].uv ? 'border-radius:0;clip-path:polygon(50% 0,100% 100%,0 100%)' : ''}"></i>${toneLabel(t)} · ${TONES[t].name} ${t}</span>`;
+}
+function updateHUD() {
+  const d = AN.dominant, sw = $('dom-swatch');
+  if (d >= 0) {
+    const o = TONES[d];
+    $('dom-text').innerHTML = `${o.en} (${o.pt}) <span class="text-[color:var(--muted)]">→</span> Cor: <span style="color:${o.hex}">${o.name} ${o.t}</span>`;
+    $('dom-sub').textContent = `${o.code} · ${o.uv ? '▲ triângulo (ultravioleta)' : '● círculo (natural)'} · ${o.role}`;
+    sw.style.background = o.hex; sw.style.color = o.hex;
+    sw.classList.toggle('tri', o.uv);
+    document.documentElement.style.setProperty('--accent', o.hex);
+    $('freq').textContent = AN.domFreq ? AN.domFreq.toFixed(1) : '—';
+  } else {
+    $('dom-text').textContent = '—';
+    $('dom-sub').textContent = A.source === 'none' ? 'aguardando áudio…' : 'silêncio / sinal fraco';
+    sw.style.background = '#2a2533'; sw.style.color = '#2a2533'; sw.classList.remove('tri');
+    $('freq').textContent = '—';
+  }
+  $('secondary').innerHTML = AN.secondary.length ? AN.secondary.map(chipFor).join('') : '—';
+  const ch = AN.chord;
+  $('chord').innerHTML = ch
+    ? `<span style="color:${TONES[ch.root].hex}">${TONES[ch.root].pt} ${ch.quality}</span><div class="text-[10px] text-[color:var(--muted)]">${ch.consonant ? 'consonante · Sete Naturais' : 'dissonante · tensão'}</div>`
+    : '—';
+  $('key').innerHTML = AN.keyRoot >= 0
+    ? `<span style="color:${TONES[pcToTone(AN.keyRoot)].hex}">${TONES[pcToTone(AN.keyRoot)].pt} ${AN.keyMode}</span>`
+    : '—';
+  const air = AN.air;
+  $('air-needle').style.left = (50 + air * 46) + '%';
+  $('mode-text').textContent = air > 0.08 ? 'Modo Ar (Maior)' : air < -0.08 ? 'Modo Terra (Menor)' : 'Equilíbrio (Verde 0)';
+  $('mode-text').style.color = air > 0.08 ? '#f27bb8' : air < -0.08 ? '#e8402c' : '#43c24a';
+  $('pol-needle').style.left = (50 + clamp(AN.polarity, -1, 1) * 46) + '%';
+  $('pol-text').textContent = AN.polarity > 0.1 ? 'Positivo · Espiritual' : AN.polarity < -0.1 ? 'Negativo · Físico' : 'Neutro';
+  $('pol-text').style.color = AN.polarity > 0.1 ? '#f7dc2f' : AN.polarity < -0.1 ? '#2f9fe6' : '#a39cb5';
+  $('tension-text').textContent = Math.round(AN.tension * 100) + '%';
+  $('tension-bar').style.width = (AN.tension * 100) + '%';
+  $('centroid').textContent = AN.active ? (AN.smoothCentroid >= 1000 ? (AN.smoothCentroid / 1000).toFixed(1) + 'k' : AN.smoothCentroid.toFixed(0)) : '—';
+  $('rms').textContent = AN.active ? AN.rmsDb.toFixed(0) + 'dB' : '—';
+  $('bpm').textContent = AN.bpm && AN.active ? AN.bpm.toFixed(0) : '—';
+  // player
+  if (A.source === 'file' && isFinite(A.el.duration)) {
+    if (!seeking) $('seek').value = (A.el.currentTime / A.el.duration * 1000) | 0;
+    $('track-time').textContent = `${fmt(A.el.currentTime)} / ${fmt(A.el.duration)}`;
+  }
+}
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+function updateSourceUI() {
+  $('btn-mic').classList.toggle('active', A.source === 'mic');
+  $('btn-mic').querySelector('span').textContent = A.source === 'mic' ? 'Parar Microfone' : 'Ativar Microfone';
+  $('btn-demo').classList.toggle('active', A.source === 'demo');
+  $('btn-demo').querySelector('span').textContent = A.source === 'demo' ? 'Parar demonstração' : 'Demonstração (sintetizador)';
+  $('btn-upload').classList.toggle('active', A.source === 'file');
+  const labels = { none: ['#666', 'sem entrada'], mic: ['#e8402c', 'microfone'], file: ['#2f9fe6', 'arquivo'], demo: ['#f7dc2f', 'demonstração'] };
+  const [c, l] = labels[A.source];
+  $('src-badge').innerHTML = `<i style="background:${c};box-shadow:0 0 8px ${c}"></i><span>${l}</span>`;
+  if (A.source !== 'file') { $('player').classList.add('hidden'); $('player').classList.remove('flex'); }
+  else { $('player').classList.remove('hidden'); $('player').classList.add('flex'); }
+  const playing = A.source === 'file' && !A.el.paused;
+  $('ico-play').classList.toggle('hidden', playing); $('ico-pause').classList.toggle('hidden', !playing);
+}
+
+// eventos de entrada
+$('btn-mic').addEventListener('click', startMic);
+$('btn-demo').addEventListener('click', startDemo);
+$('btn-upload').addEventListener('click', () => $('file-input').click());
+$('file-input').addEventListener('change', e => { loadFile(e.target.files[0]); e.target.value = ''; });
+$('gain').addEventListener('input', applyGain);
+function togglePlay() {
+  if (A.source !== 'file') return;
+  ensureAudio();
+  if (A.el.paused) A.el.play(); else A.el.pause();
+}
+$('btn-play').addEventListener('click', togglePlay);
+A.el.addEventListener('play', updateSourceUI);
+A.el.addEventListener('pause', updateSourceUI);
+A.el.addEventListener('ended', updateSourceUI);
+let seeking = false;
+$('seek').addEventListener('input', () => { seeking = true; });
+$('seek').addEventListener('change', e => { if (isFinite(A.el.duration)) A.el.currentTime = e.target.value / 1000 * A.el.duration; seeking = false; });
+$('volume').addEventListener('input', e => { if (A.outGain) A.outGain.gain.setTargetAtTime(e.target.value / 100, A.ctx.currentTime, 0.03); });
+
+// arrastar e soltar
+let dragDepth = 0;
+window.addEventListener('dragenter', e => { if ([...(e.dataTransfer?.types || [])].includes('Files')) { dragDepth++; $('dropzone').classList.add('show'); } });
+window.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) $('dropzone').classList.remove('show'); });
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => {
+  e.preventDefault(); dragDepth = 0; $('dropzone').classList.remove('show');
+  const f = e.dataTransfer?.files?.[0]; if (f) loadFile(f);
+});
+
+// modos e opções
+document.querySelectorAll('#mode-seg button').forEach(b => b.addEventListener('click', () => setMode(+b.dataset.mode)));
+$('opt-rotate').addEventListener('change', applyRotate);
+$('opt-particles').addEventListener('change', e => { [particles1, particles2, particles3].forEach(p => p.visible = e.target.checked); });
+$('opt-labels').addEventListener('change', e => labelSprites.forEach(s => s.visible = e.target.checked));
+$('hud-collapse').addEventListener('click', () => { const b = $('hud-body'); b.classList.toggle('collapsed'); $('hud-collapse').textContent = b.classList.contains('collapsed') ? '+' : '–'; });
+$('panel-collapse').addEventListener('click', () => { const p = $('panel-left'); p.classList.toggle('collapsed'); $('panel-collapse').textContent = p.classList.contains('collapsed') ? 'expandir' : 'recolher'; });
+function toggleFull() { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
+$('btn-full').addEventListener('click', toggleFull);
+
+// modal de teoria
+(function buildToneGrid() {
+  $('tone-grid').innerHTML = TONES.map(o => `
+    <div class="tone-card">
+      <div class="sw ${o.uv ? 'tri' : ''}" style="background:${o.hex}"></div>
+      <div class="min-w-0">
+        <div class="text-sm font-semibold"><span style="color:${o.hex}">${o.t}</span> · ${o.en} (${o.pt}) — ${o.name}</div>
+        <div class="text-[11px] text-[color:var(--muted)]">${o.code} · ${o.uv ? '▲ ultravioleta' : '● natural'}${o.role && !/^(Natural|Ultravioleta)$/.test(o.role) ? ' · ' + o.role : ''}</div>
+      </div>
+    </div>`).join('');
+})();
+const openModal = () => $('modal').classList.add('show');
+const closeModal = () => $('modal').classList.remove('show');
+$('btn-info').addEventListener('click', openModal);
+$('modal-close').addEventListener('click', closeModal);
+$('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox') return;
+  const k = e.key.toLowerCase();
+  if (k === 'escape') closeModal();
+  else if (k === 'h') document.body.classList.toggle('hidden-ui');
+  else if (k === 'f') toggleFull();
+  else if (k === '1' || k === '2' || k === '3') setMode(+k - 1);
+  else if (k === ' ') { if (A.source === 'file') { e.preventDefault(); togglePlay(); } }
+  else if (k === '?') openModal();
+});
+
+window.addEventListener('resize', () => {
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  if (composer) composer.setSize(w, h);
+});
+window.addEventListener('beforeunload', () => stopMic());
+
+// iniciar
+(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(buildLabels);
+setMode(0);
+camera.position.copy(MODES[0].cam); camTween = null;
+updateSourceUI();
+frame();
+</script>
+</body>
+</html>
