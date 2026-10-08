@@ -223,6 +223,15 @@
   .r-chip { display: inline-flex; align-items: center; font-size: .75rem; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--r-line); white-space: nowrap; }
   .r-seek { cursor: pointer; }
   .r-seek:hover { border-color: var(--r-ink2); }
+  .r-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .r-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+  .r-sq { max-width: 420px; margin: 0 auto; }
+  .r-rp { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+  .r-rp input[type=range] { flex: 1; min-width: 140px; }
+  .r-rp-note { font-size: .85rem; min-width: 160px; }
+  #report .mini-seg { background: var(--r-card); border-color: var(--r-line); }
+  #report .mini-seg button { color: var(--r-ink2); }
+  #report .mini-seg button.on { color: var(--r-ink); background: var(--r-line); }
   .r-method ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; max-width: 90ch; }
   .r-method li { font-size: .84rem; line-height: 1.6; color: var(--r-ink); }
   #rtip { position: fixed; z-index: 95; pointer-events: none; display: none; max-width: 320px; background: #17131f; color: #ece6f5; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; padding: 6px 10px; font-size: .78rem; line-height: 1.45; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
@@ -615,7 +624,7 @@ const ICO_DIRS = (() => {
    ===================================================================== */
 function dspCore() {
   'use strict';
-  const VERSION = 'croma-dsp 1.1';
+  const VERSION = 'croma-dsp 1.2';
   // referência do método: a classe de altura (C = 0) que vira o Verde 0 (padrão Ré = 2) e a afinação do Lá 4
   let REF = 2, A4 = 440;
   function configure(o = {}) {
@@ -927,6 +936,51 @@ function dspCore() {
       tonicStability: domShare[0],
     };
   }
+  // família de cor de cada tom (as ultravioletas pertencem à família da sua natural)
+  const FAM_OF = (() => { const f = new Array(12); FAMILIES.forEach((fam, i) => fam.tones.forEach(t => { f[t] = i; })); return f; })();
+  // transições entre notas dominantes, tons que soam juntos e classes de intervalo harmônico,
+  // numa leitura: rot = 0 (referência) ou rot = tônica (relativa; a tônica vira o tom 0)
+  function colorGrammar(tl, T, dt, rot) {
+    const trans12 = new Array(144).fill(0), cooc12 = new Array(144).fill(0);
+    const trans7 = new Array(49).fill(0), cooc7 = new Array(49).fill(0), intervals = new Array(7).fill(0);
+    const R = k => (k - rot + 12) % 12;
+    // segmentos de nota dominante; os mais curtos que 0,15 s são tratados como ruído
+    const minLen = Math.max(1, Math.round(0.15 / dt)), segs = [];
+    let cur = -1, len = 0;
+    for (let i = 0; i <= T; i++) {
+      const d = i < T ? tl.dom[i] : -2;
+      if (d === cur) { len++; continue; }
+      if (cur >= 0 && len >= minLen) segs.push(R(cur));
+      cur = d; len = 1;
+    }
+    let changes = 0, fprev = -1;
+    for (let i = 0; i < segs.length; i++) {
+      if (i > 0 && segs[i] !== segs[i - 1]) { trans12[segs[i - 1] * 12 + segs[i]]++; changes++; }
+      const f = FAM_OF[segs[i]];
+      if (fprev >= 0 && f !== fprev) trans7[fprev * 7 + f]++;
+      fprev = f;
+    }
+    let activeFrames = 0;
+    for (let i = 0; i < T; i++) {
+      if (!tl.active[i]) continue;
+      activeFrames++;
+      const on = [], fam = new Set();
+      for (let k = 0; k < 12; k++) if (tl.raw[i * 12 + k] > 0.35) { const r = R(k); on.push(r); fam.add(FAM_OF[r]); }
+      for (let a = 0; a < on.length; a++) {
+        cooc12[on[a] * 12 + on[a]]++;
+        for (let b = a + 1; b < on.length; b++) {
+          cooc12[on[a] * 12 + on[b]]++; cooc12[on[b] * 12 + on[a]]++;
+          const d = Math.abs(on[b] - on[a]) % 12; intervals[Math.min(d, 12 - d)]++;
+        }
+      }
+      const fl = [...fam];
+      for (let a = 0; a < fl.length; a++) {
+        cooc7[fl[a] * 7 + fl[a]]++;
+        for (let b = a + 1; b < fl.length; b++) { cooc7[fl[a] * 7 + fl[b]]++; cooc7[fl[b] * 7 + fl[a]]++; }
+      }
+    }
+    return { trans12, cooc12, trans7, cooc7, intervals, activeFrames, changes };
+  }
   function summarize(tl, chordList, dt, duration) {
     const T = tl.t.length;
     // perfil cromático global: média ponderada por amplitude, só quadros ativos
@@ -1010,6 +1064,7 @@ function dspCore() {
     const topChords = [...chordDur.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10)
       .map(([c, d]) => Object.assign({}, chordList[c], { seconds: +d.toFixed(2), share: pct(d, chordTotal) }));
     const activeDur = activeN * dt;
+    const grammar = { ref: colorGrammar(tl, T, dt, 0), rel: colorGrammar(tl, T, dt, key.tone) };
     const abs = reading(tl, T, 0, profileAbs, domCount, domFrames);
     const rel = reading(tl, T, key.tone, profileAbs, domCount, domFrames);
     return {
@@ -1024,12 +1079,12 @@ function dspCore() {
         top: topChords, consonantShare: pct(consTotal, chordTotal), coverage: pct(chordTotal, activeDur),
         sequence: chordSegs.map(g => ({ root: chordList[g.c].root, quality: chordList[g.c].quality, consonant: chordList[g.c].consonant, t0: +g.t0.toFixed(2), t1: +(g.t1 + dt).toFixed(2) })),
       },
-      keyTimeline, absolute: abs, relative: rel,
+      keyTimeline, absolute: abs, relative: rel, grammar,
     };
   }
 
   return {
-    VERSION, NATURALS, FAMILIES, SENT_XYZ, KMAJ, KMIN, configure, pcToTone,
+    VERSION, NATURALS, FAMILIES, FAM_OF, SENT_XYZ, KMAJ, KMIN, configure, pcToTone,
     extractFrame, keyFromChroma, detectChord, bpmFromFlux, sentiramaPos, airIndex, tensionOf, rotateChroma,
     fft, blackman, analyzeBuffer, summarize,
   };
@@ -2529,7 +2584,11 @@ function updateLaudoButtons() {
 
 // ---------- painel do laudo ----------
 function openReport() { $('report').classList.add('show'); $('report').setAttribute('aria-hidden', 'false'); $('report').scrollTop = 0; }
-function closeReport() { $('report').classList.remove('show'); $('report').setAttribute('aria-hidden', 'true'); $('rtip').style.display = 'none'; }
+function closeReport() {
+  $('report').classList.remove('show'); $('report').setAttribute('aria-hidden', 'true'); $('rtip').style.display = 'none';
+  if (RP.raf) { cancelAnimationFrame(RP.raf); RP.raf = 0; }
+  RP.playing = false;
+}
 function setProgress(p) { $('r-bar').style.width = (p * 100).toFixed(1) + '%'; $('r-bar').style.opacity = p > 0 && p < 1 ? 1 : 0; }
 const rcss = name => getComputedStyle($('report')).getPropertyValue(name).trim();
 
@@ -2641,6 +2700,15 @@ function renderReportBody(res) {
   </div>
 
   <section class="r-card">
+    <h2>Roda cromática</h2>
+    <p class="r-sub">O perfil desenhado como a Flor: cada pétala cresce com a energia do seu tom; o anel interno mostra o tempo em que o tom foi a nota dominante.</p>
+    <div class="r-two">
+      <div><div class="r-lbl">Referência (${TONES[0].pt} = Verde 0)</div><div class="r-cw r-sq">${cw('wheelAbs', 300)}</div></div>
+      <div><div class="r-lbl">Relativa (tônica ${TONES[T0].pt} = Verde 0)</div><div class="r-cw r-sq">${cw('wheelRel', 300)}</div></div>
+    </div>
+  </section>
+
+  <section class="r-card">
     <h2>Sentirama</h2>
     <p class="r-sub">Cada ponto é um instante da música no cruzamento dos dois planos (cor = nota dominante). O anel marca o centro de gravidade.</p>
     <div class="r-two">
@@ -2648,6 +2716,36 @@ function renderReportBody(res) {
       <div><div class="r-lbl">Leitura relativa (tônica ${TONES[T0].pt} = Verde 0)</div>${cw('sentRel', 300)}</div>
     </div>
     <div class="r-scroll"><table class="r-tab"><thead><tr><th>Quadrante</th><th>Referência</th><th>Relativa</th></tr></thead><tbody>${quadRows}</tbody></table></div>
+  </section>
+
+  <section class="r-card">
+    <div class="r-head">
+      <div><h2>Replay no Sentirama</h2><p class="r-sub">A trajetória da música no plano, em sincronia com o áudio. ${R.blob ? 'Reproduzir toca o áudio do laudo.' : 'Sem o áudio original, o replay roda em silêncio.'}</p></div>
+      <div class="mini-seg" data-toggle="rpRead"><button data-v="ref" class="${RUI.rpRead === 'ref' ? 'on' : ''}">Referência</button><button data-v="rel" class="${RUI.rpRead === 'rel' ? 'on' : ''}">Relativa</button></div>
+    </div>
+    <div class="r-sq">${cw('replay', 340)}</div>
+    <div class="r-rp">
+      <button class="btn" id="rp-play">▶ Reproduzir</button>
+      <input type="range" id="rp-seek" min="0" max="1000" value="0" aria-label="Posição do replay">
+      <span id="rp-time" class="stat r-mut">0:00</span>
+      <span id="rp-note" class="r-rp-note">—</span>
+    </div>
+  </section>
+
+  <section class="r-card">
+    <div class="r-head">
+      <div><h2>Gramática das cores</h2><p class="r-sub">Como as cores se sucedem (melodia e encadeamento) e quais soam juntas (harmonia).</p></div>
+      <div class="r-tools">
+        <div class="mini-seg" data-toggle="gramRead"><button data-v="ref" class="${RUI.gramRead === 'ref' ? 'on' : ''}">Referência</button><button data-v="rel" class="${RUI.gramRead === 'rel' ? 'on' : ''}">Relativa</button></div>
+        <div class="mini-seg" data-toggle="gramUnit"><button data-v="12" class="${RUI.gramUnit === 12 ? 'on' : ''}">12 tons</button><button data-v="7" class="${RUI.gramUnit === 7 ? 'on' : ''}">7 cores</button></div>
+      </div>
+    </div>
+    <div class="r-two">
+      <div><div class="r-lbl">Transições: qual cor leva a qual</div>${cw('trans', 330)}<p class="r-sub">Linha = cor de onde sai; coluna = cor para onde vai; % das mudanças a partir de cada linha.</p></div>
+      <div><div class="r-lbl">Coocorrência: quais cores soam juntas</div>${cw('cooc', 330)}<p class="r-sub">% dos quadros com som em que as duas cores soam juntas; a diagonal é a presença de cada cor.</p></div>
+    </div>
+    <div class="r-lbl">Intervalos harmônicos (pares de tons que soam juntos)</div>${cw('intervals', 120)}
+    <div id="r-gram-text">${gramText(res)}</div>
   </section>
 
   <div class="r-two">
@@ -2701,6 +2799,8 @@ function renderReportBody(res) {
     </ul>
   </section>`;
   $('r-src-name').textContent = src.name || '';
+  RP.t = 0; RP.playing = false; RP.last = 0;
+  if (!RP.raf) RP.raf = requestAnimationFrame(replayTick);
   requestAnimationFrame(drawAllCharts);
 }
 
@@ -2909,6 +3009,215 @@ function drawSent(cv, res, rel) {
   g.fillText(pctS(q['rosa-amarelo']), cx + off, cy - off); g.fillText(pctS(q['rosa-azul']), cx - off, cy - off);
   g.fillText(pctS(q['vermelho-amarelo']), cx + off, cy + off + 8); g.fillText(pctS(q['vermelho-azul']), cx - off, cy + off + 8);
 }
+// ---------- Fase 1: roda cromática, gramática das cores e replay ----------
+const RUI = { gramRead: 'ref', gramUnit: 12, rpRead: 'ref' };
+const RP = { raf: 0, t: 0, playing: false, last: 0 };
+const INTERVAL_NAMES = ['', 'Semitom (2ª m · 7ª M)', 'Tom (2ª M · 7ª m)', '3ª menor · 6ª M', '3ª maior · 6ª m', '4ª · 5ª justas', 'Trítono'];
+const INTERVAL_SHORT = ['', '2ª m', '2ª M', '3ª m', '3ª M', '4ª/5ª', 'Trítono'];
+const FAM_ABBR = ['Vd', 'Am', 'La', 'Vm', 'Vi', 'Az', 'Ro'];   // Verde, Amarelo, Laranja, Vermelho, Violeta, Azul, Rosa
+
+// pétala da roda (mesma forma orgânica da Flor), ângulo 0 = topo, sentido horário
+function petalPath(g, cx, cy, a, r0, r1, hw) {
+  const P = (r, ang) => [cx + Math.cos(ang) * r, cy + Math.sin(ang) * r];
+  g.beginPath();
+  g.moveTo(...P(r0, a - hw));
+  g.quadraticCurveTo(...P(r0 + (r1 - r0) * 0.75, a - hw * 1.25), ...P(r1, a));
+  g.quadraticCurveTo(...P(r0 + (r1 - r0) * 0.75, a + hw * 1.25), ...P(r0, a + hw));
+  g.closePath();
+}
+function drawWheel(cv, res, rel) {
+  const S = res.summary, rd = rel ? S.relative : S.absolute, T0 = rel ? S.key.tone : 0;
+  const { g, w, h } = prepCanvas(cv), cx = w / 2, cy = h / 2, R0 = Math.min(w, h) / 2 - 30, r0 = R0 * 0.24;
+  const pmax = Math.max(...rd.profile) || 1, dmax = Math.max(...rd.dominantShare) || 1;
+  cv._wheel = { cx, cy, r0, R0, rd, T0, rel };
+  g.strokeStyle = rcss('--r-grid'); g.lineWidth = 1;
+  [0.5, 1].forEach(f => { g.beginPath(); g.arc(cx, cy, r0 + (R0 - r0) * f, 0, TAU); g.stroke(); });
+  for (let k = 0; k < 12; k++) {
+    const a = -Math.PI / 2 + k * Math.PI / 6, v = rd.profile[k] / pmax;
+    petalPath(g, cx, cy, a, r0, r0 + (R0 - r0) * Math.max(0.04, v), TONES[k].uv ? 0.12 : 0.2);
+    g.fillStyle = TONES[k].hex; g.globalAlpha = 0.35 + 0.65 * v; g.fill(); g.globalAlpha = 1;
+    g.strokeStyle = rcss('--r-bg'); g.lineWidth = 1.5; g.stroke();
+    // anel interno: tempo como nota dominante
+    const d = rd.dominantShare[k] / dmax;
+    g.beginPath(); g.arc(cx, cy, r0 * 0.72, a - 0.22, a + 0.22);
+    g.strokeStyle = TONES[k].hex; g.globalAlpha = 0.15 + 0.85 * d; g.lineWidth = 2 + 9 * d; g.stroke(); g.globalAlpha = 1;
+    // rótulo: número do tom e nota
+    const lx = cx + Math.cos(a) * (R0 + 12), ly = cy + Math.sin(a) * (R0 + 12);
+    g.textAlign = 'center'; g.fillStyle = rcss('--r-ink'); g.font = '600 11px Inter, system-ui, sans-serif';
+    g.fillText(String(k), lx, ly + 1);
+    g.fillStyle = rcss('--r-ink2'); g.font = '9px Inter, system-ui, sans-serif';
+    g.fillText(rel ? relNote(k, T0) : TONES[k].pt, lx, ly + 11);
+  }
+  g.fillStyle = TONES[0].hex; g.beginPath(); g.arc(cx, cy, r0 * 0.38, 0, TAU); g.fill();
+}
+
+function gramOf(res) { const G = res.summary.grammar; return G ? G[RUI.gramRead === 'rel' ? 'rel' : 'ref'] : null; }
+function gramLabel(i, fam, res) {
+  if (fam) return CORE.FAMILIES[i].name;
+  const T0 = RUI.gramRead === 'rel' ? res.summary.key.tone : 0;
+  return `${TONES[i].name} ${i} (${RUI.gramRead === 'rel' ? relNote(i, T0) : TONES[i].pt})`;
+}
+const gramHex = (i, fam) => fam ? FAMILY_HEX[CORE.FAMILIES[i].name] : TONES[i].hex;
+function drawMatrix(cv, res, kind) {
+  const G = gramOf(res), { g, w, h } = prepCanvas(cv);
+  if (!G) { g.fillStyle = rcss('--r-ink2'); g.fillText('Não disponível neste laudo (gerado por uma versão anterior).', 4, 16); return; }
+  const fam = RUI.gramUnit === 7, n = fam ? 7 : 12;
+  const M = kind === 'trans' ? (fam ? G.trans7 : G.trans12) : (fam ? G.cooc7 : G.cooc12);
+  const padL = 26, padT = 22, cell = Math.floor(Math.min((w - padL - 4) / n, (h - padT - 4) / n));
+  const vals = new Float64Array(n * n);
+  let vmax = 0;
+  for (let a = 0; a < n; a++) {
+    let rs = 0;
+    for (let b = 0; b < n; b++) rs += M[a * n + b];
+    for (let b = 0; b < n; b++) {
+      const v = kind === 'trans' ? (rs > 0 ? M[a * n + b] / rs : 0) : (G.activeFrames ? M[a * n + b] / G.activeFrames : 0);
+      vals[a * n + b] = v; if (v > vmax) vmax = v;
+    }
+  }
+  if (kind === 'trans') vmax = Math.max(vmax, 0.5);
+  cv._mat = { padL, padT, cell, n, fam, kind, vals, M };
+  const ink = rcss('--r-ink'), bg = rcss('--r-bg');
+  for (let a = 0; a < n; a++) {
+    // cabeçalhos: ponto de cor + número (12) ou inicial (7)
+    const lab = fam ? FAM_ABBR[a] : String(a);
+    g.fillStyle = gramHex(a, fam);
+    g.beginPath(); g.arc(8, padT + a * cell + cell / 2, 4, 0, TAU); g.fill();
+    g.beginPath(); g.arc(padL + a * cell + cell / 2, 6, 4, 0, TAU); g.fill();
+    g.fillStyle = rcss('--r-ink2'); g.font = '9px Inter, system-ui, sans-serif'; g.textAlign = 'right';
+    g.fillText(lab, padL - 4, padT + a * cell + cell / 2 + 3);
+    g.textAlign = 'center'; g.fillText(lab, padL + a * cell + cell / 2, 19);
+    for (let b = 0; b < n; b++) {
+      const v = vals[a * n + b], x = padL + b * cell, y = padT + a * cell, al = v > 0 ? 0.08 + 0.92 * Math.min(1, v / vmax) : 0.03;
+      g.globalAlpha = al; g.fillStyle = ink; g.fillRect(x + 1, y + 1, cell - 2, cell - 2); g.globalAlpha = 1;
+      if (cell >= 24 && v >= 0.1) {
+        g.fillStyle = al > 0.55 ? bg : ink; g.font = '600 9px Inter, system-ui, sans-serif'; g.textAlign = 'center';
+        g.fillText(Math.round(v * 100) + '', x + cell / 2, y + cell / 2 + 3);
+      }
+    }
+  }
+}
+function drawIntervals(cv, res) {
+  const G = gramOf(res), { g, w, h } = prepCanvas(cv);
+  if (!G) return;
+  const tot = G.intervals.slice(1).reduce((s, v) => s + v, 0) || 1, padB = 30, padT = 16, gap = 10, bw = (w - gap * 5) / 6, H = h - padB - padT;
+  const vmax = Math.max(...G.intervals.slice(1)) / tot || 1;
+  cv._bars = [];
+  g.strokeStyle = rcss('--r-grid'); g.beginPath(); g.moveTo(0, padT + H + 0.5); g.lineTo(w, padT + H + 0.5); g.stroke();
+  for (let i = 1; i <= 6; i++) {
+    const v = G.intervals[i] / tot, x = (i - 1) * (bw + gap), bh = Math.max(1, v / vmax * H), y = padT + H - bh;
+    const cons = i >= 3 && i <= 5;
+    g.fillStyle = rcss(cons ? '--r-ink' : '--r-ink2'); g.globalAlpha = cons ? 0.85 : 0.5;
+    roundTop(g, x, y, bw, bh, 4); g.fill(); g.globalAlpha = 1;
+    g.fillStyle = rcss('--r-ink'); g.textAlign = 'center'; g.font = '600 10px Inter, system-ui, sans-serif';
+    g.fillText(pctS(v), x + bw / 2, y - 4);
+    g.fillStyle = rcss('--r-ink2'); g.font = '10px Inter, system-ui, sans-serif';
+    g.fillText(INTERVAL_SHORT[i], x + bw / 2, padT + H + 14);
+    g.fillText(cons ? 'consonante' : 'dissonante', x + bw / 2, padT + H + 26);
+    cv._bars.push({ x0: x, x1: x + bw, k: i, v });
+  }
+}
+function gramText(res) {
+  const G = gramOf(res);
+  if (!G) return '<span class="r-mut">Gramática não disponível neste laudo (gerado por uma versão anterior).</span>';
+  const iv = G.intervals, tot = iv.slice(1).reduce((s, v) => s + v, 0) || 1;
+  const cons = (iv[3] + iv[4] + iv[5]) / tot, diss = (iv[1] + iv[2] + iv[6]) / tot;
+  const fam = RUI.gramUnit === 7, n = fam ? 7 : 12, M = fam ? G.trans7 : G.trans12, top = [];
+  for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) if (M[a * n + b]) top.push([M[a * n + b], a, b]);
+  top.sort((x, y) => y[0] - x[0]);
+  const rows = top.slice(0, 12).map(([c, a, b]) => `<tr><td>${dot(gramHex(a, fam))}${gramLabel(a, fam, res)}</td><td>→</td><td>${dot(gramHex(b, fam))}${gramLabel(b, fam, res)}</td><td>${c}×</td></tr>`).join('');
+  return `<p class="r-text">Consonâncias (terças, sextas, quartas e quintas): <b>${pctS(cons)}</b> dos pares de tons que soam juntos · dissonâncias (segundas, sétimas e trítono): <b>${pctS(diss)}</b>. ${G.changes} mudanças de cor dominante.</p>
+    <details class="r-table"><summary>Ver as transições mais frequentes</summary><div class="r-scroll"><table class="r-tab"><thead><tr><th>De</th><th></th><th>Para</th><th>Vezes</th></tr></thead><tbody>${rows || '<tr><td colspan="4" class="r-mut">sem mudanças de cor estáveis</td></tr>'}</tbody></table></div></details>`;
+}
+
+// replay: a trajetória no Sentirama acompanha o player (ou um relógio próprio, sem áudio)
+function replayLinked() { return !!(R.blob && A.currentFile === R.blob && A.source === 'file'); }
+function sentBase(g, cx, cy, Rr) {
+  g.strokeStyle = rcss('--r-grid'); g.lineWidth = 1;
+  g.beginPath(); g.arc(cx, cy, Rr / 1.1, 0, TAU); g.stroke();
+  const gx = g.createLinearGradient(cx - Rr, 0, cx + Rr, 0);
+  gx.addColorStop(0, '#2f9fe6'); gx.addColorStop(0.5, '#43c24a'); gx.addColorStop(1, '#f7dc2f');
+  const gy = g.createLinearGradient(0, cy + Rr, 0, cy - Rr);
+  gy.addColorStop(0, '#e8402c'); gy.addColorStop(0.5, '#43c24a'); gy.addColorStop(1, '#f27bb8');
+  g.lineWidth = 3; g.globalAlpha = 0.75;
+  g.strokeStyle = gx; g.beginPath(); g.moveTo(cx - Rr, cy); g.lineTo(cx + Rr, cy); g.stroke();
+  g.strokeStyle = gy; g.beginPath(); g.moveTo(cx, cy + Rr); g.lineTo(cx, cy - Rr); g.stroke();
+  g.globalAlpha = 1;
+  g.fillStyle = rcss('--r-ink2'); g.font = '10px Inter, system-ui, sans-serif';
+  g.textAlign = 'center'; g.fillText('Rosa · sutil', cx, cy - Rr - 8); g.fillText('Vermelho · denso', cx, cy + Rr + 16);
+  g.textAlign = 'left'; g.fillText('− Azul', cx - Rr, cy - 6);
+  g.textAlign = 'right'; g.fillText('+ Amarelo', cx + Rr, cy - 6);
+}
+function drawReplay(cv, res, t) {
+  const rel = RUI.rpRead === 'rel', S = res.summary, rd = rel ? S.relative : S.absolute, tonic = rel ? S.key.tone : 0;
+  const { g, w, h } = prepCanvas(cv), { tl, n, dt } = tlInfo(res), path = rd.sentirama.path;
+  const size = Math.min(w, h), cx = w / 2, cy = h / 2, Rr = size / 2 - 26, P = (x, y) => [cx + x / 1.1 * Rr, cy - y / 1.1 * Rr];
+  sentBase(g, cx, cy, Rr);
+  const t0 = n ? tl.t[0] : 0, colorAt = pt => { const d = tl.dom[clamp(Math.round((pt - t0) / dt), 0, n - 1)]; return d < 0 ? null : TONES[(d - tonic + 12) % 12].hex; };
+  // a trajetória inteira, bem apagada, como contexto
+  g.globalAlpha = 0.07; g.fillStyle = rcss('--r-ink');
+  for (const p of path) { const [x, y] = P(p[1], p[2]); g.fillRect(x - 1, y - 1, 2, 2); }
+  g.globalAlpha = 1;
+  // rastro dos últimos 5 s
+  let hi = -1, lo = 0, hiB = path.length - 1;
+  while (lo <= hiB) { const m = (lo + hiB) >> 1; if (path[m][0] <= t) { hi = m; lo = m + 1; } else hiB = m - 1; }
+  if (hi >= 0) {
+    let i0 = hi;
+    while (i0 > 0 && path[i0 - 1][0] >= t - 5) i0--;
+    g.lineCap = 'round';
+    for (let i = i0 + 1; i <= hi; i++) {
+      const a = path[i - 1], b = path[i];
+      if (b[0] - a[0] > 1) continue;
+      const age = (t - b[0]) / 5, col = colorAt(b[0]) || rcss('--r-ink2');
+      g.strokeStyle = col; g.globalAlpha = Math.max(0.05, 1 - age); g.lineWidth = 1 + 3 * (1 - age);
+      g.beginPath(); g.moveTo(...P(a[1], a[2])); g.lineTo(...P(b[1], b[2])); g.stroke();
+    }
+    g.globalAlpha = 1;
+    const cur = path[hi], [x, y] = P(cur[1], cur[2]), col = t - cur[0] < 0.5 ? colorAt(cur[0]) : null;
+    if (col) {
+      g.save(); g.shadowColor = col; g.shadowBlur = 18; g.fillStyle = col;
+      g.beginPath(); g.arc(x, y, 9, 0, TAU); g.fill(); g.restore();
+      g.strokeStyle = rcss('--r-ink'); g.lineWidth = 2; g.beginPath(); g.arc(x, y, 11, 0, TAU); g.stroke();
+    }
+  }
+  return hi >= 0 ? path[hi] : null;
+}
+function replayUI() {
+  const res = R.result; if (!res) return;
+  const dur = res.source.duration || 1, sk = $('rp-seek'), tm = $('rp-time'), nt = $('rp-note'), pb = $('rp-play');
+  if (!sk) return;
+  if (document.activeElement !== sk) sk.value = Math.round(RP.t / dur * 1000);
+  tm.textContent = `${mmss(RP.t)} / ${mmss(dur)}`;
+  const i = frameAt(res, RP.t), d = res.timeline.dom[i];
+  if (d >= 0) {
+    const rel = RUI.rpRead === 'rel', k = rel ? (d - res.summary.key.tone + 12) % 12 : d;
+    nt.innerHTML = `${dot(TONES[k].hex)}${TONES[d].pt} → ${TONES[k].name} ${k}`;
+  } else nt.textContent = '—';
+  pb.textContent = RP.playing ? '❚❚ Pausar' : '▶ Reproduzir';
+}
+function replayTick(now) {
+  RP.raf = requestAnimationFrame(replayTick);
+  if (!R.result || !$('report').classList.contains('show')) return;
+  const cv = document.querySelector('#r-body canvas[data-chart="replay"]');
+  if (!cv) return;
+  const dur = R.result.source.duration || 0;
+  if (replayLinked()) { RP.t = A.el.currentTime; RP.playing = !A.el.paused; }
+  else if (RP.playing) { RP.t += (now - (RP.last || now)) / 1000; if (RP.t >= dur) { RP.t = dur; RP.playing = false; } }
+  RP.last = now;
+  withNames(laudoRef(R.result), () => { drawReplay(cv, R.result, RP.t); replayUI(); });
+}
+function replayToggle() {
+  if (replayLinked()) { if (A.el.paused) A.el.play(); else A.el.pause(); return; }
+  if (R.blob && !RP.playing) { seekTo(RP.t >= (R.result.source.duration || 0) - 0.05 ? 0 : RP.t); return; }
+  if (!RP.playing && RP.t >= (R.result.source.duration || 0) - 0.05) RP.t = 0;
+  RP.playing = !RP.playing; RP.last = 0;
+}
+function setToggle(name, v) {
+  RUI[name] = name === 'gramUnit' ? +v : v;
+  document.querySelectorAll(`#r-body [data-toggle="${name}"] button`).forEach(b => b.classList.toggle('on', b.dataset.v === String(v)));
+  if (name !== 'rpRead') { const gt = $('r-gram-text'); if (gt) withNames(laudoRef(R.result), () => { gt.innerHTML = gramText(R.result); }); }
+  drawAllCharts();
+}
+
 const CHARTS = {
   stripAbs: (cv, r) => drawDomStrip(cv, r, false),
   stripRel: (cv, r) => drawDomStrip(cv, r, true),
@@ -2940,6 +3249,12 @@ const CHARTS = {
   palette: drawPalette,
   sentAbs: (cv, r) => drawSent(cv, r, false),
   sentRel: (cv, r) => drawSent(cv, r, true),
+  wheelAbs: (cv, r) => drawWheel(cv, r, false),
+  wheelRel: (cv, r) => drawWheel(cv, r, true),
+  trans: (cv, r) => drawMatrix(cv, r, 'trans'),
+  cooc: (cv, r) => drawMatrix(cv, r, 'cooc'),
+  intervals: drawIntervals,
+  replay: (cv, r) => { drawReplay(cv, r, RP.t); replayUI(); },
 };
 function drawAllCharts() {
   if (!R.result || !$('report').classList.contains('show')) return;
@@ -2976,6 +3291,29 @@ function chartReadout(cv, ev) {
     if (!b) return null;
     const rel = kind === 'profileRel', T0 = res.summary.key.tone;
     return { html: `${dot(TONES[b.k].hex)}<b>${pctS(b.v, 1)}</b> da energia · ${TONES[b.k].name} ${b.k} · ${rel ? `grau ${b.k} = ${relNote(b.k, T0)}` : TONES[b.k].pt}` };
+  }
+  if (kind === 'wheelAbs' || kind === 'wheelRel') {
+    const W = cv._wheel; if (!W) return null;
+    const dx = x - W.cx, dy = y - W.cy, r = Math.hypot(dx, dy);
+    if (r < W.r0 * 0.4 || r > W.R0 + 20) return null;
+    const k = ((Math.round((Math.atan2(dy, dx) + Math.PI / 2) / (Math.PI / 6)) % 12) + 12) % 12;
+    const sum = W.rd.profile.reduce((s, v) => s + v, 0) || 1;
+    return { html: `${dot(TONES[k].hex)}<b>${pctS(W.rd.profile[k] / sum, 1)}</b> da energia · dominante ${pctS(W.rd.dominantShare[k], 1)} do tempo · ${TONES[k].name} ${k} · ${W.rel ? `grau ${k} = ${relNote(k, W.T0)}` : TONES[k].pt}` };
+  }
+  if (kind === 'trans' || kind === 'cooc') {
+    const m = cv._mat; if (!m) return null;
+    const b = Math.floor((x - m.padL) / m.cell), a = Math.floor((y - m.padT) / m.cell);
+    if (a < 0 || b < 0 || a >= m.n || b >= m.n) return null;
+    const v = m.vals[a * m.n + b], c = m.M[a * m.n + b], A_ = gramLabel(a, m.fam, res), B_ = gramLabel(b, m.fam, res);
+    const da = dot(gramHex(a, m.fam)), db = dot(gramHex(b, m.fam));
+    if (kind === 'trans') return { html: `${da}${A_} → ${db}${B_}: <b>${pctS(v, 1)}</b> das mudanças a partir de ${A_} (${c}×)` };
+    if (a === b) return { html: `${da}${A_} soa em <b>${pctS(v, 1)}</b> dos quadros com som` };
+    return { html: `${da}${A_} + ${db}${B_} juntos em <b>${pctS(v, 1)}</b> dos quadros com som` };
+  }
+  if (kind === 'intervals') {
+    const b = (cv._bars || []).find(b => x >= b.x0 && x <= b.x1);
+    if (!b) return null;
+    return { html: `<b>${pctS(b.v, 1)}</b> dos pares de tons simultâneos · ${INTERVAL_NAMES[b.k]}` };
   }
   if (kind === 'palette') {
     const s = (cv._segs || []).find(s => x >= s.x0 && x <= s.x1 && y >= s.y0 && y <= s.y1);
@@ -3071,7 +3409,15 @@ $('r-body').addEventListener('pointermove', e => {
   if (xl) { if (r.x != null) { xl.style.left = r.x + 'px'; xl.style.display = 'block'; } else xl.style.display = 'none'; }
 });
 $('r-body').addEventListener('pointerleave', hideTip);
+$('r-body').addEventListener('input', e => {
+  if (e.target.id !== 'rp-seek' || !R.result) return;
+  const t = e.target.value / 1000 * (R.result.source.duration || 0);
+  if (replayLinked()) A.el.currentTime = t; else RP.t = t;
+});
 $('r-body').addEventListener('click', e => {
+  const tg = e.target.closest && e.target.closest('[data-toggle] button');
+  if (tg) { setToggle(tg.parentElement.dataset.toggle, tg.dataset.v); return; }
+  if (e.target.closest && e.target.closest('#rp-play')) { replayToggle(); return; }
   const chip = e.target.closest && e.target.closest('.r-seek');
   if (chip) { seekTo(+chip.dataset.t); return; }
   const cv = e.target.closest && e.target.closest('canvas[data-chart]');
