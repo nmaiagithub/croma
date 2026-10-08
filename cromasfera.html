@@ -251,6 +251,16 @@
   .ab-range label { display: inline-flex; align-items: center; gap: 4px; }
   .ab-t { width: 64px; background: var(--r-card); border: 1px solid var(--r-line); color: var(--r-ink); border-radius: 8px; padding: 3px 6px; font-variant-numeric: tabular-nums; }
   .mini-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .exp-q { margin-top: 18px !important; text-transform: none !important; letter-spacing: 0 !important; font-size: .95rem !important; color: var(--r-ink) !important; }
+  .exp-colors { display: flex; flex-wrap: wrap; gap: 8px; }
+  .exp-color { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 12px; border: 1px solid var(--r-line); color: var(--r-ink); font-size: .85rem; }
+  .exp-color i { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+  .exp-color.on { border-color: var(--r-ink); box-shadow: 0 0 0 2px var(--r-ink); }
+  .exp-air { display: grid; gap: 6px; max-width: 640px; font-size: .8rem; color: var(--r-ink2); }
+  .exp-air input { width: 100%; }
+  .exp-air div { display: flex; justify-content: space-between; gap: 12px; }
+  .exp-form { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: center; font-size: .85rem; }
+  .exp-form > *:nth-child(even) { justify-self: start; }
   .research-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .research-grid .btn { font-size: .78rem; padding: .45rem .5rem; }
   .r-method ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; max-width: 90ch; }
@@ -366,6 +376,7 @@
       <div class="research-grid" id="research-grid">
         <button class="btn" id="btn-bench" title="Sons controlados com a expectativa do modelo">Bancada</button>
         <button class="btn" id="btn-ab" title="Dois áudios, laudos, estímulos ou trechos lado a lado">Comparação A/B</button>
+        <button class="btn" id="btn-exp" title="Teste cego: a percepção das pessoas × a previsão do modelo">Experimento</button>
       </div>
     </div>
     <p class="text-[11px] text-[color:var(--muted)] mt-2 leading-relaxed">Ou arraste um arquivo .mp3 / .wav / .m4a / .ogg para a tela.</p>
@@ -564,6 +575,25 @@
   </div>
 </div>
 <input type="file" id="ab-file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" class="hidden">
+
+<!-- ============ EXPERIMENTO DE ESCUTA ============ -->
+<div id="exp" class="r-panel" aria-hidden="true" role="dialog" aria-label="Experimento de escuta">
+  <div class="r-top">
+    <div class="r-top-in">
+      <div class="min-w-0"><div class="label">Pesquisa</div><div class="r-h1">Experimento de escuta</div></div>
+      <div class="r-actions">
+        <div class="mini-seg" id="exp-tabs"><button data-exp-view="setup">Preparar</button><button data-exp-view="results">Resultados</button></div>
+        <button class="btn" id="exp-csv">Baixar CSV</button>
+        <button class="btn" id="exp-json">Baixar JSON</button>
+        <button class="btn" id="exp-import">Importar JSON</button>
+        <button class="btn" id="exp-close" aria-label="Fechar experimento">✕</button>
+      </div>
+    </div>
+  </div>
+  <div class="r-body" id="exp-body"></div>
+</div>
+<input type="file" id="exp-files" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" multiple class="hidden">
+<input type="file" id="exp-jsonfile" accept=".json,application/json" class="hidden">
 <input type="file" id="ab-jsonfile" accept=".json,application/json" class="hidden">
 
 <div id="dropzone"><div class="box glass"><div class="title-font text-xl rainbow-text">Solte o arquivo de áudio</div><div class="text-sm text-[color:var(--muted)] mt-2">.mp3 · .wav · .m4a · .ogg</div></div></div>
@@ -1022,6 +1052,48 @@ function dspCore() {
     return { params, timeline: tl, chords: chordList, summary };
   }
 
+  // ---- estatística para os experimentos ----
+  const mean = a => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : NaN);
+  function pearsonR(x, y) {
+    const n = Math.min(x.length, y.length); if (n < 3) return NaN;
+    const mx = mean(x), my = mean(y); let sxx = 0, syy = 0, sxy = 0;
+    for (let i = 0; i < n; i++) { const a = x[i] - mx, b = y[i] - my; sxx += a * a; syy += b * b; sxy += a * b; }
+    return sxx > 0 && syy > 0 ? sxy / Math.sqrt(sxx * syy) : NaN;
+  }
+  function normCdf(z) {   // Abramowitz & Stegun 7.1.26
+    const t = 1 / (1 + 0.3275911 * Math.abs(z) / Math.SQRT2);
+    const e = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-z * z / 2);
+    return z >= 0 ? (1 + e) / 2 : (1 - e) / 2;
+  }
+  // p bicaudal aproximado de uma correlação (transformação z de Fisher)
+  function corrP(r, n) {
+    if (!(n > 3) || !isFinite(r)) return NaN;
+    const z = Math.atanh(Math.max(-0.999999, Math.min(0.999999, r))) * Math.sqrt(n - 3);
+    return 2 * (1 - normCdf(Math.abs(z)));
+  }
+  const logFact = (() => { const c = [0]; return n => { for (let i = c.length; i <= n; i++) c[i] = c[i - 1] + Math.log(i); return c[n]; }; })();
+  // P(X ≥ k) para X ~ Binomial(n, p): chance de acertar k ou mais ao acaso
+  function binomTail(k, n, p) {
+    if (k <= 0) return 1; if (k > n) return 0;
+    let s = 0;
+    for (let i = k; i <= n; i++) s += Math.exp(logFact(n) - logFact(i) - logFact(n - i) + i * Math.log(p) + (n - i) * Math.log(1 - p));
+    return Math.min(1, s);
+  }
+  // mínimos quadrados y ≈ X·w (X com 3 colunas), por equações normais com uma pequena regularização
+  function lstsq3(X, y, ridge = 1e-6) {
+    const A = [[ridge, 0, 0], [0, ridge, 0], [0, 0, ridge]], b = [0, 0, 0];
+    for (let i = 0; i < X.length; i++) for (let r = 0; r < 3; r++) { b[r] += X[i][r] * y[i]; for (let c = 0; c < 3; c++) A[r][c] += X[i][r] * X[i][c]; }
+    const M = A.map((row, i) => [...row, b[i]]);
+    for (let c = 0; c < 3; c++) {
+      let piv = c; for (let r = c + 1; r < 3; r++) if (Math.abs(M[r][c]) > Math.abs(M[piv][c])) piv = r;
+      [M[c], M[piv]] = [M[piv], M[c]];
+      if (Math.abs(M[c][c]) < 1e-12) return null;
+      for (let r = 0; r < 3; r++) if (r !== c) { const f = M[r][c] / M[c][c]; for (let k = c; k < 4; k++) M[r][k] -= f * M[c][k]; }
+    }
+    return [M[0][3] / M[0][0], M[1][3] / M[1][1], M[2][3] / M[2][2]];
+  }
+  const stats = { mean, pearsonR, normCdf, corrP, binomTail, lstsq3 };
+
   // ---- resumo (laudo) a partir da linha do tempo ----
   function pct(a, b) { return b > 0 ? a / b : 0; }
   function quantile(arr, q) {
@@ -1257,7 +1329,7 @@ function dspCore() {
   return {
     VERSION, NATURALS, FAMILIES, FAM_OF, SENT_XYZ, KMAJ, KMIN, configure, pcToTone,
     extractFrame, pitchYin, keyFromChroma, detectChord, bpmFromFlux, sentiramaPos, airIndex, tensionOf, rotateChroma,
-    fft, blackman, analyzeBuffer, summarize,
+    fft, blackman, analyzeBuffer, summarize, stats,
   };
 }
 const CORE = dspCore();
@@ -2595,6 +2667,7 @@ $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeMo
 
 window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox') return;
+  if ($('exp').classList.contains('show')) { if (e.key === 'Escape') closeExp(); return; }
   if (synthKey(e, true)) return;
   const k = e.key.toLowerCase();
   if ($('ab').classList.contains('show') && !$('report').classList.contains('show')) {
@@ -4122,10 +4195,10 @@ async function runBench() {
   }
 }
 let benchSrc = null;
-function playSamples(x) {
+function playSamples(x, sr = BENCH_SR) {
   ensureAudio();
   if (benchSrc) { try { benchSrc.stop(); } catch (e) { /* já parou */ } }
-  const b = A.ctx.createBuffer(1, x.length, BENCH_SR); b.copyToChannel(x, 0);
+  const b = A.ctx.createBuffer(1, x.length, sr); b.copyToChannel(x, 0);
   benchSrc = A.ctx.createBufferSource(); benchSrc.buffer = b; benchSrc.connect(A.outGain); benchSrc.start();
 }
 function openBench() {
@@ -4425,6 +4498,333 @@ $('ab-jsonfile').addEventListener('change', e => {
 });
 let abResizeT = 0;
 window.addEventListener('resize', () => { clearTimeout(abResizeT); abResizeT = setTimeout(drawAB, 140); });
+
+/* =====================================================================
+   11. EXPERIMENTO DE ESCUTA — teste cego: a percepção das pessoas
+   comparada com a previsão do modelo (nas leituras de referência e relativa)
+   ===================================================================== */
+const EXP_KEY = 'croma.exp.v1';
+const EXP_COLORS = ['Verde', 'Amarelo', 'Laranja', 'Vermelho', 'Violeta', 'Azul', 'Rosa'];
+const EXP = { stimuli: [], sessions: [], run: null, view: 'setup', excerpt: { mode: 'middle', seconds: 20 }, shuffle: true, preparing: false };
+try { EXP.sessions = JSON.parse(localStorage.getItem(EXP_KEY) || '[]'); } catch (e) { EXP.sessions = []; }
+const expSave = () => { try { localStorage.setItem(EXP_KEY, JSON.stringify(EXP.sessions)); } catch (e) { toast('Não foi possível salvar no navegador; baixe o JSON para não perder os dados.', 5000); } };
+let expSeq = 0;
+function expAddStim(src) {
+  EXP.stimuli.push({ id: 's' + (++expSeq) + '-' + Date.now().toString(36), name: src.name, samples: src.samples, sampleRate: src.sampleRate, pred: null, predKey: '' });
+  if ($('exp').classList.contains('show') && EXP.view === 'setup') renderExp();
+  toast(`“${src.name}” adicionado ao experimento (${EXP.stimuli.length} trechos).`);
+}
+// trecho tocado e analisado: inteiro ou N segundos do meio
+function expExcerpt(st) {
+  const sr = st.sampleRate, n = st.samples.length;
+  if (EXP.excerpt.mode !== 'middle' || n / sr <= EXP.excerpt.seconds) return { x: st.samples, t0: 0, t1: n / sr };
+  const len = Math.round(EXP.excerpt.seconds * sr), a = Math.floor((n - len) / 2);
+  return { x: st.samples.subarray(a, a + len), t0: a / sr, t1: (a + len) / sr };
+}
+async function expPredict(st) {
+  const key = `${EXP.excerpt.mode}:${EXP.excerpt.seconds}:${REF_PC}:${A4_HZ}`;
+  if (st.pred && st.predKey === key) return st.pred;
+  const ex = expExcerpt(st), res = await runAnalysis(ex.x.slice(), st.sampleRate, () => {}), S = res.summary;
+  st.pred = {
+    ref: { color: topFamily(S.absolute).name, x: S.absolute.sentirama.mean[0], y: S.absolute.sentirama.mean[1] },
+    rel: { color: topFamily(S.relative).name, x: S.relative.sentirama.mean[0], y: S.relative.sentirama.mean[1] },
+    air: S.air.air, comp: { mode: S.air.mode, bright: S.air.bright, tempo: S.air.tempo },
+    tonic: keyLabel(S.key.tone, S.key.mode), keyR: S.key.r, calib: { ref: REF_PC, a4: A4_HZ }, excerpt: [+ex.t0.toFixed(2), +ex.t1.toFixed(2)],
+  };
+  st.predKey = key;
+  return st.pred;
+}
+function shuffled(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+async function expStart() {
+  const code = ($('exp-code').value || '').trim();
+  if (!EXP.stimuli.length) { toast('Adicione pelo menos um trecho.'); return; }
+  if (!code) { toast('Dê um código ao participante (ex.: P1).'); return; }
+  if (R.busy) { toast('Aguarde a análise em andamento.'); return; }
+  if (A.el && !A.el.paused) A.el.pause(); // nada de áudio analisado durante o teste
+  EXP.preparing = true; R.busy = true; renderExp();
+  try {
+    for (let i = 0; i < EXP.stimuli.length; i++) { $('exp-prep').textContent = `Preparando as previsões do modelo… ${i + 1} de ${EXP.stimuli.length}`; await expPredict(EXP.stimuli[i]); }
+  } catch (err) { console.error(err); toast('Falha ao preparar: ' + err.message, 5000); EXP.preparing = false; R.busy = false; renderExp(); return; }
+  EXP.preparing = false; R.busy = false;
+  const order = EXP.shuffle ? shuffled(EXP.stimuli) : EXP.stimuli.slice();
+  EXP.run = { id: 'x' + Date.now().toString(36), participant: code, startedAt: new Date().toISOString(), order, idx: 0, responses: [], settings: { excerpt: Object.assign({}, EXP.excerpt), shuffle: EXP.shuffle } };
+  expNewTrial(); EXP.view = 'trial'; renderExp();
+}
+function expNewTrial() { EXP.run.cur = { color: null, x: null, y: null, air: 0, airTouched: false, familiar: null, firstPlay: 0, plays: 0 }; }
+function expPlay() {
+  const st = EXP.run.order[EXP.run.idx], ex = expExcerpt(st);
+  playSamples(ex.x.slice(), st.sampleRate);
+  const c = EXP.run.cur; c.plays++; if (!c.firstPlay) c.firstPlay = performance.now();
+  expTrialState();
+}
+function expTrialState() {
+  const c = EXP.run.cur, ok = c.plays > 0 && c.color && c.x != null && c.airTouched && c.familiar != null;
+  $('exp-next').disabled = !ok;
+  document.querySelectorAll('#exp-body [data-color]').forEach(b => b.classList.toggle('on', b.dataset.color === c.color));
+  document.querySelectorAll('#exp-body [data-familiar]').forEach(b => b.classList.toggle('on', b.dataset.familiar === c.familiar));
+  $('exp-missing').textContent = ok ? '' : 'Falta: ' + [c.plays ? '' : 'ouvir o trecho', c.color ? '' : 'cor', c.x != null ? '' : 'posição no Sentirama', c.airTouched ? '' : 'Ar ↔ Terra', c.familiar != null ? '' : 'se conhece'].filter(Boolean).join(', ');
+  drawExpPlane();
+}
+function drawExpPlane() {
+  const cv = $('exp-plane'); if (!cv) return;
+  const { g, w, h } = prepCanvas(cv), size = Math.min(w, h), cx = w / 2, cy = h / 2, Rr = size / 2 - 26;
+  cv._plane = { cx, cy, Rr };
+  sentBase(g, cx, cy, Rr);
+  const c = EXP.run && EXP.run.cur;
+  if (c && c.x != null) {
+    const x = cx + c.x / 1.1 * Rr, y = cy - c.y / 1.1 * Rr;
+    g.fillStyle = rcss('--r-ink'); g.beginPath(); g.arc(x, y, 7, 0, TAU); g.fill();
+    g.strokeStyle = rcss('--r-bg'); g.lineWidth = 2; g.stroke();
+  }
+}
+function expNext() {
+  const r = EXP.run, c = r.cur, st = r.order[r.idx];
+  r.responses.push({
+    stimId: st.id, stimulus: st.name, order: r.idx + 1, color: c.color, x: +c.x.toFixed(3), y: +c.y.toFixed(3), air: +c.air.toFixed(2),
+    familiar: c.familiar === 'sim', plays: c.plays, rtMs: Math.round(performance.now() - c.firstPlay), pred: st.pred,
+  });
+  if (benchSrc) { try { benchSrc.stop(); } catch (e) { /* já parou */ } }
+  r.idx++;
+  if (r.idx >= r.order.length) {
+    EXP.sessions.push({ id: r.id, participant: r.participant, startedAt: r.startedAt, settings: r.settings, responses: r.responses });
+    expSave(); EXP.run = null; EXP.view = 'done';
+  } else expNewTrial();
+  renderExp();
+}
+// ---- resultados ----
+function expAllResponses(filter) {
+  const out = [];
+  EXP.sessions.forEach(s => { if (!filter || s.participant === filter) s.responses.forEach(r => out.push(Object.assign({ participant: s.participant, session: s.id, startedAt: s.startedAt }, r))); });
+  return out;
+}
+function expStats(resps) {
+  const st = CORE.stats, col = resps.filter(r => r.color && r.color !== 'Nenhuma');
+  const agree = key => { const k = col.filter(r => r.pred && r.color === r.pred[key].color).length; return { k, n: col.length, rate: col.length ? k / col.length : NaN, p: col.length ? st.binomTail(k, col.length, 1 / 7) : NaN }; };
+  const corr = (fa, fb) => { const a = resps.map(fa), b = resps.map(fb); const r = st.pearsonR(a, b); return { r, n: resps.length, p: st.corrP(r, resps.length) }; };
+  return {
+    n: resps.length, participants: new Set(resps.map(r => r.participant)).size, stimuli: new Set(resps.map(r => r.stimulus)).size,
+    colorRef: agree('ref'), colorRel: agree('rel'), none: resps.length - col.length,
+    xRef: corr(r => r.x, r => r.pred.ref.x), yRef: corr(r => r.y, r => r.pred.ref.y),
+    xRel: corr(r => r.x, r => r.pred.rel.x), yRel: corr(r => r.y, r => r.pred.rel.y),
+    air: corr(r => r.air, r => r.pred.air),
+  };
+}
+const pFmt = p => !isFinite(p) ? '—' : p < 0.001 ? 'p < 0,001' : `p = ${num(p, 3)}`;
+const rFmt = c => !isFinite(c.r) ? '— (dados insuficientes)' : `r = ${sgn(c.r)} · ${pFmt(c.p)}`;
+function corrWord(r) { if (!isFinite(r)) return ''; const a = Math.abs(r); return a < 0.1 ? 'nula' : a < 0.3 ? 'fraca' : a < 0.5 ? 'moderada' : 'forte'; }
+function expByStimulus(resps) {
+  const m = new Map();
+  resps.forEach(r => { if (!m.has(r.stimulus)) m.set(r.stimulus, []); m.get(r.stimulus).push(r); });
+  return [...m.entries()].map(([name, rs]) => {
+    const cnt = {}; rs.forEach(r => { cnt[r.color] = (cnt[r.color] || 0) + 1; });
+    const topC = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+    const p = rs[0].pred;
+    return { name, n: rs.length, topColor: topC[0], topShare: topC[1] / rs.length, modelRef: p.ref.color, modelRel: p.rel.color,
+      airH: CORE.stats.mean(rs.map(r => r.air)), airM: p.air, xH: CORE.stats.mean(rs.map(r => r.x)), yH: CORE.stats.mean(rs.map(r => r.y)), xM: p.ref.x, yM: p.ref.y, comp: p.comp };
+  });
+}
+function expResultsHTML() {
+  const filt = EXP.filter || '', resps = expAllResponses(filt);
+  const parts = [...new Set(EXP.sessions.map(s => s.participant))];
+  if (!resps.length) return `<section class="r-card"><h2>Resultados</h2><p class="r-text">Ainda não há respostas. Rode uma sessão em “Preparar”, ou importe um JSON de outro aparelho.</p></section>`;
+  const S = expStats(resps), small = S.n < 20 ? `<div class="r-alert">Amostra pequena (${S.n} respostas): trate os números como indicação, não como prova.</div>` : '';
+  const better = (a, b) => (isFinite(a) && isFinite(b)) ? (a > b + 0.02 ? 'referência' : b > a + 0.02 ? 'relativa' : 'empate') : '—';
+  const colorBetter = better(S.colorRef.rate, S.colorRel.rate);
+  const posBetter = better((Math.abs(S.xRef.r) || 0) + (Math.abs(S.yRef.r) || 0), (Math.abs(S.xRel.r) || 0) + (Math.abs(S.yRel.r) || 0));
+  const byStim = expByStimulus(resps);
+  const stimRows = byStim.map(b => `<tr><td>${esc(b.name)}</td><td>${b.n}</td><td>${dot(FAMILY_HEX[b.topColor] || '#777')}${b.topColor} ${pctS(b.topShare)}</td><td>${dot(FAMILY_HEX[b.modelRef])}${b.modelRef}</td><td>${dot(FAMILY_HEX[b.modelRel])}${b.modelRel}</td><td>${sgn(b.airH)} × ${sgn(b.airM)}</td><td>(${sgn(b.xH)}, ${sgn(b.yH)}) × (${sgn(b.xM)}, ${sgn(b.yM)})</td></tr>`).join('');
+  const partRows = parts.map(pp => { const rs = expAllResponses(pp), s = expStats(rs); return `<tr><td>${esc(pp)}</td><td>${rs.length}</td><td>${isFinite(s.colorRef.rate) ? pctS(s.colorRef.rate) : '—'}</td><td>${isFinite(s.colorRel.rate) ? pctS(s.colorRel.rate) : '—'}</td><td>${isFinite(s.air.r) ? sgn(s.air.r) : '—'}</td></tr>`; }).join('');
+  return `
+    <section class="r-card r-hero">
+      <div class="r-head"><div><h2>Resultados</h2><p class="r-sub">${S.n} respostas · ${S.participants} participante(s) · ${S.stimuli} trecho(s)${filt ? ` · filtrado: ${esc(filt)}` : ''}</p></div>
+      <div class="r-tools"><select id="exp-filter" class="ref-select" style="width:auto;max-width:100%" aria-label="Filtrar participante"><option value="">Todos os participantes</option>${parts.map(pp => `<option value="${esc(pp)}" ${pp === filt ? 'selected' : ''}>${esc(pp)}</option>`).join('')}</select></div></div>
+      <div class="r-stats">
+        ${statCard('Cor · leitura de referência', isFinite(S.colorRef.rate) ? pctS(S.colorRef.rate) : '—', `${S.colorRef.k} de ${S.colorRef.n} · acaso 14% · ${pFmt(S.colorRef.p)}`)}
+        ${statCard('Cor · leitura relativa', isFinite(S.colorRel.rate) ? pctS(S.colorRel.rate) : '—', `${S.colorRel.k} de ${S.colorRel.n} · ${pFmt(S.colorRel.p)}`)}
+        ${statCard('Ar ↔ Terra', isFinite(S.air.r) ? sgn(S.air.r) : '—', `correlação ${corrWord(S.air.r)} · ${pFmt(S.air.p)}`)}
+        ${statCard('Sentirama x (ref.)', isFinite(S.xRef.r) ? sgn(S.xRef.r) : '—', `frio ↔ quente · ${pFmt(S.xRef.p)}`)}
+        ${statCard('Sentirama y (ref.)', isFinite(S.yRef.r) ? sgn(S.yRef.r) : '—', `denso ↔ sutil · ${pFmt(S.yRef.p)}`)}
+        ${statCard('Sentirama x / y (relativa)', `${isFinite(S.xRel.r) ? sgn(S.xRel.r) : '—'} / ${isFinite(S.yRel.r) ? sgn(S.yRel.r) : '—'}`, '')}
+      </div>
+      <p class="r-text"><b>Qual leitura explica melhor a percepção?</b> Cor: <b>${colorBetter}</b> · posição no Sentirama: <b>${posBetter}</b>. ${S.none ? `${S.none} resposta(s) “nenhuma cor” ficam fora da concordância de cor.` : ''}</p>
+      <p class="r-sub">Concordância de cor testada contra o acaso (1 em 7) pelo teste binomial exato; p das correlações aproximado pela transformação z de Fisher. Correlações: |r| < 0,1 nula · < 0,3 fraca · < 0,5 moderada · ≥ 0,5 forte.</p>
+      ${small}
+    </section>
+    <div class="r-two">
+      <section class="r-card"><h2>Ar ↔ Terra por trecho</h2><p class="r-sub">Cada ponto é um trecho: média das pessoas (vertical) × previsão do modelo (horizontal). Na diagonal, o modelo acerta.</p><canvas class="r-chart" id="exp-scatter" data-h="300"></canvas></section>
+      <section class="r-card"><h2>Cor: modelo × pessoas</h2><p class="r-sub">Linhas = cor prevista (referência); colunas = cor escolhida; % das respostas de cada linha.</p><canvas class="r-chart" id="exp-confusion" data-h="300"></canvas></section>
+    </div>
+    <section class="r-card"><h2>Por trecho</h2><div class="r-scroll"><table class="r-tab"><thead><tr><th>Trecho</th><th>n</th><th>Cor mais escolhida</th><th>Modelo (ref.)</th><th>Modelo (rel.)</th><th>Ar/Terra pessoas × modelo</th><th>Sentirama (x, y) pessoas × modelo</th></tr></thead><tbody>${stimRows}</tbody></table></div></section>
+    <section class="r-card"><h2>Por participante</h2><div class="r-scroll"><table class="r-tab"><thead><tr><th>Participante</th><th>Respostas</th><th>Cor (ref.)</th><th>Cor (rel.)</th><th>r Ar/Terra</th></tr></thead><tbody>${partRows}</tbody></table></div></section>`;
+}
+function drawExpResults() {
+  const resps = expAllResponses(EXP.filter || ''); if (!resps.length) return;
+  const sc = $('exp-scatter');
+  if (sc) {
+    const { g, w, h } = prepCanvas(sc), pad = 34, X = v => pad + (v + 1) / 2 * (w - pad - 10), Y = v => h - pad - (v + 1) / 2 * (h - pad - 10);
+    g.strokeStyle = rcss('--r-grid'); g.lineWidth = 1;
+    [-1, 0, 1].forEach(v => { g.beginPath(); g.moveTo(X(v), Y(-1)); g.lineTo(X(v), Y(1)); g.stroke(); g.beginPath(); g.moveTo(X(-1), Y(v)); g.lineTo(X(1), Y(v)); g.stroke(); });
+    g.setLineDash([4, 4]); g.strokeStyle = rcss('--r-ink2'); g.beginPath(); g.moveTo(X(-1), Y(-1)); g.lineTo(X(1), Y(1)); g.stroke(); g.setLineDash([]);
+    g.fillStyle = rcss('--r-ink2'); g.font = '10px Inter, system-ui, sans-serif'; g.textAlign = 'center';
+    g.fillText('modelo: Terra −1', X(-0.7), h - 8); g.fillText('Ar +1', X(0.85), h - 8);
+    g.save(); g.translate(10, Y(0)); g.rotate(-Math.PI / 2); g.fillText('pessoas', 0, 0); g.restore();
+    expByStimulus(resps).forEach(b => {
+      g.fillStyle = FAMILY_HEX[b.modelRef] || rcss('--r-ink'); g.beginPath(); g.arc(X(clamp(b.airM, -1, 1)), Y(clamp(b.airH, -1, 1)), 6, 0, TAU); g.fill();
+      g.strokeStyle = rcss('--r-bg'); g.lineWidth = 2; g.stroke();
+    });
+  }
+  const cf = $('exp-confusion');
+  if (cf) {
+    const cols = [...EXP_COLORS, 'Nenhuma'], M = EXP_COLORS.map(() => cols.map(() => 0));
+    resps.forEach(r => { const a = EXP_COLORS.indexOf(r.pred.ref.color), b = cols.indexOf(r.color); if (a >= 0 && b >= 0) M[a][b]++; });
+    const { g, w, h } = prepCanvas(cf), padL = 30, padT = 22, cell = Math.floor(Math.min((w - padL) / cols.length, (h - padT) / EXP_COLORS.length));
+    const ink = rcss('--r-ink'), bg = rcss('--r-bg');
+    M.forEach((row, a) => {
+      const rs = row.reduce((s, v) => s + v, 0);
+      g.fillStyle = FAMILY_HEX[EXP_COLORS[a]]; g.beginPath(); g.arc(12, padT + a * cell + cell / 2, 5, 0, TAU); g.fill();
+      row.forEach((v, b) => {
+        const p = rs ? v / rs : 0, x = padL + b * cell, y = padT + a * cell, al = rs ? 0.06 + 0.94 * p : 0.03;
+        g.globalAlpha = al; g.fillStyle = ink; g.fillRect(x + 1, y + 1, cell - 2, cell - 2); g.globalAlpha = 1;
+        if (a === b) { g.strokeStyle = FAMILY_HEX[EXP_COLORS[a]]; g.lineWidth = 2; g.strokeRect(x + 2, y + 2, cell - 4, cell - 4); }
+        if (rs && p >= 0.1 && cell >= 22) { g.fillStyle = al > 0.55 ? bg : ink; g.font = '600 9px Inter, system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(Math.round(p * 100) + '', x + cell / 2, y + cell / 2 + 3); }
+      });
+    });
+    cols.forEach((c, b) => {
+      const x = padL + b * cell + cell / 2;
+      if (c === 'Nenhuma') { g.fillStyle = rcss('--r-ink2'); g.font = '9px Inter, system-ui, sans-serif'; g.textAlign = 'center'; g.fillText('—', x, 14); }
+      else { g.fillStyle = FAMILY_HEX[c]; g.beginPath(); g.arc(x, 10, 5, 0, TAU); g.fill(); }
+    });
+  }
+}
+function expCSV() {
+  const q = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`, n = v => (v == null || !isFinite(v) ? '' : (+v).toFixed(4));
+  const head = ['participante', 'sessao', 'inicio', 'ordem', 'trecho', 'resp_cor', 'resp_x', 'resp_y', 'resp_ar_terra', 'conhece', 'vezes_ouvido', 'tempo_resposta_ms',
+    'modelo_cor_ref', 'modelo_x_ref', 'modelo_y_ref', 'modelo_cor_rel', 'modelo_x_rel', 'modelo_y_rel', 'modelo_ar_terra', 'modelo_comp_modo', 'modelo_comp_brilho', 'modelo_comp_andamento', 'modelo_tonica', 'trecho_inicio_s', 'trecho_fim_s', 'verde0_pc', 'la4_hz'];
+  const rows = expAllResponses('').map(r => [q(r.participant), q(r.session), q(r.startedAt), r.order, q(r.stimulus), q(r.color), n(r.x), n(r.y), n(r.air), r.familiar ? 1 : 0, r.plays, r.rtMs,
+    q(r.pred.ref.color), n(r.pred.ref.x), n(r.pred.ref.y), q(r.pred.rel.color), n(r.pred.rel.x), n(r.pred.rel.y), n(r.pred.air), n(r.pred.comp && r.pred.comp.mode), n(r.pred.comp && r.pred.comp.bright), n(r.pred.comp && r.pred.comp.tempo),
+    q(r.pred.tonic), r.pred.excerpt ? r.pred.excerpt[0] : '', r.pred.excerpt ? r.pred.excerpt[1] : '', r.pred.calib ? r.pred.calib.ref : '', r.pred.calib ? r.pred.calib.a4 : ''].join(','));
+  return [head.join(','), ...rows].join('\n');
+}
+// ---- telas ----
+function renderExp() {
+  const v = EXP.view, body = $('exp-body');
+  if (v !== renderExp.last || v === 'trial') $('exp').scrollTop = 0; // cada tela (e cada trecho) começa do topo
+  renderExp.last = v;
+  document.querySelectorAll('#exp [data-exp-view]').forEach(b => b.classList.toggle('on', b.dataset.expView === (v === 'trial' || v === 'done' ? 'setup' : v)));
+  $('exp-tabs').style.display = v === 'trial' ? 'none' : '';
+  if (v === 'trial') {
+    const r = EXP.run;
+    body.innerHTML = `<section class="r-card exp-trial">
+      <p class="r-sub">Trecho <b>${r.idx + 1}</b> de ${r.order.length} · participante ${esc(r.participant)}</p>
+      <div class="flex items-center gap-3 flex-wrap"><button class="btn" id="exp-play">▶ Ouvir o trecho</button><span class="r-mut">pode ouvir quantas vezes quiser</span></div>
+      <h3 class="exp-q">1. Que cor você sente neste trecho?</h3>
+      <div class="exp-colors">${EXP_COLORS.map(c => `<button class="exp-color" data-color="${c}"><i style="background:${FAMILY_HEX[c]}"></i>${c}</button>`).join('')}<button class="exp-color" data-color="Nenhuma"><i style="background:transparent;border:1px dashed currentColor"></i>Nenhuma</button></div>
+      <h3 class="exp-q">2. Onde este trecho fica no Sentirama?</h3>
+      <p class="r-sub">Clique no plano: à esquerda frio (azul), à direita quente (amarelo); embaixo denso (vermelho), em cima sutil (rosa).</p>
+      <div class="r-sq"><canvas class="r-chart" id="exp-plane" data-h="300" style="cursor:pointer"></canvas></div>
+      <h3 class="exp-q">3. Ele soa mais Terra ou mais Ar?</h3>
+      <div class="exp-air"><input type="range" id="exp-air" min="-100" max="100" value="0" aria-label="Terra ou Ar"><div><span>← Terra · pesado, denso</span><span>Ar · leve, expansivo →</span></div></div>
+      <h3 class="exp-q">4. Você conhece esta música?</h3>
+      <div class="mini-seg"><button data-familiar="sim">Sim</button><button data-familiar="nao">Não</button></div>
+      <div class="flex items-center gap-3 flex-wrap" style="margin-top:18px"><button class="btn" id="exp-next" disabled>${r.idx + 1 < r.order.length ? 'Próximo trecho →' : 'Concluir sessão'}</button><span class="r-mut" id="exp-missing"></span></div>
+    </section>`;
+    expTrialState();
+    return;
+  }
+  if (v === 'done') {
+    body.innerHTML = `<section class="r-card r-hero"><h2>Sessão concluída</h2><p class="r-text">Obrigado! As respostas foram salvas neste navegador. Você pode iniciar outra sessão (outro participante) ou ver os resultados.</p><div class="flex gap-2 flex-wrap"><button class="btn" data-exp-go="setup">Nova sessão</button><button class="btn" data-exp-go="results">Ver resultados</button></div></section>`;
+    return;
+  }
+  if (v === 'results') { body.innerHTML = expResultsHTML(); requestAnimationFrame(drawExpResults); return; }
+  // preparar
+  const list = EXP.stimuli.map((s, i) => `<tr><td>${i + 1}</td><td>${esc(s.name)}</td><td>${mmss(s.samples.length / s.sampleRate)}</td><td><button class="mini-btn" data-exp-del="${s.id}">Remover</button></td></tr>`).join('');
+  body.innerHTML = `
+    <section class="r-card r-hero">
+      <h2>Teste cego</h2>
+      <p class="r-text">O participante ouve cada trecho e responde <b>cor</b>, <b>posição no Sentirama</b> e <b>Ar ↔ Terra</b> antes de ver qualquer análise. Durante o teste, esta tela cobre o app e o áudio não passa pela análise: nada revela a resposta do modelo. As respostas ficam salvas neste navegador (${EXP.sessions.length} sessão(ões) até agora); os trechos ficam só nesta aba e precisam ser adicionados de novo se a página for recarregada.</p>
+    </section>
+    <div class="r-two">
+      <section class="r-card">
+        <h2>Trechos</h2>
+        <div class="r-chips"><button class="mini-btn" id="exp-add-files">Adicionar arquivos…</button><button class="mini-btn" id="exp-add-player" ${A.currentFile ? '' : 'disabled'}>Áudio do player</button><button class="mini-btn" id="exp-add-bench">Estímulos da bancada…</button></div>
+        ${list ? `<div class="r-scroll"><table class="r-tab"><thead><tr><th>#</th><th>Trecho</th><th>Duração</th><th></th></tr></thead><tbody>${list}</tbody></table></div>` : '<p class="r-sub" style="margin-top:10px">Nenhum trecho ainda.</p>'}
+      </section>
+      <section class="r-card">
+        <h2>Sessão</h2>
+        <div class="exp-form">
+          <label for="exp-code">Código do participante</label><input id="exp-code" class="ab-t" style="width:120px" value="P${EXP.sessions.length + 1}" autocomplete="off">
+          <span>Trecho tocado</span>
+          <div class="mini-seg"><button data-exc="all" class="${EXP.excerpt.mode === 'all' ? 'on' : ''}">Inteiro</button><button data-exc="middle" class="${EXP.excerpt.mode === 'middle' ? 'on' : ''}">Meio</button></div>
+          <label for="exp-secs">Segundos do meio</label><input id="exp-secs" class="ab-t" type="number" min="3" max="120" value="${EXP.excerpt.seconds}">
+          <label for="exp-shuffle">Ordem aleatória</label><input id="exp-shuffle" type="checkbox" ${EXP.shuffle ? 'checked' : ''}>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap" style="margin-top:14px"><button class="btn" id="exp-start" ${EXP.preparing ? 'disabled' : ''}>Iniciar sessão</button><span class="r-mut" id="exp-prep">${EXP.preparing ? 'Preparando…' : ''}</span></div>
+        <p class="r-sub" style="margin-top:10px">A previsão do modelo é calculada sobre o mesmo trecho tocado, com a calibração atual (Lá 4 = ${A4_HZ} Hz · Verde 0 = ${PC_PT[REF_PC]}).</p>
+      </section>
+    </div>`;
+}
+function openExp(view) { EXP.view = view || (EXP.run ? 'trial' : EXP.view === 'trial' ? 'setup' : EXP.view); renderExp(); $('exp').classList.add('show'); $('exp').setAttribute('aria-hidden', 'false'); }
+function closeExp() {
+  if (EXP.run && !confirmInline()) return;
+  $('exp').classList.remove('show'); $('exp').setAttribute('aria-hidden', 'true'); if (benchSrc) { try { benchSrc.stop(); } catch (e) { /* já parou */ } }
+}
+// fechar no meio de uma sessão descarta as respostas dela: pede um segundo clique
+let expCloseArmed = 0;
+function confirmInline() {
+  if (Date.now() - expCloseArmed < 4000) { EXP.run = null; EXP.view = 'setup'; return true; }
+  expCloseArmed = Date.now(); toast('Sessão em andamento: clique em ✕ de novo para descartá-la.', 4000); return false;
+}
+$('btn-exp').addEventListener('click', () => openExp());
+$('exp-close').addEventListener('click', closeExp);
+$('exp-tabs').addEventListener('click', e => { const b = e.target.closest('[data-exp-view]'); if (!b || EXP.run) return; EXP.view = b.dataset.expView; renderExp(); });
+$('exp-body').addEventListener('click', e => {
+  const t = e.target.closest && e.target.closest('button, canvas');
+  if (!t) return;
+  if (t.id === 'exp-play') expPlay();
+  else if (t.dataset.color) { EXP.run.cur.color = t.dataset.color; expTrialState(); }
+  else if (t.dataset.familiar) { EXP.run.cur.familiar = t.dataset.familiar; expTrialState(); }
+  else if (t.id === 'exp-plane' && EXP.run) {
+    const P = t._plane, rc = t.getBoundingClientRect(), x = ((e.clientX - rc.left) - P.cx) / P.Rr * 1.1, y = -((e.clientY - rc.top) - P.cy) / P.Rr * 1.1;
+    EXP.run.cur.x = clamp(x, -1.1, 1.1); EXP.run.cur.y = clamp(y, -1.1, 1.1); expTrialState();
+  }
+  else if (t.id === 'exp-next') expNext();
+  else if (t.id === 'exp-start') expStart();
+  else if (t.id === 'exp-add-files') $('exp-files').click();
+  else if (t.id === 'exp-add-player' && A.currentFile) expAddFile(A.currentFile);
+  else if (t.id === 'exp-add-bench') { closeExp(); openBench(); toast('Rode a bancada e use “+ Experimento” nas linhas desejadas.', 4000); }
+  else if (t.dataset.expDel) { EXP.stimuli = EXP.stimuli.filter(s => s.id !== t.dataset.expDel); renderExp(); }
+  else if (t.dataset.exc) { EXP.excerpt.mode = t.dataset.exc; renderExp(); }
+  else if (t.dataset.expGo) { EXP.view = t.dataset.expGo; renderExp(); }
+});
+$('exp-body').addEventListener('input', e => {
+  if (e.target.id === 'exp-air' && EXP.run) { EXP.run.cur.air = e.target.value / 100; EXP.run.cur.airTouched = true; expTrialState(); }
+  else if (e.target.id === 'exp-secs') EXP.excerpt.seconds = clamp(+e.target.value || 20, 3, 120);
+  else if (e.target.id === 'exp-shuffle') EXP.shuffle = e.target.checked;
+});
+// clicar no controle sem arrastar também vale como resposta (ex.: deixar no meio)
+['pointerup', 'keyup'].forEach(ev => $('exp-body').addEventListener(ev, e => { if (e.target.id === 'exp-air' && EXP.run && !EXP.run.cur.airTouched) { EXP.run.cur.airTouched = true; expTrialState(); } }));
+$('exp-body').addEventListener('change', e => { if (e.target.id === 'exp-filter') { EXP.filter = e.target.value; renderExp(); } });
+async function expAddFile(f) {
+  try { const d = await decodeToMono(await f.arrayBuffer()); expAddStim({ name: f.name, samples: d.samples, sampleRate: d.sampleRate }); }
+  catch (err) { toast(`Não foi possível ler “${f.name}”: ${err.message}`, 5000); }
+}
+$('exp-files').addEventListener('change', async e => { const fs = [...e.target.files]; e.target.value = ''; for (const f of fs) await expAddFile(f); });
+$('exp-csv').addEventListener('click', () => { if (!EXP.sessions.length) { toast('Ainda não há respostas para exportar.'); return; } saveFile('experimento-escuta-cromasfera.csv', expCSV()); });
+$('exp-json').addEventListener('click', () => { if (!EXP.sessions.length) { toast('Ainda não há respostas para exportar.'); return; } saveFile('experimento-escuta-cromasfera.json', JSON.stringify({ format: 'cromasfera-experimento', version: 1, sessions: EXP.sessions })); });
+$('exp-import').addEventListener('click', () => $('exp-jsonfile').click());
+$('exp-jsonfile').addEventListener('change', e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  f.text().then(t => {
+    const d = JSON.parse(t);
+    if (d.format !== 'cromasfera-experimento' || !Array.isArray(d.sessions)) throw new Error('Este JSON não é um experimento da Cromasfera.');
+    const ids = new Set(EXP.sessions.map(s => s.id)); let added = 0;
+    d.sessions.forEach(s => { if (!ids.has(s.id)) { EXP.sessions.push(s); added++; } });
+    expSave(); EXP.view = 'results'; renderExp();
+    toast(`${added} sessão(ões) importada(s); ${d.sessions.length - added} já existiam.`, 4000);
+  }).catch(err => toast('Não foi possível importar: ' + err.message, 5000));
+});
+let expResizeT = 0;
+window.addEventListener('resize', () => { clearTimeout(expResizeT); expResizeT = setTimeout(() => { if (!$('exp').classList.contains('show')) return; if (EXP.view === 'results') drawExpResults(); if (EXP.view === 'trial') drawExpPlane(); }, 140); });
 
 // layout de celular: painéis recolhidos e painel de entrada logo acima do teclado
 if (window.matchMedia('(max-width: 767px)').matches) {
