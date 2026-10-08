@@ -176,13 +176,14 @@
   .btn.rec-on { border-color: #e8402c; color: #fff; background: rgba(232,64,44,.22); box-shadow: 0 0 0 1px #e8402c, 0 0 18px -4px #e8402c; animation: recpulse 1.4s ease-in-out infinite; }
   @keyframes recpulse { 50% { background: rgba(232,64,44,.08); } }
   @media (prefers-reduced-motion: reduce) { .btn.rec-on { animation: none; } }
-  #report {
+  #report, .r-panel {
     --r-bg: #0c0a12; --r-card: rgba(255,255,255,.035); --r-line: rgba(255,255,255,.09);
     --r-ink: #ece6f5; --r-ink2: #a39cb5; --r-grid: rgba(255,255,255,.09); --r-top: rgba(12,10,18,.9);
     position: fixed; inset: 0; z-index: 75; display: none; overflow-y: auto; overscroll-behavior: contain;
     background: var(--r-bg); color: var(--r-ink); font-size: 14px;
   }
-  #report.show { display: block; }
+  .r-panel { z-index: 74; }
+  #report.show, .r-panel.show { display: block; }
   body.printing #report {
     --r-bg: #ffffff; --r-card: #f6f5f8; --r-line: rgba(0,0,0,.12);
     --r-ink: #17121d; --r-ink2: #5b5468; --r-grid: rgba(0,0,0,.1); --r-top: #ffffff;
@@ -235,9 +236,19 @@
   .r-rp { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
   .r-rp input[type=range] { flex: 1; min-width: 140px; }
   .r-rp-note { font-size: .85rem; min-width: 160px; }
-  #report .mini-seg { background: var(--r-card); border-color: var(--r-line); }
-  #report .mini-seg button { color: var(--r-ink2); }
-  #report .mini-seg button.on { color: var(--r-ink); background: var(--r-line); }
+  #report .mini-seg, .r-panel .mini-seg { background: var(--r-card); border-color: var(--r-line); }
+  #report .mini-seg button, .r-panel .mini-seg button { color: var(--r-ink2); }
+  #report .mini-seg button.on, .r-panel .mini-seg button.on { color: var(--r-ink); background: var(--r-line); }
+  .r-progress { height: 3px; }
+  .r-bar { height: 100%; width: 0; opacity: 0; transition: width .2s, opacity .4s; background: linear-gradient(90deg,#43c24a,#f7dc2f,#f7902f,#e8402c,#8f4fd0,#2f9fe6,#f27bb8); }
+  .mini-btn { font-size: .72rem; padding: 3px 8px; border-radius: 8px; border: 1px solid var(--r-line); color: var(--r-ink); background: transparent; margin: 2px 4px 2px 0; white-space: nowrap; }
+  .mini-btn:hover { border-color: var(--r-ink2); }
+  .b-res { font-size: .75rem; font-weight: 600; white-space: nowrap; }
+  .b-res.ok { color: #43c24a; } .b-res.no { color: #f0604a; } .b-res.info { color: var(--r-ink2); }
+  .b-tab td { white-space: normal; vertical-align: top; min-width: 90px; }
+  .b-act { white-space: nowrap !important; }
+  .research-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .research-grid .btn { font-size: .78rem; padding: .45rem .5rem; }
   .r-method ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; max-width: 90ch; }
   .r-method li { font-size: .84rem; line-height: 1.6; color: var(--r-ink); }
   #rtip { position: fixed; z-index: 95; pointer-events: none; display: none; max-width: 320px; background: #17131f; color: #ece6f5; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; padding: 6px 10px; font-size: .78rem; line-height: 1.45; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
@@ -346,6 +357,12 @@
     <input type="file" id="json-input" accept=".json,application/json" class="hidden">
     <div class="panel-extra">
     <button class="text-[11px] text-[color:var(--muted)] underline underline-offset-2 mt-2 hover:text-white" id="btn-open-json">Abrir laudo salvo (.json)</button>
+    <div class="mt-3 pt-3 border-t border-white/10">
+      <div class="label mb-2">Pesquisa</div>
+      <div class="research-grid" id="research-grid">
+        <button class="btn" id="btn-bench" title="Sons controlados com a expectativa do modelo">Bancada</button>
+      </div>
+    </div>
     <p class="text-[11px] text-[color:var(--muted)] mt-2 leading-relaxed">Ou arraste um arquivo .mp3 / .wav / .m4a / .ogg para a tela.</p>
 
     <div class="mt-4">
@@ -503,6 +520,23 @@
   <div class="r-body" id="r-body"></div>
 </div>
 <div id="rtip" role="tooltip"></div>
+
+<!-- ============ BANCADA DE ESTÍMULOS ============ -->
+<div id="bench" class="r-panel" aria-hidden="true" role="dialog" aria-label="Bancada de estímulos">
+  <div class="r-top">
+    <div class="r-top-in">
+      <div class="min-w-0"><div class="label">Pesquisa</div><div class="r-h1">Bancada de estímulos</div></div>
+      <div class="r-actions">
+        <label class="sr-only" for="bench-instr">Instrumento dos estímulos</label>
+        <select id="bench-instr" class="ref-select"></select>
+        <button class="btn" id="bench-run">Rodar bancada</button>
+        <button class="btn" id="bench-close" aria-label="Fechar bancada">✕</button>
+      </div>
+    </div>
+    <div class="r-progress"><div class="r-bar" id="bench-bar"></div></div>
+  </div>
+  <div class="r-body" id="bench-body"></div>
+</div>
 
 <div id="dropzone"><div class="box glass"><div class="title-font text-xl rainbow-text">Solte o arquivo de áudio</div><div class="text-sm text-[color:var(--muted)] mt-2">.mp3 · .wav · .m4a · .ogg</div></div></div>
 <div id="toast" class="glass px-4 py-2 text-sm"></div>
@@ -2535,6 +2569,10 @@ window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox') return;
   if (synthKey(e, true)) return;
   const k = e.key.toLowerCase();
+  if ($('bench').classList.contains('show') && !$('report').classList.contains('show')) {
+    if (k === 'escape') closeBench();
+    return;
+  }
   if ($('report').classList.contains('show')) {
     if (k === 'escape') closeReport();
     else if (k === ' ' && A.source === 'file' && e.target.tagName !== 'BUTTON') { e.preventDefault(); togglePlay(); }
@@ -3605,7 +3643,7 @@ function laudoJSON(res) {
     timeline: {
       t: rd(tl.t, 3), rmsDb: rd(tl.rmsDb, 1), centroid: rd(tl.centroid, 0), flux: rd(tl.flux, 5), level: rd(tl.level, 3),
       active: Array.from(tl.active), dom: Array.from(tl.dom), tension: rd(tl.tension, 3), chord: Array.from(tl.chord),
-      chroma: rd(tl.chroma, 3), raw: rd(tl.raw, 3),
+      chroma: rd(tl.chroma, 3), raw: rd(tl.raw, 3), f0: tl.f0 ? rd(tl.f0, 2) : undefined, clar: tl.clar ? rd(tl.clar, 2) : undefined,
     },
   });
 }
@@ -3772,7 +3810,7 @@ const INSTRUMENTS = {
     const srcs = [vOsc(c, 'sine', f, t, g)];
     const h2 = c.createGain(); h2.gain.value = 0.12; h2.connect(g); srcs.push(vOsc(c, 'triangle', f * 2, t, h2));
     const n = c.createBufferSource(), bp = c.createBiquadFilter(), ng = c.createGain();
-    n.buffer = KEYS.noise; n.loop = true; bp.type = 'bandpass'; bp.frequency.value = f * 2; bp.Q.value = 2;
+    n.buffer = noiseFor(c); n.loop = true; bp.type = 'bandpass'; bp.frequency.value = f * 2; bp.Q.value = 2;
     ng.gain.setValueAtTime(0.09, t); ng.gain.exponentialRampToValueAtTime(0.025, t + 0.25);
     n.connect(bp); bp.connect(ng); ng.connect(g); n.start(t, Math.random() * 0.5); srcs.push(n);
     srcs.push(vVibrato(c, t, srcs.slice(0, 2), 5, 12, 0.35));
@@ -3865,6 +3903,225 @@ $('keyboard').addEventListener('pointerdown', e => {
 });
 ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => $('keyboard').addEventListener(ev, e => noteOff('ptr' + e.pointerId)));
 setOctave(4);
+
+/* =====================================================================
+   9. BANCADA DE ESTÍMULOS — sinais controlados, cada um com a expectativa
+   do modelo. Gerados com os instrumentos do teclado musical num
+   OfflineAudioContext e analisados pelo mesmo núcleo do laudo.
+   ===================================================================== */
+const BENCH_SR = 44100;
+const BENCH = { specs: [], results: {}, running: false, instrument: 'organ', ran: false };
+const NOISE_BY_CTX = new WeakMap();
+function noiseFor(c) {
+  let b = NOISE_BY_CTX.get(c);
+  if (!b) {
+    b = c.createBuffer(1, c.sampleRate, c.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    NOISE_BY_CTX.set(c, b);
+  }
+  return b;
+}
+function encodeWav(x, sr) {
+  const n = x.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, sr, true);
+  v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, x[i])) * 32767, true);
+  return new Blob([buf], { type: 'audio/wav' });
+}
+function kickAt(c, out, t) {
+  const o = c.createOscillator(), g = c.createGain();
+  o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.9, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+  o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.2);
+}
+// timbres de contraste para o teste de brilho
+const TIMBRE_VOICES = {
+  soft(c, f, t, out) { const g = vEnv(c, out, t, 0.05, 0.22); const s = [vOsc(c, 'sine', f, t, g)]; return { release: rt => vRelease(g, s, rt, 0.2) }; },
+  bright(c, f, t, out) { const g = vEnv(c, out, t, 0.01, 0.1); const s = [vOsc(c, 'sawtooth', f, t, g), vOsc(c, 'square', f * 2, t, g, 3)]; return { release: rt => vRelease(g, s, rt, 0.2) }; },
+};
+async function renderSpec(spec) {
+  const c = new OfflineAudioContext(1, Math.ceil(BENCH_SR * spec.dur), BENCH_SR);
+  const bus = c.createGain(); bus.gain.value = 0.45; bus.connect(c.destination);
+  const a4 = spec.a4 || A4_HZ;
+  for (const ev of spec.events) for (const m of ev.midi) {
+    const f = a4 * Math.pow(2, (m - 69) / 12);
+    const v = ev.voice ? TIMBRE_VOICES[ev.voice](c, f, ev.t, bus) : INSTRUMENTS[BENCH.instrument].play(c, f, ev.t, bus);
+    v.release(ev.t + ev.dur);
+  }
+  (spec.kicks || []).forEach(t => kickAt(c, bus, t));
+  const buf = await c.startRendering();
+  return buf.getChannelData(0).slice();
+}
+const argmax = a => a.reduce((b, v, i) => (v > a[b] ? i : b), 0);
+const pcOfTone = k => (k + REF_PC) % 12;
+function progression(t0, beat, pc, pattern) {   // acordes I–IV–V–I (graus em semitons) a partir de pc
+  return pattern.map((deg, i) => ({ t: t0 + i * 4 * beat, dur: 4 * beat - 0.05, midi: [36 + pc + deg, 60 + pc + deg, 64 + pc + deg, 67 + pc + deg].map(m => m >= 84 ? m - 12 : m) }));
+}
+function buildBench() {
+  const L = [], ref = REF_PC, refName = PC_PT[ref];
+  // 1. notas isoladas: a cor dominante deve ser a do tom
+  for (let k = 0; k < 12; k++) {
+    L.push({ id: 'note' + k, group: 'Notas isoladas', name: `${PC_PT[pcOfTone(k)]} 4 → ${TONES[k].name} ${k}`, dur: 2.5,
+      events: [{ t: 0.05, dur: 2.3, midi: [60 + pcOfTone(k)] }],
+      expect: `nota dominante = tom ${k}`,
+      check: S => { const d = argmax(S.absolute.dominantShare); return { pass: d === k, got: `tom ${d} (${TONES[d].pt}) em ${pctS(S.absolute.dominantShare[d])} do tempo` }; } });
+  }
+  // 2. tríades maiores e menores sobre I, IV e V
+  for (const k of [0, 5, 7]) {
+    for (const q of ['maior', 'menor']) {
+      const pc = pcOfTone(k), third = q === 'maior' ? 4 : 3;
+      L.push({ id: `tri-${k}-${q}`, group: 'Tríades', name: `${PC_PT[pc]} ${q}`, dur: 3,
+        events: [{ t: 0.05, dur: 2.8, midi: [48 + pc, 60 + pc, 60 + pc + third, 60 + pc + 7] }],
+        expect: `acorde ${PC_PT[pc]} ${q}; tonalidade ${q}`,
+        check: S => {
+          const c = S.chords.top[0], okC = !!c && c.root === k && c.quality === q, okM = S.key.mode === q;
+          return { pass: okC && okM, got: `${c ? TONES[c.root].pt + ' ' + c.quality : 'sem acorde'} · ${TONES[S.key.tone].pt} ${S.key.mode} · Ar ${sgn(S.air.air)}` };
+        } });
+    }
+    L.push({ id: `tri-${k}-pair`, group: 'Tríades', pair: [`tri-${k}-maior`, `tri-${k}-menor`], name: `${PC_PT[pcOfTone(k)]}: maior × menor`,
+      expect: 'Ar(maior) > Ar(menor)', check2: (a, b) => ({ pass: a.air.air > b.air.air, got: `${sgn(a.air.air)} × ${sgn(b.air.air)}` }) });
+  }
+  // 3. tensão e estabilidade
+  L.push({ id: 'tension', group: 'Tensão e estabilidade', name: `${PC_PT[pcOfTone(3)]} + ${PC_PT[pcOfTone(9)]} (Vermelho 3 + Rosa 9)`, dur: 4,
+    events: [{ t: 0.05, dur: 3.8, midi: [60 + pcOfTone(3), 60 + pcOfTone(9)] }],
+    expect: 'tensão > 50% em mais da metade do tempo',
+    check: S => ({ pass: S.tension.above50 > 0.5, got: `média ${pctS(S.tension.mean)} · acima de 50% em ${pctS(S.tension.above50)}` }) });
+  L.push({ id: 'stab', group: 'Tensão e estabilidade', name: `${refName} sustentado (Verde 0)`, dur: 4,
+    events: [{ t: 0.05, dur: 3.8, midi: [48 + ref, 60 + ref] }],
+    expect: `${refName} dominante em mais de 60% do tempo`,
+    check: S => ({ pass: S.stabilityD > 0.6, got: `${refName} dominante em ${pctS(S.stabilityD)}` }) });
+  // 4. escalas nos 7 modos a partir da referência, sobre um bordão de tônica e quinta
+  const MODES7 = [['Jônio', [0, 2, 4, 5, 7, 9, 11], 'maior'], ['Dórico', [0, 2, 3, 5, 7, 9, 10]], ['Frígio', [0, 1, 3, 5, 7, 8, 10]], ['Lídio', [0, 2, 4, 6, 7, 9, 11]],
+    ['Mixolídio', [0, 2, 4, 5, 7, 9, 10]], ['Eólio', [0, 2, 3, 5, 7, 8, 10], 'menor'], ['Lócrio', [0, 1, 3, 5, 6, 8, 10]]];
+  for (const [mname, deg, expMode] of MODES7) {
+    const seq = [...deg, 12, ...deg.slice().reverse()], step = 0.35, ev = [];
+    seq.forEach((d, i) => ev.push({ t: 0.05 + i * step, dur: step - 0.03, midi: [60 + ref + d] }));
+    const end = 0.05 + seq.length * step;
+    ev.push({ t: end, dur: 0.9, midi: [60 + ref] });
+    ev.push({ t: 0.05, dur: end + 0.85, midi: [36 + ref, 36 + ref + deg[4]] });
+    L.push({ id: 'mode-' + mname, group: 'Modos', name: `${refName} ${mname}`, dur: end + 1.1, events: ev,
+      expect: expMode ? `tonalidade ${refName} ${expMode}` : 'informativo: como o modelo lê este modo',
+      check: S => ({ pass: expMode ? (S.key.tone === 0 && S.key.mode === expMode) : null, got: `${TONES[S.key.tone].pt} ${S.key.mode} (r ${num(S.key.r)}) · Ar ${sgn(S.air.air)}` }) });
+  }
+  L.push({ id: 'mode-pair', group: 'Modos', pair: ['mode-Jônio', 'mode-Eólio'], name: 'Jônio × Eólio', expect: 'Ar(jônio) > Ar(eólio)',
+    check2: (a, b) => ({ pass: a.air.air > b.air.air, got: `${sgn(a.air.air)} × ${sgn(b.air.air)}` }) });
+  // 5. andamento: a mesma progressão a 60, 120 e 180 BPM
+  for (const bpm of [60, 120, 180]) {
+    const beat = 60 / bpm, bars = Math.max(4, Math.ceil(14 / (4 * beat))), pattern = [];
+    for (let i = 0; i < bars; i++) pattern.push([0, 5, 7, 0][i % 4]);
+    const dur = 0.05 + bars * 4 * beat + 0.4, kicks = [];
+    for (let t = 0.05; t < dur - 0.4; t += beat) kicks.push(t);
+    L.push({ id: 'bpm' + bpm, group: 'Andamento', name: `I–IV–V–I a ${bpm} BPM`, dur, events: progression(0.05, beat, ref, pattern), kicks,
+      expect: `BPM ${bpm} ± 5%`,
+      check: S => ({ pass: !!S.bpm && Math.abs(S.bpm - bpm) / bpm <= 0.05, got: `${S.bpm ? Math.round(S.bpm) + ' BPM' : 'não detectado'} · Ar ${sgn(S.air.air)} (andamento ${sgn(S.air.tempo)})` }) });
+  }
+  L.push({ id: 'bpm-pair1', group: 'Andamento', pair: ['bpm120', 'bpm60'], name: '120 × 60 BPM', expect: 'Ar(120) > Ar(60)', check2: (a, b) => ({ pass: a.air.air > b.air.air, got: `${sgn(a.air.air)} × ${sgn(b.air.air)}` }) });
+  L.push({ id: 'bpm-pair2', group: 'Andamento', pair: ['bpm180', 'bpm120'], name: '180 × 120 BPM', expect: 'Ar(180) > Ar(120)', check2: (a, b) => ({ pass: a.air.air > b.air.air, got: `${sgn(a.air.air)} × ${sgn(b.air.air)}` }) });
+  // 6. afinação: progressão tocada na outra afinação
+  const other = A4_HZ === 440 ? 432 : 440;
+  L.push({ id: 'tuning', group: 'Afinação e timbre', name: `Progressão em Lá 4 = ${other} Hz (análise em ${A4_HZ} Hz)`, dur: 8.5, a4: other,
+    events: progression(0.05, 0.5, ref, [0, 5, 7, 0]), expect: `afinação estimada ${other} ± 2 Hz`,
+    check: S => ({ pass: !!S.tuning && Math.abs(S.tuning.a4Estimated - other) <= 2, got: S.tuning ? `${num(S.tuning.a4Estimated, 1)} Hz (${sgn(S.tuning.cents, 0)} cents)` : '—' }) });
+  // 7. timbre: o mesmo acorde suave × brilhante
+  for (const voice of ['soft', 'bright']) {
+    L.push({ id: 'timbre-' + voice, group: 'Afinação e timbre', name: `${refName} maior · timbre ${voice === 'soft' ? 'suave (senoide)' : 'brilhante (dente de serra)'}`, dur: 3,
+      events: [{ t: 0.05, dur: 2.8, voice, midi: [48 + ref, 60 + ref, 64 + ref, 67 + ref] }], expect: 'informativo: brilho e índice Ar/Terra',
+      check: S => ({ pass: null, got: `centroide ${Math.round(S.centroid.median)} Hz · Ar ${sgn(S.air.air)} (brilho ${sgn(S.air.bright)})` }) });
+  }
+  L.push({ id: 'timbre-pair', group: 'Afinação e timbre', pair: ['timbre-bright', 'timbre-soft'], name: 'Brilhante × suave', expect: 'centroide e Ar maiores no brilhante',
+    check2: (a, b) => ({ pass: a.centroid.median > b.centroid.median && a.air.air > b.air.air, got: `${Math.round(a.centroid.median)} × ${Math.round(b.centroid.median)} Hz · Ar ${sgn(a.air.air)} × ${sgn(b.air.air)}` }) });
+  return L;
+}
+function benchEval(spec) {
+  if (spec.pair) {
+    const a = BENCH.results[spec.pair[0]], b = BENCH.results[spec.pair[1]];
+    return a && b ? spec.check2(a.res.summary, b.res.summary) : null;
+  }
+  const r = BENCH.results[spec.id];
+  return r ? spec.check(r.res.summary) : null;
+}
+function renderBench() {
+  const specs = BENCH.specs, ev = specs.map(benchEval);
+  const done = ev.filter(Boolean), pass = done.filter(e => e.pass === true).length, fail = done.filter(e => e.pass === false).length, info = done.filter(e => e.pass === null).length;
+  const groups = [...new Set(specs.map(s => s.group))];
+  const chip = e => !e ? '<span class="r-mut">—</span>' : e.pass === true ? '<span class="b-res ok">✓ aprovado</span>' : e.pass === false ? '<span class="b-res no">✗ reprovado</span>' : '<span class="b-res info">ℹ informativo</span>';
+  const rows = g => specs.map((s, i) => [s, ev[i]]).filter(([s]) => s.group === g).map(([s, e]) => `<tr data-id="${s.id}">
+      <td>${s.pair ? '<span class="r-mut">comparação ·</span> ' : ''}${s.name}</td><td class="r-mut">${s.expect}</td><td>${e ? e.got : '<span class="r-mut">ainda não rodado</span>'}</td><td>${chip(e)}</td>
+      <td class="b-act">${!s.pair && BENCH.results[s.id] ? `<button class="mini-btn" data-act="play">▶ Ouvir</button><button class="mini-btn" data-act="laudo">Laudo</button><button class="mini-btn" data-act="wav">WAV</button>${typeof abUse === 'function' ? '<button class="mini-btn" data-act="ab-a">A</button><button class="mini-btn" data-act="ab-b">B</button>' : ''}${typeof expAddStim === 'function' ? '<button class="mini-btn" data-act="exp">+ Experimento</button>' : ''}` : ''}</td></tr>`).join('');
+  $('bench-body').innerHTML = `
+    <section class="r-card r-hero">
+      <h2>O modelo diante de sons controlados</h2>
+      <p class="r-sub">Cada estímulo é gerado aqui mesmo, com o instrumento escolhido e a calibração atual (Lá 4 = ${A4_HZ} Hz · Verde 0 = ${PC_PT[REF_PC]}), e analisado pelo mesmo núcleo do laudo. A coluna “Expectativa” diz o que o método prevê; “informativo” mostra como o modelo lê casos em que ele não faz uma previsão fechada.</p>
+      <div class="r-stats">
+        ${statCard('Aprovados', BENCH.ran ? `${pass} de ${pass + fail}` : '—', BENCH.ran ? pctS(pass / Math.max(1, pass + fail)) + ' das expectativas' : 'clique em “Rodar bancada”')}
+        ${statCard('Reprovados', BENCH.ran ? String(fail) : '—', fail ? 'veja as linhas marcadas abaixo' : '')}
+        ${statCard('Informativos', BENCH.ran ? String(info) : '—')}
+        ${statCard('Estímulos', String(specs.filter(s => !s.pair).length), `${specs.filter(s => s.pair).length} comparações em pares`)}
+      </div>
+    </section>
+    ${groups.map(g => `<section class="r-card"><h2>${g}</h2><div class="r-scroll"><table class="r-tab b-tab"><thead><tr><th>Estímulo</th><th>Expectativa</th><th>Obtido</th><th>Resultado</th><th></th></tr></thead><tbody>${rows(g)}</tbody></table></div></section>`).join('')}`;
+}
+async function runBench() {
+  if (BENCH.running || R.busy) { toast('Aguarde a análise em andamento.'); return; }
+  BENCH.running = true; R.busy = true; updateLaudoButtons();
+  BENCH.specs = buildBench(); BENCH.results = {}; BENCH.ran = true;
+  const singles = BENCH.specs.filter(s => !s.pair);
+  $('bench-run').disabled = true;
+  try {
+    for (let i = 0; i < singles.length; i++) {
+      const s = singles[i];
+      $('bench-bar').style.opacity = 1; $('bench-bar').style.width = (i / singles.length * 100).toFixed(1) + '%';
+      const samples = await renderSpec(s);
+      const res = await runAnalysis(samples.slice(), BENCH_SR, () => {});
+      res.source = { kind: 'estímulo', name: `Bancada · ${s.name}`, duration: samples.length / BENCH_SR, sampleRate: BENCH_SR };
+      res.app = { name: 'Cromasfera Audio-Visualizer', analysis: CORE.VERSION, generatedAt: new Date().toISOString() };
+      BENCH.results[s.id] = { res, samples };
+      renderBench();
+    }
+    $('bench-bar').style.width = '100%';
+    setTimeout(() => { $('bench-bar').style.opacity = 0; }, 600);
+  } catch (err) {
+    console.error(err); toast('Falha ao rodar a bancada: ' + err.message, 5000);
+  } finally {
+    BENCH.running = false; R.busy = false; $('bench-run').disabled = false; updateLaudoButtons();
+  }
+}
+let benchSrc = null;
+function playSamples(x) {
+  ensureAudio();
+  if (benchSrc) { try { benchSrc.stop(); } catch (e) { /* já parou */ } }
+  const b = A.ctx.createBuffer(1, x.length, BENCH_SR); b.copyToChannel(x, 0);
+  benchSrc = A.ctx.createBufferSource(); benchSrc.buffer = b; benchSrc.connect(A.outGain); benchSrc.start();
+}
+function openBench() {
+  if (!BENCH.specs.length || !BENCH.ran) BENCH.specs = buildBench();
+  $('bench-instr').value = BENCH.instrument;
+  renderBench();
+  $('bench').classList.add('show'); $('bench').setAttribute('aria-hidden', 'false');
+}
+function closeBench() { $('bench').classList.remove('show'); $('bench').setAttribute('aria-hidden', 'true'); if (benchSrc) { try { benchSrc.stop(); } catch (e) { /* já parou */ } } }
+$('bench-instr').innerHTML = Object.entries(INSTRUMENTS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('');
+$('bench-instr').addEventListener('change', e => { BENCH.instrument = e.target.value; });
+$('bench-run').addEventListener('click', runBench);
+$('bench-close').addEventListener('click', closeBench);
+$('btn-bench').addEventListener('click', openBench);
+$('bench-body').addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-act]');
+  if (!b) return;
+  const id = b.closest('tr').dataset.id, r = BENCH.results[id], spec = BENCH.specs.find(s => s.id === id);
+  if (!r) return;
+  const fname = `estimulo-${id}.wav`;
+  if (b.dataset.act === 'play') playSamples(r.samples);
+  else if (b.dataset.act === 'wav') saveFile(fname, encodeWav(r.samples, BENCH_SR));
+  else if (b.dataset.act === 'laudo') {
+    R.result = r.res; R.blob = new File([encodeWav(r.samples, BENCH_SR)], fname, { type: 'audio/wav' });
+    openReport(); setProgress(0); renderReport(r.res);
+  } else if (b.dataset.act === 'ab-a' || b.dataset.act === 'ab-b') abUse(b.dataset.act === 'ab-a' ? 'A' : 'B', { kind: 'estímulo', name: spec.name, samples: r.samples, sampleRate: BENCH_SR });
+  else if (b.dataset.act === 'exp') expAddStim({ name: spec.name, samples: r.samples, sampleRate: BENCH_SR });
+});
 
 // layout de celular: painéis recolhidos e painel de entrada logo acima do teclado
 if (window.matchMedia('(max-width: 767px)').matches) {
