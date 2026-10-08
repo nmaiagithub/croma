@@ -247,6 +247,10 @@
   .b-res.ok { color: #43c24a; } .b-res.no { color: #f0604a; } .b-res.info { color: var(--r-ink2); }
   .b-tab td { white-space: normal; vertical-align: top; min-width: 90px; }
   .b-act { white-space: nowrap !important; }
+  .ab-range { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .8rem; margin-top: 10px; }
+  .ab-range label { display: inline-flex; align-items: center; gap: 4px; }
+  .ab-t { width: 64px; background: var(--r-card); border: 1px solid var(--r-line); color: var(--r-ink); border-radius: 8px; padding: 3px 6px; font-variant-numeric: tabular-nums; }
+  .mini-btn:disabled { opacity: .4; cursor: not-allowed; }
   .research-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .research-grid .btn { font-size: .78rem; padding: .45rem .5rem; }
   .r-method ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; max-width: 90ch; }
@@ -361,6 +365,7 @@
       <div class="label mb-2">Pesquisa</div>
       <div class="research-grid" id="research-grid">
         <button class="btn" id="btn-bench" title="Sons controlados com a expectativa do modelo">Bancada</button>
+        <button class="btn" id="btn-ab" title="Dois áudios, laudos, estímulos ou trechos lado a lado">Comparação A/B</button>
       </div>
     </div>
     <p class="text-[11px] text-[color:var(--muted)] mt-2 leading-relaxed">Ou arraste um arquivo .mp3 / .wav / .m4a / .ogg para a tela.</p>
@@ -537,6 +542,29 @@
   </div>
   <div class="r-body" id="bench-body"></div>
 </div>
+
+<!-- ============ COMPARAÇÃO A/B ============ -->
+<div id="ab" class="r-panel" aria-hidden="true" role="dialog" aria-label="Comparação A/B">
+  <div class="r-top">
+    <div class="r-top-in">
+      <div class="min-w-0"><div class="label">Pesquisa</div><div class="r-h1">Comparação A/B</div></div>
+      <div class="r-actions">
+        <button class="btn" id="ab-run">Comparar</button>
+        <button class="btn" id="ab-csv" disabled>Baixar CSV</button>
+        <button class="btn" id="ab-json" disabled>Baixar JSON</button>
+        <button class="btn" id="ab-close" aria-label="Fechar comparação">✕</button>
+      </div>
+    </div>
+    <div class="r-progress"><div class="r-bar" id="ab-bar"></div></div>
+  </div>
+  <div class="r-body">
+    <p class="r-sub" style="margin:0">Escolha o que comparar em A e em B. Os dois lados são analisados com a calibração atual; laudos salvos mantêm a análise original.</p>
+    <div class="r-two" id="ab-slots"></div>
+    <div id="ab-out" class="r-body" style="padding:0"></div>
+  </div>
+</div>
+<input type="file" id="ab-file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" class="hidden">
+<input type="file" id="ab-jsonfile" accept=".json,application/json" class="hidden">
 
 <div id="dropzone"><div class="box glass"><div class="title-font text-xl rainbow-text">Solte o arquivo de áudio</div><div class="text-sm text-[color:var(--muted)] mt-2">.mp3 · .wav · .m4a · .ogg</div></div></div>
 <div id="toast" class="glass px-4 py-2 text-sm"></div>
@@ -2569,6 +2597,10 @@ window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox') return;
   if (synthKey(e, true)) return;
   const k = e.key.toLowerCase();
+  if ($('ab').classList.contains('show') && !$('report').classList.contains('show')) {
+    if (k === 'escape') closeAB();
+    return;
+  }
   if ($('bench').classList.contains('show') && !$('report').classList.contains('show')) {
     if (k === 'escape') closeBench();
     return;
@@ -4122,6 +4154,277 @@ $('bench-body').addEventListener('click', e => {
   } else if (b.dataset.act === 'ab-a' || b.dataset.act === 'ab-b') abUse(b.dataset.act === 'ab-a' ? 'A' : 'B', { kind: 'estímulo', name: spec.name, samples: r.samples, sampleRate: BENCH_SR });
   else if (b.dataset.act === 'exp') expAddStim({ name: spec.name, samples: r.samples, sampleRate: BENCH_SR });
 });
+
+/* =====================================================================
+   10. COMPARAÇÃO A/B — dois áudios, laudos, estímulos ou trechos lado a lado
+   ===================================================================== */
+const AB = { A: null, B: null, resA: null, resB: null, busy: false, pick: null };
+const parseTime = s => { s = String(s || '').trim(); if (!s) return NaN; const p = s.split(':').map(Number); return p.length === 2 ? p[0] * 60 + p[1] : +s; };
+// análise de amostras já decodificadas, com trecho opcional (reaproveita o Worker do laudo)
+async function analyzeSamples(samples, sr, meta, onProgress) {
+  let x = samples, t0 = 0;
+  if (meta.t1 > meta.t0 && meta.t0 >= 0) { t0 = meta.t0; x = samples.subarray(Math.floor(meta.t0 * sr), Math.min(samples.length, Math.floor(meta.t1 * sr))); }
+  if (x.length < 4096) throw new Error('Trecho curto demais para analisar.');
+  const res = await runAnalysis(x.slice(), sr, onProgress || (() => {}));
+  const rng = meta.t1 > meta.t0 ? ` (${mmss(meta.t0)}–${mmss(meta.t1)})` : '';
+  res.source = { kind: meta.kind, name: (meta.name || 'áudio') + rng, duration: x.length / sr, sampleRate: sr, offset: t0 };
+  res.app = { name: 'Cromasfera Audio-Visualizer', analysis: CORE.VERSION, generatedAt: new Date().toISOString() };
+  return res;
+}
+async function slotResult(slot, onProgress) {
+  if (slot.result) return slot.result;
+  if (!slot.samples) { const d = await decodeToMono(await slot.blob.arrayBuffer()); slot.samples = d.samples; slot.sampleRate = d.sampleRate; }
+  return analyzeSamples(slot.samples, slot.sampleRate, { kind: slot.kind, name: slot.name, t0: slot.t0, t1: slot.t1 }, onProgress);
+}
+function abUse(which, src) {
+  AB[which] = Object.assign({ t0: 0, t1: 0 }, src); AB['res' + which] = null;
+  renderABSlots();
+  toast($('ab').classList.contains('show') ? `${src.name} definido como ${which}.` : `${src.name} definido como ${which}. Abra “Comparação A/B” para comparar.`, 3500);
+}
+function slotHTML(which) {
+  const s = AB[which], isJson = s && s.result, dur = s && (s.result ? s.result.source.duration : s.samples ? s.samples.length / s.sampleRate : 0);
+  const desc = s ? `${esc(s.name)} <span class="r-mut">· ${esc(s.kind)}${dur ? ' · ' + mmss(dur) : ''}</span>` : '<span class="r-mut">Escolha um áudio, um laudo salvo ou um estímulo da bancada.</span>';
+  const part = s && s.t1 > s.t0;
+  return `<section class="r-card ab-slot" data-slot="${which}">
+    <h2>${which}</h2>
+    <p class="r-text">${desc}</p>
+    <div class="r-chips">
+      <button class="mini-btn" data-ab="file">Arquivo de áudio…</button>
+      <button class="mini-btn" data-ab="player" ${A.currentFile ? '' : 'disabled'}>Áudio do player</button>
+      <button class="mini-btn" data-ab="json">Laudo salvo (.json)…</button>
+      <button class="mini-btn" data-ab="bench">Estímulo da bancada…</button>
+      ${which === 'B' ? `<button class="mini-btn" data-ab="sameA" ${AB.A && !AB.A.result ? '' : 'disabled'}>Mesmo áudio de A</button>` : ''}
+    </div>
+    <div class="ab-range ${isJson ? 'r-mut' : ''}">
+      <span>Trecho:</span>
+      <label><input type="radio" name="rng-${which}" value="all" ${part ? '' : 'checked'} ${isJson ? 'disabled' : ''}> inteiro</label>
+      <label><input type="radio" name="rng-${which}" value="part" ${part ? 'checked' : ''} ${isJson ? 'disabled' : ''}> de</label>
+      <input class="ab-t" data-k="t0" value="${part ? mmss(s.t0) : ''}" placeholder="0:00" aria-label="Início do trecho ${which}" ${isJson ? 'disabled' : ''}>
+      <span>a</span>
+      <input class="ab-t" data-k="t1" value="${part ? mmss(s.t1) : ''}" placeholder="0:30" aria-label="Fim do trecho ${which}" ${isJson ? 'disabled' : ''}>
+      ${isJson ? '<span>(laudo salvo: usa a análise já feita)</span>' : ''}
+    </div>
+  </section>`;
+}
+function renderABSlots() { if ($('ab-slots')) $('ab-slots').innerHTML = slotHTML('A') + slotHTML('B'); }
+function readRange(which) {
+  const s = AB[which]; if (!s || s.result) return;
+  const card = document.querySelector(`.ab-slot[data-slot="${which}"]`);
+  const part = card.querySelector(`input[name="rng-${which}"][value="part"]`).checked;
+  if (!part) { s.t0 = 0; s.t1 = 0; return; }
+  const t0 = parseTime(card.querySelector('[data-k="t0"]').value), t1 = parseTime(card.querySelector('[data-k="t1"]').value);
+  if (!(t1 > t0) || t0 < 0) throw new Error(`Trecho de ${which} inválido: use m:ss, com o fim depois do início.`);
+  s.t0 = t0; s.t1 = t1;
+}
+async function runAB() {
+  if (!AB.A || !AB.B) { toast('Escolha A e B antes de comparar.'); return; }
+  if (R.busy || AB.busy) { toast('Aguarde a análise em andamento.'); return; }
+  try { readRange('A'); readRange('B'); } catch (e) { toast(e.message, 4000); return; }
+  AB.busy = true; R.busy = true; updateLaudoButtons(); $('ab-run').disabled = true;
+  const bar = $('ab-bar'); bar.style.opacity = 1;
+  try {
+    AB.resA = await slotResult(AB.A, p => { bar.style.width = (p * 50).toFixed(1) + '%'; });
+    AB.resB = await slotResult(AB.B, p => { bar.style.width = (50 + p * 50).toFixed(1) + '%'; });
+    bar.style.width = '100%';
+    renderABOut();
+  } catch (err) { console.error(err); toast('Não foi possível comparar: ' + err.message, 5000); }
+  finally { AB.busy = false; R.busy = false; updateLaudoButtons(); $('ab-run').disabled = false; setTimeout(() => { bar.style.opacity = 0; }, 500); }
+}
+// métricas comparáveis de um resumo
+function abMetrics(res) {
+  const S = res.summary, ref = laudoRef(res), M = S.melody || {};
+  const famR = topFamily(S.absolute), famL = topFamily(S.relative), qR = topQuad(S.absolute);
+  return [
+    ['Tônica', 'text', withNames(ref, () => keyLabel(S.key.tone, S.key.mode))],
+    ['Confiança da tonalidade (r)', 'num', S.key.r],
+    ['Índice Ar/Terra', 'num', S.air.air], ['· modo', 'num', S.air.mode], ['· brilho', 'num', S.air.bright], ['· andamento', 'num', S.air.tempo],
+    ['Cor predominante (referência)', 'text', `${famR.name} ${pctS(famR.share)}`],
+    ['Cor predominante (relativa)', 'text', `${famL.name} ${pctS(famL.share)}`],
+    ['Quadrante (referência)', 'text', `${QUAD_LABEL[qR[0]]} ${pctS(qR[1])}`],
+    ['Plano Físico x (referência)', 'num', S.absolute.sentirama.mean[0]], ['Plano Espiritual y (referência)', 'num', S.absolute.sentirama.mean[1]],
+    ['Plano Físico x (relativa)', 'num', S.relative.sentirama.mean[0]], ['Plano Espiritual y (relativa)', 'num', S.relative.sentirama.mean[1]],
+    ['Tensão média', 'pct', S.tension.mean], ['Tensão acima de 50%', 'pct', S.tension.above50],
+    ['Estabilidade na referência', 'pct', S.stabilityD], ['Estabilidade na tônica', 'pct', S.relative.tonicStability],
+    ['Acordes consonantes', 'pct', S.chords.consonantShare], ['Naturais (energia)', 'pct', S.absolute.naturalsEnergy],
+    ['Andamento (BPM)', 'int', S.bpm || NaN], ['Centroide (Hz)', 'int', S.centroid.median], ['Faixa dinâmica (dB)', 'int', S.dynamics.p95 - S.dynamics.p10],
+    ['Afinação estimada (Hz)', 'num1', S.tuning ? S.tuning.a4Estimated : NaN],
+    ['Melodia: notas definidas', 'pct', M.voicedShare != null ? M.voicedShare : NaN], ['Melodia: passos', 'pct', M.noteCount ? M.steps : NaN],
+  ];
+}
+function fmtMetric(type, v) {
+  if (type === 'text') return v;
+  if (!isFinite(v)) return '—';
+  return type === 'pct' ? pctS(v) : type === 'int' ? String(Math.round(v)) : type === 'num1' ? num(v, 1) : sgn(v);
+}
+function fmtDelta(type, a, b) {
+  if (type === 'text') return a === b ? '=' : '≠';
+  if (!isFinite(a) || !isFinite(b)) return '—';
+  const d = b - a;
+  return type === 'pct' ? `${d >= 0 ? '+' : '−'}${Math.abs(d * 100).toFixed(0)} p.p.` : type === 'int' ? `${d >= 0 ? '+' : '−'}${Math.abs(Math.round(d))}` : type === 'num1' ? `${d >= 0 ? '+' : '−'}${num(Math.abs(d), 1)}` : sgn(d);
+}
+function abSynthesis(a, b) {
+  const A_ = a.summary, B_ = b.summary, out = [];
+  const dAir = B_.air.air - A_.air.air;
+  if (Math.abs(dAir) >= 0.1) out.push(`B está mais <b>${dAir > 0 ? 'Ar' : 'Terra'}</b> que A (${sgn(dAir)} no índice Ar/Terra)`);
+  else out.push('A e B ficam no mesmo ponto do eixo Ar/Terra');
+  const dx = B_.absolute.sentirama.mean[0] - A_.absolute.sentirama.mean[0], dy = B_.absolute.sentirama.mean[1] - A_.absolute.sentirama.mean[1];
+  const pos = [];
+  if (Math.abs(dx) >= 0.08) pos.push(`mais ${dx > 0 ? 'quente (amarelo)' : 'frio (azul)'} (x ${sgn(dx)})`);
+  if (Math.abs(dy) >= 0.08) pos.push(`mais ${dy > 0 ? 'sutil (rosa)' : 'denso (vermelho)'} (y ${sgn(dy)})`);
+  if (pos.length) out.push(`no Sentirama, B é ${pos.join(' e ')}`);
+  const fa = topFamily(A_.absolute).name, fb = topFamily(B_.absolute).name;
+  out.push(fa === fb ? `a cor predominante é a mesma (${fa})` : `a cor predominante muda de <b>${fa}</b> para <b>${fb}</b>`);
+  const ka = withNames(laudoRef(a), () => keyLabel(A_.key.tone, A_.key.mode)), kb = withNames(laudoRef(b), () => keyLabel(B_.key.tone, B_.key.mode));
+  if (ka !== kb) out.push(`a tônica estimada passa de ${ka} para ${kb}`);
+  const dT = B_.tension.mean - A_.tension.mean;
+  if (Math.abs(dT) >= 0.1) out.push(`a tensão Vermelho 3 ↔ Rosa 9 ${dT > 0 ? 'sobe' : 'cai'} (${dT > 0 ? '+' : '−'}${Math.abs(dT * 100).toFixed(0)} p.p.)`);
+  if (A_.bpm && B_.bpm && Math.abs(B_.bpm - A_.bpm) >= 8) out.push(`o andamento vai de ${Math.round(A_.bpm)} para ${Math.round(B_.bpm)} BPM`);
+  return out.map((t, i) => (i === 0 ? t.charAt(0).toUpperCase() + t.slice(1) : t)).join('; ') + '.';
+}
+function renderABOut() {
+  const a = AB.resA, b = AB.resB;
+  if (!a || !b) { $('ab-out').innerHTML = ''; $('ab-csv').disabled = $('ab-json').disabled = true; return; }
+  const ma = abMetrics(a), mb = abMetrics(b);
+  const warn = (laudoRef(a) !== laudoRef(b) || A4_HZ_OF(a) !== A4_HZ_OF(b)) ? `<div class="r-alert">A e B foram analisados com calibrações diferentes (Verde 0 = ${PC_PT[laudoRef(a)]} / ${PC_PT[laudoRef(b)]}, Lá 4 = ${A4_HZ_OF(a)} / ${A4_HZ_OF(b)} Hz). A leitura de referência deixa de ser diretamente comparável.</div>` : '';
+  const rows = ma.map((m, i) => `<tr><td>${m[0]}</td><td>${fmtMetric(m[1], m[2])}</td><td>${fmtMetric(m[1], mb[i][2])}</td><td class="r-mut">${fmtDelta(m[1], m[2], mb[i][2])}</td></tr>`).join('');
+  const nameA = esc(a.source.name), nameB = esc(b.source.name);
+  $('ab-out').innerHTML = `
+    <section class="r-card r-hero">
+      <h2>Diferenças</h2>
+      <p class="r-sub"><b>A</b> = ${nameA} · <b>B</b> = ${nameB}</p>
+      <p class="r-verdict">${abSynthesis(a, b)}</p>
+      ${warn}
+    </section>
+    <div class="r-two">
+      <section class="r-card"><h2>Perfil cromático</h2><p class="r-sub">Barra cheia = A · barra vazada = B (energia de cada tom, leitura de referência).</p><div class="r-cw"><canvas class="r-chart" data-ab-chart="profile" data-h="170"></canvas></div></section>
+      <section class="r-card"><h2>Rodas cromáticas</h2><p class="r-sub">Pétalas cheias = A · contornos = B.</p><div class="r-sq"><canvas class="r-chart" data-ab-chart="wheel" data-h="300"></canvas></div></section>
+    </div>
+    <div class="r-two">
+      <section class="r-card"><h2>Sentirama</h2><p class="r-sub">Pontos claros = A · pontos escuros com contorno = B; a seta liga o centro de gravidade de A ao de B.</p><div class="r-sq"><canvas class="r-chart" data-ab-chart="sent" data-h="320"></canvas></div></section>
+      <section class="r-card"><h2>Paletas</h2><p class="r-sub">Tempo de cada cor como nota dominante (leitura de referência).</p><canvas class="r-chart" data-ab-chart="palette" data-h="92"></canvas></section>
+    </div>
+    <section class="r-card"><h2>Tabela A | B | Δ</h2><p class="r-sub">Δ = B − A (p.p. = pontos percentuais).</p>
+      <div class="r-scroll"><table class="r-tab"><thead><tr><th>Medida</th><th>A</th><th>B</th><th>Δ</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </section>`;
+  $('ab-csv').disabled = $('ab-json').disabled = false;
+  requestAnimationFrame(drawAB);
+}
+function drawABProfile(cv, a, b) {
+  const { g, w, h } = prepCanvas(cv), pa = a.summary.absolute.profile, pb = b.summary.absolute.profile;
+  const sa = pa.reduce((s, v) => s + v, 0) || 1, sb = pb.reduce((s, v) => s + v, 0) || 1;
+  const va = pa.map(v => v / sa), vb = pb.map(v => v / sb), vmax = Math.max(...va, ...vb) || 1;
+  const padT = 10, padB = 30, gap = 6, gw = (w - gap * 11) / 12, bw = (gw - 3) / 2, H = h - padT - padB;
+  cv._ab = { gw, gap, va, vb };
+  g.strokeStyle = rcss('--r-grid'); g.beginPath(); g.moveTo(0, padT + H + 0.5); g.lineTo(w, padT + H + 0.5); g.stroke();
+  withNames(laudoRef(a), () => {
+    for (let k = 0; k < 12; k++) {
+      const x = k * (gw + gap), ha = Math.max(1, va[k] / vmax * H), hb = Math.max(1, vb[k] / vmax * H);
+      g.fillStyle = TONES[k].hex; roundTop(g, x, padT + H - ha, bw, ha, 3); g.fill();
+      roundTop(g, x + bw + 3, padT + H - hb + 1, bw - 1, hb - 1, 3); g.globalAlpha = 0.25; g.fill(); g.globalAlpha = 1;
+      g.strokeStyle = TONES[k].hex; g.lineWidth = 1.5; g.stroke();
+      g.fillStyle = rcss('--r-ink'); g.textAlign = 'center'; g.font = '600 10px Inter, system-ui, sans-serif'; g.fillText(String(k), x + gw / 2, padT + H + 13);
+      g.fillStyle = rcss('--r-ink2'); g.font = '9px Inter, system-ui, sans-serif'; g.fillText(TONES[k].pt, x + gw / 2, padT + H + 25);
+    }
+  });
+}
+function drawABWheel(cv, a, b) {
+  const { g, w, h } = prepCanvas(cv), cx = w / 2, cy = h / 2, R0 = Math.min(w, h) / 2 - 30, r0 = R0 * 0.24;
+  const pa = a.summary.absolute.profile, pb = b.summary.absolute.profile, ma = Math.max(...pa) || 1, mb = Math.max(...pb) || 1;
+  g.strokeStyle = rcss('--r-grid'); g.lineWidth = 1; g.beginPath(); g.arc(cx, cy, R0, 0, TAU); g.stroke();
+  for (let k = 0; k < 12; k++) {
+    const ang = -Math.PI / 2 + k * Math.PI / 6, hw = TONES[k].uv ? 0.12 : 0.2;
+    petalPath(g, cx, cy, ang, r0, r0 + (R0 - r0) * Math.max(0.04, pa[k] / ma), hw);
+    g.fillStyle = TONES[k].hex; g.globalAlpha = 0.7; g.fill(); g.globalAlpha = 1;
+    petalPath(g, cx, cy, ang, r0, r0 + (R0 - r0) * Math.max(0.04, pb[k] / mb), hw);
+    g.strokeStyle = rcss('--r-ink'); g.lineWidth = 2; g.setLineDash([4, 3]); g.stroke(); g.setLineDash([]);
+    g.fillStyle = rcss('--r-ink'); g.textAlign = 'center'; g.font = '600 10px Inter, system-ui, sans-serif';
+    g.fillText(String(k), cx + Math.cos(ang) * (R0 + 14), cy + Math.sin(ang) * (R0 + 14) + 3);
+  }
+}
+function drawABSent(cv, a, b) {
+  const { g, w, h } = prepCanvas(cv), size = Math.min(w, h), cx = w / 2, cy = h / 2, Rr = size / 2 - 26, P = (x, y) => [cx + x / 1.1 * Rr, cy - y / 1.1 * Rr];
+  sentBase(g, cx, cy, Rr);
+  const dots = (res, filled) => {
+    const { tl, n, dt } = tlInfo(res), t0 = n ? tl.t[0] : 0, path = res.summary.absolute.sentirama.path;
+    g.globalAlpha = Math.max(0.06, Math.min(0.3, 160 / Math.max(1, path.length)));
+    for (const p of path) {
+      const d = tl.dom[clamp(Math.round((p[0] - t0) / dt), 0, n - 1)]; if (d < 0) continue;
+      const [x, y] = P(p[1], p[2]);
+      g.beginPath(); g.arc(x, y, 2.2, 0, TAU);
+      if (filled) { g.fillStyle = TONES[d].hex; g.fill(); } else { g.strokeStyle = TONES[d].hex; g.lineWidth = 1; g.stroke(); }
+    }
+    g.globalAlpha = 1;
+  };
+  dots(a, true); dots(b, false);
+  const [ax, ay] = P(a.summary.absolute.sentirama.mean[0], a.summary.absolute.sentirama.mean[1]);
+  const [bx, by] = P(b.summary.absolute.sentirama.mean[0], b.summary.absolute.sentirama.mean[1]);
+  g.strokeStyle = rcss('--r-ink'); g.fillStyle = rcss('--r-ink'); g.lineWidth = 2;
+  if (Math.hypot(bx - ax, by - ay) > 6) {
+    const ang = Math.atan2(by - ay, bx - ax);
+    g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx - Math.cos(ang) * 9, by - Math.sin(ang) * 9); g.stroke();
+    g.beginPath(); g.moveTo(bx - Math.cos(ang) * 8, by - Math.sin(ang) * 8);
+    g.lineTo(bx - Math.cos(ang - 0.4) * 16, by - Math.sin(ang - 0.4) * 16); g.lineTo(bx - Math.cos(ang + 0.4) * 16, by - Math.sin(ang + 0.4) * 16); g.closePath(); g.fill();
+  }
+  g.beginPath(); g.arc(ax, ay, 7, 0, TAU); g.stroke();
+  g.setLineDash([3, 3]); g.beginPath(); g.arc(bx, by, 7, 0, TAU); g.stroke(); g.setLineDash([]);
+  g.font = '700 12px Inter, system-ui, sans-serif'; g.textAlign = 'left';
+  g.fillText('A', ax + 10, ay - 8); g.fillText('B', bx + 10, by - 8);
+}
+function drawABPalette(cv, a, b) {
+  const { g, w } = prepCanvas(cv), lab = 30, bh = 24;
+  [['A', a.summary.absolute.families, 10], ['B', b.summary.absolute.families, 52]].forEach(([name, fams, y]) => {
+    g.fillStyle = rcss('--r-ink'); g.textAlign = 'left'; g.font = '700 12px Inter, system-ui, sans-serif'; g.fillText(name, 0, y + bh / 2 + 4);
+    const total = fams.reduce((s, f) => s + f.share, 0) || 1; let x = lab;
+    fams.forEach(f => { const sw = f.share / total * (w - lab); if (sw <= 0) return; g.fillStyle = FAMILY_HEX[f.name]; g.fillRect(x, y, Math.max(0.5, sw - 2), bh); x += sw; });
+  });
+}
+function drawAB() {
+  if (!AB.resA || !AB.resB || !$('ab').classList.contains('show')) return;
+  const fns = { profile: drawABProfile, wheel: drawABWheel, sent: drawABSent, palette: drawABPalette };
+  document.querySelectorAll('#ab-out canvas[data-ab-chart]').forEach(cv => { try { fns[cv.dataset.abChart](cv, AB.resA, AB.resB); } catch (e) { console.error('A/B', e); } });
+}
+function abCSV() {
+  const ma = abMetrics(AB.resA), mb = abMetrics(AB.resB), q = v => `"${String(v).replace(/"/g, '""')}"`;
+  const lines = [['medida', 'A', 'B', 'delta_B_menos_A'].join(',')];
+  ma.forEach((m, i) => {
+    const va = m[2], vb = mb[i][2], num_ = m[1] !== 'text';
+    lines.push([q(m[0]), num_ ? (isFinite(va) ? (+va).toFixed(4) : '') : q(va), num_ ? (isFinite(vb) ? (+vb).toFixed(4) : '') : q(vb), num_ && isFinite(va) && isFinite(vb) ? (vb - va).toFixed(4) : q(va === vb ? '=' : '≠')].join(','));
+  });
+  for (let k = 0; k < 12; k++) {
+    const sa = AB.resA.summary.absolute.profile, sb = AB.resB.summary.absolute.profile, ta = sa.reduce((s, v) => s + v, 0) || 1, tb = sb.reduce((s, v) => s + v, 0) || 1;
+    lines.push([q(`perfil tom ${k}`), (sa[k] / ta).toFixed(4), (sb[k] / tb).toFixed(4), (sb[k] / tb - sa[k] / ta).toFixed(4)].join(','));
+  }
+  lines.push([q('A'), q(AB.resA.source.name), '', ''].join(','), [q('B'), q(AB.resB.source.name), '', ''].join(','));
+  return lines.join('\n');
+}
+function openAB() { renderABSlots(); renderABOut(); $('ab').classList.add('show'); $('ab').setAttribute('aria-hidden', 'false'); }
+function closeAB() { $('ab').classList.remove('show'); $('ab').setAttribute('aria-hidden', 'true'); }
+$('btn-ab').addEventListener('click', openAB);
+$('ab-close').addEventListener('click', closeAB);
+$('ab-run').addEventListener('click', runAB);
+$('ab-csv').addEventListener('click', () => saveFile('comparacao-ab-cromasfera.csv', abCSV()));
+$('ab-json').addEventListener('click', () => saveFile('comparacao-ab-cromasfera.json', JSON.stringify({ format: 'cromasfera-ab', A: { source: AB.resA.source, params: AB.resA.params, summary: AB.resA.summary }, B: { source: AB.resB.source, params: AB.resB.params, summary: AB.resB.summary } })));
+$('ab-slots').addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-ab]'); if (!b) return;
+  const which = b.closest('.ab-slot').dataset.slot, act = b.dataset.ab;
+  AB.pick = which;
+  if (act === 'file') $('ab-file').click();
+  else if (act === 'json') $('ab-jsonfile').click();
+  else if (act === 'player' && A.currentFile) abUse(which, { kind: 'arquivo', name: A.currentFile.name, blob: A.currentFile });
+  else if (act === 'sameA' && AB.A) abUse('B', { kind: AB.A.kind, name: AB.A.name, blob: AB.A.blob, samples: AB.A.samples, sampleRate: AB.A.sampleRate });
+  else if (act === 'bench') { closeAB(); openBench(); toast(`Rode a bancada e use o botão ${which} na linha do estímulo.`, 4000); }
+});
+$('ab-file').addEventListener('change', e => { const f = e.target.files[0]; if (f) abUse(AB.pick || 'A', { kind: 'arquivo', name: f.name, blob: f }); e.target.value = ''; });
+$('ab-jsonfile').addEventListener('change', e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  f.text().then(t => {
+    const d = JSON.parse(t);
+    if (d.format !== 'cromasfera-laudo') throw new Error('Este JSON não é um laudo da Cromasfera.');
+    abUse(AB.pick || 'A', { kind: 'laudo salvo', name: (d.source && d.source.name) || f.name, result: d });
+  }).catch(err => toast('Não foi possível abrir o laudo: ' + err.message, 5000));
+});
+let abResizeT = 0;
+window.addEventListener('resize', () => { clearTimeout(abResizeT); abResizeT = setTimeout(drawAB, 140); });
 
 // layout de celular: painéis recolhidos e painel de entrada logo acima do teclado
 if (window.matchMedia('(max-width: 767px)').matches) {
