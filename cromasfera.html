@@ -19,6 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <style>
   :root {
+    color-scheme: dark;
     --bg: #07060d;
     --panel: rgba(17, 13, 28, 0.66);
     --panel-border: rgba(255, 255, 255, 0.09);
@@ -499,7 +500,7 @@ async function startMic() {
     toast('Microfone ativo — cante, toque ou fale.');
   } catch (err) {
     let msg = 'Não foi possível acessar o microfone. ';
-    if (err.name === 'NotAllowedError') msg += 'Permissão negada.';
+    if (err.name === 'NotAllowedError') msg += 'Permissão negada ou bloqueada por este ambiente. Use o Upload de Áudio ou a Demonstração, ou abra a página localmente.';
     else if (err.name === 'NotFoundError') msg += 'Nenhum microfone encontrado.';
     else msg += err.message;
     toast(msg, 5000);
@@ -1787,7 +1788,10 @@ $('opt-particles').addEventListener('change', e => { [particles1, particles2, pa
 $('opt-labels').addEventListener('change', e => labelSprites.forEach(s => s.visible = e.target.checked));
 $('hud-collapse').addEventListener('click', () => { const b = $('hud-body'); b.classList.toggle('collapsed'); $('hud-collapse').textContent = b.classList.contains('collapsed') ? '+' : '–'; });
 $('panel-collapse').addEventListener('click', () => { const p = $('panel-left'); p.classList.toggle('collapsed'); $('panel-collapse').textContent = p.classList.contains('collapsed') ? 'mais opções' : 'recolher'; });
-function toggleFull() { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
+function toggleFull() {
+  const p = !document.fullscreenElement ? document.documentElement.requestFullscreen?.() : document.exitFullscreen?.();
+  if (p && p.catch) p.catch(() => toast('Tela cheia indisponível aqui.'));
+}
 $('btn-full').addEventListener('click', toggleFull);
 
 // modal de teoria
