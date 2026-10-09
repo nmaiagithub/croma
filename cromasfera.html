@@ -288,6 +288,22 @@
     --r-ink: #17121d; --r-ink2: #5b5468; --r-grid: rgba(0,0,0,.1); --r-top: #ffffff;
   }
   body.printing-guia .g-doc a { color: #17121d; }
+  .sc-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: .8rem; color: var(--r-ink2); margin: 10px 0 6px; }
+  .sc-ctl label, .sc-g { display: inline-flex; align-items: center; gap: 6px; }
+  .sc-actions { margin: 4px 0 6px; }
+  .sc-pane { display: none; margin-top: 8px; } .sc-pane.on { display: block; }
+  .sc-print-h { display: none; }
+  .sc-paper { background: #fbfaf7; border-radius: 12px; padding: 8px 4px; overflow: hidden; min-height: 60px; }
+  .sc-paper.dark { background: #15121c; border: 1px solid var(--r-line); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sc-paper svg { display: block; max-width: 100%; }
+  .sc-msg { color: #5b5468; font-size: .85rem; padding: 14px; } .sc-paper.dark .sc-msg { color: #a39cb5; }
+  .sc-legend { margin-top: 12px; }
+  .sc-leg { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .75rem; color: var(--r-ink2); }
+  .sc-leg span { display: inline-flex; align-items: center; gap: 5px; } .sc-leg span.dim { opacity: .45; }
+  .sc-leg i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .sc-leg i.tri { border-radius: 0; clip-path: polygon(50% 4%, 97% 92%, 3% 92%); }
+  body.printing .sc-pane { display: block !important; break-inside: auto; } body.printing .sc-print-h { display: block; }
+  body.printing .sc-ctl, body.printing .sc-actions, body.printing #sc-tabs { display: none !important; }
   .v-badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: .75rem; font-weight: 600; white-space: nowrap; border: 1px solid currentColor; }
   .v-ok { color: #43c24a; background: rgba(67,194,74,.12); } .v-bad { color: #f0644f; background: rgba(232,64,44,.12); } .v-mid { color: var(--r-ink2); background: rgba(255,255,255,.05); }
   .v-list { display: grid; gap: 8px; margin-bottom: 12px; }
@@ -894,7 +910,8 @@ O laudo mostra esses avisos automaticamente, no topo.
    - *coocorrência*: quais soam juntas;
    - *intervalos*: consonantes (terças, quartas, quintas) × dissonantes (segundas, trítono).
 7. **Melodia** (pensada para voz ou instrumento solo): extensão, afinação em cents, passos × saltos.
-8. **Método e limitações:** as condições daquela análise.
+8. **Partitura:** a transcrição da música em notação convencional e nas duas formas Cromasônicas (ver [Partitura](#partitura)).
+9. **Método e limitações:** as condições daquela análise.
 
 > **Regra de decisão (laudo).** Um laudo **não prova** nada sobre percepção; ele descreve a leitura do modelo. Use-o para afirmar "segundo o modelo, a música X é predominantemente Verde, no quadrante Rosa–Azul, Ar/Terra +0,01 (equilíbrio)", sempre com a confiança da tonalidade e os avisos. Para comparar duas músicas, use a Comparação A/B. Para afirmar algo sobre como as pessoas sentem, use o Experimento.
 
@@ -904,6 +921,48 @@ O laudo mostra esses avisos automaticamente, no topo.
 - Ler a leitura relativa com tonalidade de confiança baixa (r < 0,50).
 - Tomar a média da música inteira por "a cor da música" quando a linha do tempo mostra partes muito diferentes. Nesse caso, analise trechos.
 - Percussão e ruído espalham energia por todos os tons e puxam a música para o centro do Sentirama.
+
+### Partitura
+
+O laudo transcreve a música em pauta, em três formas:
+
+| Forma | O que mostra |
+|---|---|
+| **Convencional** | Pauta dupla: melodia (clave de sol, ou de fá se for grave) e baixo (clave de fá), com armadura, fórmula de compasso, cifras e ligaduras. |
+| **Cromasônica · pauta colorida** | A mesma pauta com cada nota na cor do seu tom: cabeça redonda nos tons naturais, triangular nos ultravioleta, e o número do tom Croma embaixo. As cifras aparecem coloridas com o número do tom da fundamental (ex.: "D · 0"). |
+| **Cromasônica · pauta cromática** | Doze linhas por oitava, uma por tom (Verde 0 embaixo, Azul-UV 11 em cima), com as notas como barras na cor do tom e um ● ou ▲ no ataque; em cima, a faixa das cifras; embaixo, a do baixo; mesmas barras de compasso da pauta convencional. |
+
+**Como é feita a transcrição.**
+
+1. **Melodia predominante:** em cada quadro (~46 ms), os candidatos a nota (picos fortes do espectro e seus sub-harmônicos, de 110 a 1500 Hz) são pontuados pela soma dos seus harmônicos. Entre os fortes, vale a voz de cima, e a nota que já soava continua enquanto ainda estiver presente. Uma nota repetida conta de novo quando há novo ataque. Notas curtas que mergulham uma quinta abaixo das vizinhas são tratadas como acompanhamento.
+2. **Grade de tempo:** o andamento do laudo é afinado por mínimos quadrados sobre os ataques da melodia (±3%). Sem andamento no laudo (melodia solo), ele é estimado pelos intervalos entre ataques.
+3. **Acordes:** o cromagrama é somado por meio compasso (por compasso em 3/4) e comparado com as 24 tríades maiores e menores. O 1º tempo do compasso é o que recebe mais trocas de acorde.
+4. **Quantização:** ataques e finais vão para a semicolcheia (ou colcheia) mais próxima. Em legato, cada nota vai até o próximo ataque quando a pausa entre elas é menor que ¾ de tempo.
+5. **Baixo:** a fundamental de cada cifra, entre Mi 2 e Ré# 3. É **inferido**, não ouvido nota a nota.
+6. **Tonalidade da partitura:** estimada pela própria transcrição (perfis de Krumhansl sobre as notas e os acordes, com bônus para a cadência final). Pode diferir da tonalidade global do laudo; o app avisa.
+
+**Controles:** andamento (com ÷2 e ×2 para corrigir meio/dobro), compasso (4/4, 3/4, 2/4, 6/8), menor figura (semicolcheia ou colcheia), início do compasso (◀ ▶ deslocam um tempo) e cifras ligadas/desligadas. Em áudio com pouca harmonia (melodia solo), as cifras começam desligadas, porque seriam só implícitas pela melodia.
+
+**Saídas:** **Ouvir a transcrição** (piano elétrico + baixo analógico, com um cursor na pauta cromática), **MusicXML** (abre no MuseScore, Finale, Sibelius ou Dorico), **MusicXML colorido** (as cores, as cabeças triangulares e os números dos tons vão junto) e **MIDI** (duas trilhas: melodia e baixo). **Imprimir / PDF** inclui as três formas.
+
+**Acurácia medida** (estímulos com resposta conhecida, gerados pelo próprio app):
+
+| Estímulo | Resultado |
+|---|---|
+| Ode à Alegria, Ré maior, 100 BPM: melodia de piano elétrico + acordes de órgão + bumbo (30 notas, 9 cifras) | 27 de 30 notas com altura e ataque exatos; 25 de 30 com a duração exata; 27 das 28 notas transcritas estão certas; 8 de 9 cifras certas; 1º compasso e armadura corretos |
+| Escala de Dó maior solo, 0,5 s por nota, sem percussão | 11 de 11 notas certas; andamento estimado em 120 BPM (o laudo não tinha detectado) |
+| Progressão de demonstração (16 acordes de órgão) | 16 de 16 cifras certas |
+
+Os erros na Ode à Alegria mostram as limitações típicas: duas notas repetidas (Lá Lá, Mi Mi) saíram unidas numa só, um Ré 4 foi lido como Lá 3 (o acompanhamento venceu a melodia que decaía) e meio compasso de Lá maior saiu como Fá# menor.
+
+> **Regra de decisão (partitura).** A partitura é uma **transcrição automática**: serve para ler a música no modelo (em especial na pauta cromática) e como rascunho de transcrição. Para usar notas e ritmos como dado de pesquisa, **confira de ouvido** com *Ouvir a transcrição* e corrija o MusicXML num editor. Não use a partitura automática para afirmar o que a música "é" sem essa revisão.
+
+**Armadilhas.**
+
+- Andamento em meio ou dobro: se as figuras parecerem longas ou curtas demais, use ÷2 ou ×2.
+- O 1º tempo do compasso pode sair deslocado em músicas com anacruse ou acordes que mudam fora do 1º tempo: ajuste com ◀ ▶.
+- Polifonia: só a voz de cima vira melodia; vozes internas, contracantos e o baixo real não são transcritos.
+- Percussão sem altura não aparece; voz falada, ruído e percussão produzem notas espúrias ou nenhuma.
 
 ## Comparação A/B
 
@@ -1430,7 +1489,11 @@ Pessoas com sinestesia som-cor podem ter associações fortes e idiossincrática
 - `params`: FFT, salto, taxa, janela, suavização, A4, ref, airWeights, versão do método;
 - `source`: nome, tipo, duração;
 - `summary`: todas as medidas do laudo;
-- `timeline`: por quadro de ~46 ms, com tempo, nível, centroide, nota dominante, tensão, acorde, cromagrama de 12 tons (suavizado e bruto), f0 e clareza.
+- `timeline`: por quadro de ~46 ms, com tempo, nível, centroide, nota dominante, tensão, acorde, cromagrama de 12 tons (suavizado e bruto), f0 e clareza (YIN), e a melodia predominante (`mcf`/`mcs`: os 4 melhores candidatos a nota por quadro, frequência e fração da energia; `mtot`: energia total dos picos), usada pela partitura.
+
+**MusicXML da partitura:** MusicXML 4.0 *partwise* com duas partes (Melodia e Baixo), armadura, fórmula de compasso, andamento, cifras (`<harmony>`) e ligaduras. Na versão colorida, cada nota tem `color`, a cabeça é `triangle` nos tons ultravioleta e o número do tom vai como letra (`<lyric>`).
+
+**MIDI da partitura:** SMF tipo 1, 480 *ticks* por semínima: trilha de andamento, compasso e armadura; melodia no canal 1 (piano elétrico) e baixo no canal 2.
 
 **JSON do experimento:** `format: "cromasfera-experimento"` e `sessions` (participante, configurações, respostas com a previsão completa).
 
@@ -1573,6 +1636,7 @@ print(m.summary())
     <ul class="list-disc pl-5 space-y-1">
       <li><strong>Gramática das cores</strong>: matriz de transições (qual cor leva a qual) e de coocorrência (quais soam juntas), em 12 tons ou 7 cores, e o perfil de intervalos (quintas, terças, trítonos…).</li>
       <li><strong>Roda cromática</strong>: o perfil desenhado como mandala de 12 pétalas. <strong>Replay no Sentirama</strong>: um ponto percorre a trajetória da música em sincronia com o áudio.</li>
+      <li><strong>Partitura</strong>: a música transcrita em pauta convencional, em pauta colorida (cada nota na cor do tom, ▲ nos ultravioleta) e em pauta cromática de 12 linhas; dá para ouvir a transcrição e baixar em MusicXML e MIDI.</li>
       <li><strong>Melodia</strong>: contorno da nota fundamental (f0) no tempo, extensão, desvio de afinação em cents e intervalos melódicos. O botão <strong>Afinador</strong> (barra superior) mostra nota, cents e contorno ao vivo.</li>
     </ul>
     <h3>Ferramentas de pesquisa</h3>
@@ -1740,6 +1804,77 @@ function dspCore() {
     };
   }
 
+  // melodia predominante: candidatos a fundamental (picos fortes e seus sub-harmônicos, 110–1500 Hz) pontuados
+  // pela soma dos harmônicos no espectro. Diferente do YIN, não é capturado pelo bumbo nem pelo baixo.
+  // Devolve os PP_K melhores {f, conf} (conf = fração da energia dos picos que o candidato explica) e o total.
+  const PP_FMIN = 110, PP_FMAX = 1500, PP_K = 4;
+  function predominantPitch(freqDb, sampleRate, fftSize) {
+    const binHz = sampleRate / fftSize, nb = freqDb.length;
+    const lo = Math.max(2, Math.floor(80 / binHz)), hi = Math.min(nb - 2, Math.ceil(5000 / binHz));
+    let maxDb = -200;
+    for (let i = lo; i <= hi; i++) if (freqDb[i] > maxDb) maxDb = freqDb[i];
+    const gate = Math.max(-95, maxDb - 45), P = [];
+    let total = 0;
+    for (let i = lo; i <= hi; i++) {
+      const b = freqDb[i], a = freqDb[i - 1], c = freqDb[i + 1];
+      if (b < gate || !(b > a && b >= c)) continue;
+      const den = a - 2 * b + c, p = den !== 0 ? clamp(0.5 * (a - c) / den, -0.5, 0.5) : 0;
+      const amp = Math.pow(10, b / 20);
+      P.push({ f: (i + p) * binHz, a: amp }); total += amp;
+    }
+    if (!P.length || total <= 0) return { cands: [], total: 0 };
+    P.sort((x, y) => y.a - x.a);
+    const top = P.slice(0, 24), cands = [];
+    for (const pk of top.slice(0, 10)) for (let h = 1; h <= 5; h++) { const c = pk.f / h; if (c >= PP_FMIN && c <= PP_FMAX) cands.push(c); }
+    const scored = [];
+    for (const c of cands) {
+      if (scored.some(o => Math.abs(1200 * Math.log2(o.f / c)) < 35)) continue;
+      let s = 0;
+      for (let h = 1; h <= 10; h++) {
+        const tg = h * c; if (tg > 5000) break;
+        let m = 0;
+        for (const pk of top) if (Math.abs(1200 * Math.log2(pk.f / tg)) < 35 && pk.a > m) m = pk.a;
+        s += m * Math.pow(0.8, h - 1);
+      }
+      scored.push({ f: c, conf: Math.min(1, s / total) });
+    }
+    scored.sort((x, y) => y.conf - x.conf);
+    return { cands: scored.slice(0, PP_K), total };
+  }
+  // linha melódica para a partitura, a partir dos candidatos da melodia predominante: entre os fortes
+  // (≥ metade do melhor), a voz de cima que não seja só harmônico de outro; mantém a nota anterior enquanto
+  // ela continuar forte. Uma nota repetida volta a valer quando há novo ataque (a saliência sobe de repente).
+  function melodyLine(tl, T, dt, a4 = A4, opt = {}) {
+    if (!tl.mcf) return [];
+    const confMin = opt.confMin != null ? opt.confMin : 0.25, ratio = opt.ratio != null ? opt.ratio : 0.5, keep = opt.keep != null ? opt.keep : 0.2;
+    const cents = (a, b) => Math.abs(1200 * Math.log2(a / b));
+    const notes = [], amp = new Float32Array(T);
+    let cur = null, prevF = 0;
+    for (let i = 0; i < T; i++) {
+      const C = [];
+      for (let k = 0; k < PP_K; k++) { const f = tl.mcf[i * PP_K + k], c = tl.mcs[i * PP_K + k]; if (f > 0) C.push({ f, c }); }
+      const best = C.length ? C[0].c : 0;
+      if (!tl.active[i] || best < confMin) { cur = null; prevF = 0; continue; }
+      const strong = C.filter(o => o.c >= ratio * best)
+        .filter(o => !C.some(l => l !== o && l.c >= o.c && l.f < o.f && [2, 3, 4].some(h => cents(o.f, h * l.f) < 35)));
+      // a nota que já soava continua enquanto ainda estiver entre os candidatos (o piano decai, o acompanhamento não)
+      let pick = prevF ? C.find(o => o.c >= keep * best && cents(o.f, prevF) < 50) : null;
+      if (!pick) pick = strong.reduce((a, o) => (o.f > a.f ? o : a), strong[0] || C[0]);
+      prevF = pick.f; amp[i] = pick.c * (tl.mtot[i] || 0);
+      const r = Math.round(69 + 12 * Math.log2(pick.f / a4));
+      const attack = i > 0 && amp[i - 1] > 0 && amp[i] > 1.5 * amp[i - 1];
+      if (cur && cur.r === r && i - cur.end <= 1 && !attack) cur.end = i;
+      else { cur = { r, start: i, end: i, attack: attack || !cur }; notes.push(cur); }
+    }
+    const minF = Math.max(1, Math.round(0.08 / dt)), gapF = Math.round(0.12 / dt), ev = [];
+    for (const nt of notes) {
+      if (nt.end - nt.start + 1 < minF) continue;
+      const last = ev[ev.length - 1];
+      if (last && last.r === nt.r && nt.start - last.end <= gapF && !nt.attack) last.end = nt.end;
+      else ev.push({ r: nt.r, start: nt.start, end: nt.end });
+    }
+    return ev;
+  }
   function pearson(x, prof, root) {
     let mx = 0, my = 0;
     for (let i = 0; i < 12; i++) { mx += x[i]; my += prof[i]; }
@@ -1896,7 +2031,6 @@ function dspCore() {
     }
     return { f0: sampleRate / tf, clarity: clamp(1 - yd[tau], 0, 1), rms };
   }
-  const midiOf = f => 69 + 12 * Math.log2(f / A4);
 
   // ---- análise completa de um sinal mono ----
   function analyzeBuffer(samples, sampleRate, opts = {}, onProgress) {
@@ -1912,6 +2046,7 @@ function dspCore() {
       level: new Float32Array(T), active: new Uint8Array(T), dom: new Int8Array(T), tension: new Float32Array(T),
       chroma: new Float32Array(T * 12), raw: new Float32Array(T * 12), chord: new Int16Array(T),
       f0: new Float32Array(T), clar: new Float32Array(T),
+      mcf: new Float32Array(T * PP_K), mcs: new Float32Array(T * PP_K), mtot: new Float32Array(T),
     };
     const chordIndex = new Map(), chordList = [];
     let tuneC = 0, tuneS = 0;
@@ -1957,7 +2092,11 @@ function dspCore() {
         }
       }
       if (f.active) { tuneC += f.tc; tuneS += f.ts; }
-      if (f.active) { const pv = pitchYin(frame.subarray(N / 2 - YN / 2, N / 2 + YN / 2), sampleRate); tl.f0[fi] = pv.f0; tl.clar[fi] = pv.clarity; }
+      if (f.active) {
+        const pv = pitchYin(frame.subarray(N / 2 - YN / 2, N / 2 + YN / 2), sampleRate); tl.f0[fi] = pv.f0; tl.clar[fi] = pv.clarity;
+        const pp = predominantPitch(freqDb, sampleRate, N); tl.mtot[fi] = pp.total;
+        pp.cands.forEach((o, k) => { tl.mcf[fi * PP_K + k] = o.f; tl.mcs[fi * PP_K + k] = o.conf; });
+      }
       tl.t[fi] = (off + N / 2) / sampleRate; tl.rmsDb[fi] = f.rmsDb; tl.centroid[fi] = f.centroid; tl.flux[fi] = f.flux;
       tl.level[fi] = level; tl.active[fi] = f.active ? 1 : 0; tl.dom[fi] = dom; tl.tension[fi] = tension; tl.chord[fi] = ci;
       for (let k = 0; k < 12; k++) { tl.chroma[fi * 12 + k] = chroma[k]; tl.raw[fi * 12 + k] = f.maxRaw > 0 ? f.raw[k] / f.maxRaw : 0; }
@@ -2125,7 +2264,9 @@ function dspCore() {
     return { trans12, cooc12, trans7, cooc7, intervals, activeFrames, changes };
   }
   // melodia: notas sustentadas da frequência fundamental (voz ou instrumento solo)
-  function melodySummary(tl, T, dt) {
+  // notas da melodia (o som mais forte): quadros com f0 claro viram notas MIDI; notas curtas
+  // (< 0,1 s) saem e repetições separadas por menos de 0,3 s se juntam. ev = {r, start, end} em quadros.
+  function melodyNotes(tl, T, dt, a4 = A4) {
     let act = 0, voiced = 0, devSum = 0;
     const ms = [], notes = [];
     let cur = null;
@@ -2135,12 +2276,11 @@ function dspCore() {
       const f = tl.f0 ? tl.f0[i] : 0;
       if (!(f > 0 && tl.clar[i] > 0.8)) { cur = null; continue; }
       voiced++;
-      const m = midiOf(f), r = Math.round(m);
+      const m = 69 + 12 * Math.log2(f / a4), r = Math.round(m);
       ms.push(m); devSum += Math.abs(m - r) * 100;
       if (cur && cur.r === r && i - cur.end <= 1) cur.end = i;
       else { cur = { r, start: i, end: i }; notes.push(cur); }
     }
-    if (!ms.length) return { voicedShare: 0, noteCount: 0 };
     const minF = Math.max(1, Math.round(0.1 / dt));
     const ev = [];
     for (const nt of notes) {
@@ -2149,6 +2289,11 @@ function dspCore() {
       if (last && last.r === nt.r && nt.start - last.end < Math.round(0.3 / dt)) last.end = nt.end;
       else ev.push({ r: nt.r, start: nt.start, end: nt.end });
     }
+    return { ev, ms, act, voiced, devSum };
+  }
+  function melodySummary(tl, T, dt) {
+    const { ev, ms, act, voiced, devSum } = melodyNotes(tl, T, dt);
+    if (!ms.length) return { voicedShare: 0, noteCount: 0 };
     const hist = new Array(25).fill(0), toneDur = new Array(12).fill(0);
     let steps = 0, leaps = 0, up = 0, down = 0;
     for (let i = 0; i < ev.length; i++) {
@@ -2272,11 +2417,412 @@ function dspCore() {
 
   return {
     VERSION, NATURALS, FAMILIES, FAM_OF, SENT_XYZ, KMAJ, KMIN, configure, pcToTone,
-    AIRW_DEFAULT, extractFrame, pitchYin, keyFromChroma, detectChord, bpmFromFlux, sentiramaPos, airIndex, tensionOf, rotateChroma,
+    AIRW_DEFAULT, extractFrame, pitchYin, melodyNotes, predominantPitch, melodyLine, keyFromChroma, detectChord, bpmFromFlux, sentiramaPos, airIndex, tensionOf, rotateChroma,
     fft, blackman, analyzeBuffer, summarize, stats,
   };
 }
 const CORE = dspCore();
+/* =====================================================================
+   PARTITURA — núcleo puro da transcrição (sem DOM): grade de tempos,
+   quantização, compassos, grafia das notas, cifras, MusicXML e MIDI.
+   Posições e durações são contadas em semicolcheias a partir do 1º compasso.
+   ===================================================================== */
+function scoreCore() {
+  'use strict';
+  const SHARP = [['C', 0], ['C', 1], ['D', 0], ['D', 1], ['E', 0], ['F', 0], ['F', 1], ['G', 0], ['G', 1], ['A', 0], ['A', 1], ['B', 0]];
+  const FLAT = [['C', 0], ['D', -1], ['D', 0], ['E', -1], ['E', 0], ['F', 0], ['G', -1], ['G', 0], ['A', -1], ['A', 0], ['B', -1], ['B', 0]];
+  const FIFTHS_MAJ = [0, -5, 2, -3, 4, -1, 6, 1, -4, 3, -2, 5];  // armadura da tonalidade maior, pela classe da tônica (Dó = 0)
+  const MAJOR_NAME = { '-7': 'Cb', '-6': 'Gb', '-5': 'Db', '-4': 'Ab', '-3': 'Eb', '-2': 'Bb', '-1': 'F', 0: 'C', 1: 'G', 2: 'D', 3: 'A', 4: 'E', 5: 'B', 6: 'F#', 7: 'C#' };
+  const QUAL = { maior: '', menor: 'm', diminuto: '°', aumentado: '+' };
+  const KIND = { maior: 'major', menor: 'minor', diminuto: 'diminished', aumentado: 'augmented' };
+  const ORDER_SHARP = ['F', 'C', 'G', 'D', 'A', 'E', 'B'];
+  // figuras (duração em semicolcheias → [código VexFlow, pontuada?, tipo MusicXML])
+  const FIG = { 16: ['w', 0, 'whole'], 12: ['h', 1, 'half'], 8: ['h', 0, 'half'], 6: ['q', 1, 'quarter'], 4: ['q', 0, 'quarter'], 3: ['8', 1, 'eighth'], 2: ['8', 0, 'eighth'], 1: ['16', 0, '16th'] };
+  const FIG_DESC = [16, 12, 8, 6, 4, 3, 2, 1];
+  const METERS = {
+    '4/4': { beats: 4, beatType: 4, upb: 4, upbar: 16 }, '3/4': { beats: 3, beatType: 4, upb: 4, upbar: 12 },
+    '2/4': { beats: 2, beatType: 4, upb: 4, upbar: 8 }, '6/8': { beats: 6, beatType: 8, upb: 6, upbar: 12 },
+  };
+  const pcOf = m => ((m % 12) + 12) % 12;
+
+  function keySignature(rootPc, mode) {
+    const fifths = mode === 'menor' ? FIFTHS_MAJ[(rootPc + 3) % 12] : FIFTHS_MAJ[rootPc];
+    return { fifths, mode: mode === 'menor' ? 'minor' : 'major', vex: MAJOR_NAME[fifths] };
+  }
+  function spell(midi, key) {
+    const [step, alter] = (key && key.fifths < 0 ? FLAT : SHARP)[pcOf(midi)];
+    return { step, alter, octave: Math.floor(midi / 12) - 1 };
+  }
+  function chordSymbol(rootPc, quality, key) {
+    const { step, alter } = spell(60 + rootPc, key);
+    return step + (alter > 0 ? '#' : alter < 0 ? 'b' : '') + (QUAL[quality] != null ? QUAL[quality] : '');
+  }
+  // alteração que a armadura dá a cada nota (F, C, G… sustenidos; B, E, A… bemóis)
+  function keyAlters(fifths) {
+    const m = { C: 0, D: 0, E: 0, F: 0, G: 0, A: 0, B: 0 };
+    if (fifths > 0) ORDER_SHARP.slice(0, fifths).forEach(s => { m[s] = 1; });
+    if (fifths < 0) ORDER_SHARP.slice().reverse().slice(0, -fifths).forEach(s => { m[s] = -1; });
+    return m;
+  }
+
+  // envelope de ataques (o mesmo do estimador de andamento): fluxo menos sua média local
+  function onsetEnv(flux, dt) {
+    const n = flux.length, env = new Float32Array(n), half = Math.max(2, Math.round(0.15 / dt));
+    for (let i = 0; i < n; i++) {
+      let s = 0, c = 0;
+      for (let j = Math.max(0, i - half); j <= Math.min(n - 1, i + half); j++) { s += flux[j]; c++; }
+      env[i] = Math.max(0, flux[i] - s / c);
+    }
+    return env;
+  }
+  // fase do pulso: a grade que melhor encaixa os ataques da melodia e os picos do fluxo espectral
+  function beatPhase(period, onsets, flux, t, dt) {
+    const ev = onsets.map(x => [x, 1]);
+    if (flux && t && flux.length > 10 && dt > 0) {
+      const env = onsetEnv(flux, dt);
+      let mx = 0; for (let i = 0; i < env.length; i++) mx = Math.max(mx, env[i]);
+      if (mx > 0) for (let i = 1; i < env.length - 1; i++) if (env[i] > 0.25 * mx && env[i] >= env[i - 1] && env[i] >= env[i + 1]) ev.push([t[i], env[i] / mx]);
+    }
+    if (!ev.length) return 0;
+    const sig = Math.min(0.06, period / 6);
+    let phase = 0, best = -1;
+    for (let ph = 0; ph < period; ph += 0.004) {
+      let s = 0;
+      for (const [x, w] of ev) { const u = (x - ph) / period, fr = u - Math.floor(u), e = Math.min(fr, 1 - fr) * period; s += w * Math.exp(-0.5 * (e / sig) ** 2); }
+      if (s > best) { best = s; phase = ph; }
+    }
+    return phase;
+  }
+  // andamento pelos intervalos entre ataques (quando o laudo não detectou BPM): o pulso que explica os intervalos
+  // como figuras simples, com preferência por valores comuns e por andamentos perto de 110 BPM
+  function tempoFromOnsets(onsets) {
+    const ioi = [];
+    for (let i = 1; i < onsets.length; i++) { const d = onsets[i] - onsets[i - 1]; if (d > 0.08 && d < 3) ioi.push(d); }
+    if (ioi.length < 4) return 0;
+    const VALS = [[1, 1], [2, 0.9], [0.5, 0.85], [1.5, 0.6], [3, 0.6], [4, 0.7], [0.25, 0.5], [0.75, 0.5]];
+    let best = 0, bs = -1;
+    for (let bpm = 50; bpm <= 200; bpm += 0.5) {
+      const P = 60 / bpm;
+      let s = 0;
+      for (const d of ioi) { let m = 0; for (const [v, w] of VALS) { const e = (d - v * P) / d; m = Math.max(m, w * Math.exp(-0.5 * (e / 0.05) ** 2)); } s += m; }
+      s *= Math.exp(-0.5 * (Math.log2(bpm / 110) / 0.7) ** 2);
+      if (s > bs) { bs = s; best = bpm; }
+    }
+    return best;
+  }
+  // ajuste fino da grade: cada ataque vai para a semicolcheia mais próxima e a reta tempo = fase + n × duração é
+  // refeita por mínimos quadrados (o andamento detectado é inteiro; 1% de erro vira deriva ao longo da música)
+  function refineGrid(onsets, period, phase, upb, maxDev = 0.03) {
+    let sec = period / upb, ph = phase;
+    for (let it = 0; it < 4; it++) {
+      const pts = [];
+      for (const x of onsets) { const q = Math.round((x - ph) / sec), e = x - ph - q * sec; if (Math.abs(e) < sec / 3) pts.push([q, x]); }
+      if (pts.length < 6) break;
+      let sq = 0, sx = 0, sqq = 0, sqx = 0;
+      for (const [q, x] of pts) { sq += q; sx += x; sqq += q * q; sqx += q * x; }
+      const n = pts.length, den = n * sqq - sq * sq;
+      if (!(den > 0)) break;
+      const b = (n * sqx - sq * sx) / den, a = (sx - b * sq) / n;
+      if (!(b > 0) || Math.abs(b * upb / period - 1) > maxDev) break;
+      sec = b; ph = a;
+    }
+    const P = sec * upb;
+    return { period: P, phase: ((ph % P) + P) % P };
+  }
+  // acordes: o cromagrama somado em cada tempo (ou grupo de tempos) comparado com as 24 tríades maiores e menores
+  const TRIADS = [];
+  for (let r = 0; r < 12; r++) TRIADS.push({ rootPc: r, quality: 'maior', pcs: [r, (r + 4) % 12, (r + 7) % 12] }, { rootPc: r, quality: 'menor', pcs: [r, (r + 3) % 12, (r + 7) % 12] });
+  function beatChroma(beatTimes, t, raw, ref, active) {
+    const out = [];
+    let fi = 0;
+    for (let b = 0; b < beatTimes.length - 1; b++) {
+      const v = new Float64Array(12); let cnt = 0, all = 0;
+      while (fi < t.length && t[fi] < beatTimes[b]) fi++;
+      for (let j = fi; j < t.length && t[j] < beatTimes[b + 1]; j++) {
+        all++;
+        if (active && !active[j]) continue;
+        for (let k = 0; k < 12; k++) v[(k + ref) % 12] += raw[j * 12 + k];
+        cnt++;
+      }
+      out.push(cnt && cnt >= 0.5 * all ? v : null);  // tempo quase todo em silêncio não tem acorde
+    }
+    return out;
+  }
+  function triadOf(v, minScore = 0.6) {
+    if (!v) return null;
+    let norm = 0; for (let k = 0; k < 12; k++) norm += v[k] * v[k];
+    norm = Math.sqrt(norm); if (norm <= 0) return null;
+    let best = null, bs = 0;
+    for (const tr of TRIADS) { const sc = (v[tr.pcs[0]] + v[tr.pcs[1]] + v[tr.pcs[2]]) / (norm * Math.sqrt(3)); if (sc > bs) { bs = sc; best = tr; } }
+    return bs >= minScore ? { rootPc: best.rootPc, quality: best.quality, score: bs } : null;
+  }
+  function beatChords(vecs, minScore = 0.6) {
+    const out = vecs.map(v => triadOf(v, minScore)), same = (a, c) => a && c && a.rootPc === c.rootPc && a.quality === c.quality;
+    for (let b = 1; b < out.length - 1; b++) if (same(out[b - 1], out[b + 1]) && !same(out[b], out[b - 1])) out[b] = out[b - 1];
+    return out;
+  }
+  // 1º tempo do compasso: o deslocamento em que mais trocas de acorde (e ataques de melodia) caem no 1º tempo
+  function chooseDownbeat(beatsPerBar, labels, onsetBeats) {
+    const key = l => (l ? l.rootPc + l.quality : '-');
+    let downbeat = 0, best = -1;
+    for (let b = 0; b < beatsPerBar; b++) {
+      let s = 0;
+      for (let k = 1; k < labels.length; k++) if ((((k - b) % beatsPerBar) + beatsPerBar) % beatsPerBar === 0 && labels[k] && key(labels[k]) !== key(labels[k - 1])) s += 2;
+      for (const k of onsetBeats) if ((((k - b) % beatsPerBar) + beatsPerBar) % beatsPerBar === 0) s += 0.5;
+      if (s > best + 1e-9) { best = s; downbeat = b; }
+    }
+    return downbeat;
+  }
+  // coloca na grade (semicolcheias desde tBar0); unit = 1 (semicolcheia), 2 (colcheia) ou upb (tempo).
+  // mono: uma voz só — a nota anterior termina no ataque da seguinte
+  function quantize(items, tBar0, sec16, unit, mono = true) {
+    const q = x => Math.round((x - tBar0) / sec16 / unit) * unit;
+    let out = items.map(it => { const qs = q(it.t0); return Object.assign({}, it, { qs, qe: Math.max(q(it.t1), qs + unit) }); })
+      .filter(it => it.qe > 0).map(it => Object.assign(it, { qs: Math.max(0, it.qs) }));
+    out.sort((a, b) => a.qs - b.qs || b.qe - a.qe);
+    if (mono) {
+      const res = [];
+      for (const it of out) {
+        const last = res[res.length - 1];
+        if (last && it.qs < last.qe) { if (it.qs === last.qs) continue; last.qe = it.qs; }
+        res.push(it);
+      }
+      out = res;
+    }
+    return out;
+  }
+  // divide uma duração em figuras escrevíveis sem esconder o pulso (nem o meio do compasso em 4/4);
+  // pausas não levam ponto, a não ser a pausa de um tempo inteiro em 6/8
+  function chunks(pos, len, upb, upbar, rest = false) {
+    const out = [];
+    while (len > 0) {
+      let take = 1;
+      for (const v of FIG_DESC) {
+        if (v > len || v > upbar - (pos % upbar)) continue;
+        if (rest && FIG[v][1] && v !== upb) continue;
+        let ok;
+        if (v <= upb) ok = Math.floor(pos / upb) === Math.floor((pos + v - 1) / upb) && (v !== 3 || pos % upb === 0) && (v !== 2 || pos % 2 === 0) && (v !== 6 || pos % upb === 0) && (v !== 4 || pos % 2 === 0);
+        else if (v === 6 && upb === 4) ok = pos % 8 === 0;
+        else ok = pos % upb === 0 && v % upb === 0 && (v === upbar ? pos % upbar === 0 : (pos % upbar) % v === 0);
+        if (ok) { take = v; break; }
+      }
+      out.push(take); pos += take; len -= take;
+    }
+    return out;
+  }
+  // compassos: notas e pausas cortadas na barra (com ligadura) e escritas em figuras
+  function toMeasures(events, nBars, m) {
+    const total = nBars * m.upbar, segs = [];
+    let cur = 0;
+    for (const e of events) {
+      if (e.qs >= total) break;
+      if (e.qs > cur) segs.push({ s: cur, e: e.qs, rest: true });
+      segs.push({ s: e.qs, e: Math.min(e.qe, total), rest: false, ev: e });
+      cur = Math.min(e.qe, total);
+    }
+    if (cur < total) segs.push({ s: cur, e: total, rest: true });
+    const bars = Array.from({ length: nBars }, () => []);
+    for (const g of segs) {
+      const pieces = [];
+      let p = g.s;
+      while (p < g.e) {
+        const b = Math.floor(p / m.upbar), end = Math.min(g.e, (b + 1) * m.upbar), pos = p - b * m.upbar;
+        if (g.rest && pos === 0 && end - p === m.upbar) pieces.push({ b, pos, len: m.upbar, measureRest: true });
+        else for (const len of chunks(pos, end - p, m.upb, m.upbar, g.rest)) { pieces.push({ b, pos: p - b * m.upbar, len }); p += len; }
+        p = end;
+      }
+      pieces.forEach((pc, i) => {
+        const it = { pos: pc.pos, len: pc.len, rest: g.rest, fig: FIG[pc.len] ? FIG[pc.len][0] : '16', dot: FIG[pc.len] ? FIG[pc.len][1] : 0, type: FIG[pc.len] ? FIG[pc.len][2] : '16th', measureRest: !!pc.measureRest };
+        if (!g.rest) Object.assign(it, { midi: g.ev.midi, tone: g.ev.tone, first: i === 0, tieStart: i < pieces.length - 1, tieStop: i > 0 });
+        bars[pc.b].push(it);
+      });
+    }
+    return bars;
+  }
+  // tonalidade da partitura: notas transcritas (por duração) e notas dos acordes contra os perfis de Krumhansl–Kessler,
+  // com um bônus quando a música termina na tônica (última nota e último acorde) — a cadência decide entre vizinhas
+  const KK_MAJ = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
+  const KK_MIN = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
+  function estimateKey(melody, chords, hint) {
+    const h = new Array(12).fill(0);
+    melody.forEach(e => { h[pcOf(e.midi)] += e.qe - e.qs; });
+    chords.forEach(c => { const third = c.quality === 'menor' ? 3 : 4; [0, third, 7].forEach(iv => { h[(c.rootPc + iv) % 12] += 0.5 * (c.qe - c.qs); }); });
+    if (h.every(v => v === 0)) return hint || { rootPc: 0, mode: 'maior' };
+    const corr = (prof, r) => {
+      const n = 12, mx = h.reduce((a, b) => a + b, 0) / n, mp = prof.reduce((a, b) => a + b, 0) / n;
+      let sxy = 0, sxx = 0, syy = 0;
+      for (let k = 0; k < n; k++) { const x = h[(k + r) % 12] - mx, y = prof[k] - mp; sxy += x * y; sxx += x * x; syy += y * y; }
+      return sxx > 0 ? sxy / Math.sqrt(sxx * syy) : 0;
+    };
+    const lastN = melody[melody.length - 1], lastC = chords[chords.length - 1];
+    let best = null, bs = -9;
+    for (let r = 0; r < 12; r++) for (const [mode, prof] of [['maior', KK_MAJ], ['menor', KK_MIN]]) {
+      let sc = corr(prof, r);
+      if (lastN && pcOf(lastN.midi) === r) sc += 0.1;
+      if (lastC && lastC.rootPc === r) sc += lastC.quality === mode ? 0.12 : 0.04;
+      if (hint && hint.rootPc === r && hint.mode === mode) sc += 0.02;
+      if (sc > bs) { bs = sc; best = { rootPc: r, mode }; }
+    }
+    return best;
+  }
+  // tira da melodia o que é quase certamente acompanhamento: nota curta (≤ ½ tempo) que mergulha uma quinta
+  // ou mais abaixo das duas vizinhas próximas, e a repetição uma oitava abaixo logo depois da mesma nota
+  function cleanMelody(notes, period) {
+    const out = notes.slice();
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = 0; i < out.length; i++) {
+        const n = out[i], a = out[i - 1], b = out[i + 1], short = n.t1 - n.t0 <= period / 2 + 1e-6;
+        const near = o => o && Math.min(Math.abs(o.t0 - n.t1), Math.abs(n.t0 - o.t1)) < period;
+        const dip = short && near(a) && near(b) && a.midi - n.midi >= 7 && b.midi - n.midi >= 7;
+        const octDown = a && near(a) && a.midi - n.midi === 12 && n.t0 - a.t1 < period / 2;
+        if (dip || octDown) { if (octDown && a) a.t1 = Math.max(a.t1, n.t1); out.splice(i, 1); i--; }
+      }
+    }
+    return out;
+  }
+  // monta a partitura a partir das notas da melodia (tempos em segundos) e do cromagrama por quadro (acordes).
+  // legato: a nota vai até o próximo ataque quando o silêncio entre elas é menor que ¾ de tempo.
+  // Sem cromagrama, usa os acordes do laudo (chords) como estão.
+  function buildScore({ notes, chords = [], chroma = null, bpm, meter = '4/4', unit = 1, shift = 0, key = null, keyHint = null, ref = 2, flux = null, t = null, dt = 0, duration = 0, title = '', legato = true, refine = true }) {
+    const m = METERS[meter] || METERS['4/4'], beatsPerBar = m.upbar / m.upb;
+    const tempoGuess = !(bpm > 0) ? tempoFromOnsets(notes.map(n => n.t0).sort((a, b) => a - b)) : 0;
+    if (!(bpm > 0)) bpm = tempoGuess || 100;
+    let period = 60 / bpm;
+    notes = cleanMelody(notes.slice().sort((a, b) => a.t0 - b.t0).map(n => Object.assign({}, n)), period);
+    if (legato) for (let i = 0; i < notes.length - 1; i++) { const gap = notes[i + 1].t0 - notes[i].t1; if (gap < 0.75 * period) notes[i].t1 = Math.max(notes[i].t0 + 0.01, notes[i + 1].t0); }
+    // com melodia suficiente, a fase vem só dos ataques dela (o fluxo espectral tem outro atraso e desalinharia a grade)
+    let phase = notes.length >= 8 ? beatPhase(period, notes.map(n => n.t0)) : beatPhase(period, notes.map(n => n.t0), flux, t, dt);
+    if (refine && notes.length >= 8) ({ period, phase } = refineGrid(notes.map(n => n.t0), period, phase, m.upb));
+    const end = Math.max(duration, t && t.length ? t[t.length - 1] : 0, ...notes.map(n => n.t1), ...chords.map(c => c.t1));
+    const k0 = Math.floor((0 - phase) / period), beatTimes = [];
+    for (let k = k0; phase + k * period <= end + period; k++) beatTimes.push(phase + k * period);
+    let ch;
+    if (chroma && chroma.raw && t) {
+      const vecs = beatChroma(beatTimes, t, chroma.raw, chroma.ref != null ? chroma.ref : ref, chroma.active);
+      const onsetBeats = notes.map(n => Math.round((n.t0 - phase) / period) - k0);
+      const db = chooseDownbeat(beatsPerBar, beatChords(vecs), onsetBeats);
+      // acorde por meio compasso (4/4, 2/4), por compasso (3/4) ou por tempo (6/8): a melodia passando não vira troca de acorde
+      const group = m.upb === 6 ? 1 : beatsPerBar === 3 ? 3 : 2;
+      ch = [];
+      for (let g0 = db - Math.ceil(db / group) * group; g0 < vecs.length; g0 += group) {
+        const v = new Float64Array(12); let any = false;
+        for (let j = Math.max(0, g0); j < Math.min(vecs.length, g0 + group); j++) if (vecs[j]) { any = true; for (let k = 0; k < 12; k++) v[k] += vecs[j][k]; }
+        const l = any ? triadOf(v) : null;
+        const i0 = Math.max(0, g0), i1 = Math.min(vecs.length, g0 + group);
+        if (!l || i1 <= i0) continue;
+        const last = ch[ch.length - 1];
+        if (last && last.rootPc === l.rootPc && last.quality === l.quality && last.i1 === i0) { last.t1 = beatTimes[i1]; last.i1 = i1; }
+        else ch.push({ t0: beatTimes[i0], t1: beatTimes[i1], rootPc: l.rootPc, quality: l.quality, i1 });
+      }
+      ch.db = (k0 + db) % beatsPerBar;
+    } else ch = chords.map(c => Object.assign({}, c));
+    // 1º compasso: o 1º tempo escolhido, no ou antes do primeiro evento
+    const first = Math.min(...notes.map(n => n.t0), ...ch.map(c => c.t0), end);
+    let kf = Math.floor((first - phase) / period + 0.25);
+    const dbk = ch.db != null ? ch.db : 0;
+    while ((((kf - dbk) % beatsPerBar) + beatsPerBar) % beatsPerBar !== 0) kf--;
+    const tBar0 = phase + (kf + shift) * period, sec16 = period / m.upb;
+    const toneOf = midi => (pcOf(midi) - ref + 12) % 12;
+    const melody = quantize(notes.map(n => ({ t0: n.t0, t1: n.t1, midi: n.midi, tone: toneOf(n.midi) })), tBar0, sec16, unit);
+    // a última nota que passa da barra por até meio tempo termina na barra (resto do legato/release)
+    const lastN = melody[melody.length - 1];
+    if (lastN) { const over = lastN.qe % m.upbar; if (over > 0 && over <= m.upb / 2 && lastN.qe - over > lastN.qs) lastN.qe -= over; }
+    const chq = quantize(ch.map(c => ({ t0: c.t0, t1: c.t1, rootPc: c.rootPc, quality: c.quality })), tBar0, sec16, m.upb);
+    // tonalidade: a dada, ou estimada da própria transcrição (com a do laudo como desempate)
+    const tonic = key && key.rootPc != null ? key : estimateKey(melody, chq, keyHint);
+    key = Object.assign(keySignature(tonic.rootPc, tonic.mode), { rootPc: tonic.rootPc, modePt: tonic.mode });
+    chq.forEach(c => Object.assign(c, { tone: (c.rootPc - ref + 12) % 12, symbol: chordSymbol(c.rootPc, c.quality, key) }));
+    // baixo inferido: a fundamental de cada acorde entre Mi 2 e Ré# 3
+    const bass = chq.map(c => { const midi = 40 + ((c.rootPc - 4 + 12) % 12); return { qs: c.qs, qe: c.qe, midi, tone: toneOf(midi) }; });
+    const last = Math.max(1, ...melody.map(e => e.qe), ...bass.map(e => e.qe));
+    const nBars = Math.max(1, Math.ceil(last / m.upbar));
+    const med = melody.length ? melody.map(e => e.midi).sort((a, b) => a - b)[melody.length >> 1] : 67;
+    return {
+      meta: { title, bpm: 60 / period, bpmIn: bpm, tempoGuessed: tempoGuess > 0, meter, beats: m.beats, beatType: m.beatType, upb: m.upb, upbar: m.upbar, unit, key, ref, period, sec16, tBar0, phase, chordSource: chroma && chroma.raw ? 'tempo' : 'laudo' },
+      melody, bass, chords: chq, nBars, melodyClef: med < 55 ? 'bass' : 'treble',
+      melodyMeasures: toMeasures(melody, nBars, m), bassMeasures: toMeasures(bass, nBars, m),
+    };
+  }
+
+  // ---- MusicXML 4.0 (partwise) ----
+  const xesc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function musicXML(sc, opt = {}) {
+    const { colored = false, colorOf = null, software = 'Cromasfera Audio-Visualizer' } = opt, M = sc.meta, key = M.key;
+    const accName = { 1: 'sharp', '-1': 'flat', 0: 'natural' };
+    const tempoQ = M.bpm * M.upb / 4, beatUnit = M.upb === 6 ? '<beat-unit>quarter</beat-unit><beat-unit-dot/>' : '<beat-unit>quarter</beat-unit>';
+    const clefXML = c => c === 'bass' ? '<clef><sign>F</sign><line>4</line></clef>' : '<clef><sign>G</sign><line>2</line></clef>';
+    const harmonyXML = (c, off) => {
+      const sp = spell(60 + c.rootPc, key), col = colored && colorOf ? ` color="${colorOf(c.tone).hex}"` : '';
+      return `<harmony${col}><root><root-step>${sp.step}</root-step>${sp.alter ? `<root-alter>${sp.alter}</root-alter>` : ''}</root><kind text="${xesc(QUAL[c.quality] || '')}">${KIND[c.quality] || 'major'}</kind>${off ? `<offset>${off}</offset>` : ''}</harmony>`;
+    };
+    const partXML = (id, bars, clef, withChords) => {
+      const out = [];
+      bars.forEach((items, bi) => {
+        const start = bi * M.upbar, state = Object.assign({}, keyAlters(key.fifths));
+        let x = `<measure number="${bi + 1}">`;
+        if (bi === 0) {
+          x += `<attributes><divisions>4</divisions><key><fifths>${key.fifths}</fifths><mode>${key.mode}</mode></key><time><beats>${M.beats}</beats><beat-type>${M.beatType}</beat-type></time>${clefXML(clef)}</attributes>`;
+          if (withChords) x += `<direction placement="above"><direction-type><metronome>${beatUnit}<per-minute>${Math.round(M.bpm)}</per-minute></metronome></direction-type><sound tempo="${+tempoQ.toFixed(2)}"/></direction>`;
+        }
+        const seen = {};
+        for (const it of items) {
+          if (withChords) sc.chords.filter(c => c.qs >= start + it.pos && c.qs < start + it.pos + it.len).forEach(c => { x += harmonyXML(c, c.qs - start - it.pos); });
+          if (it.rest) { x += `<note><rest${it.measureRest ? ' measure="yes"' : ''}/><duration>${it.len}</duration><voice>1</voice>${it.measureRest ? '' : `<type>${it.type}</type>${it.dot ? '<dot/>' : ''}`}</note>`; continue; }
+          const sp = spell(it.midi, key), k = sp.step + sp.octave, cur = seen[k] != null ? seen[k] : state[sp.step];
+          const acc = cur !== sp.alter ? `<accidental>${accName[sp.alter]}</accidental>` : '';
+          seen[k] = sp.alter;
+          const c = colored && colorOf ? colorOf(it.tone) : null;
+          x += `<note${c ? ` color="${c.hex}"` : ''}><pitch><step>${sp.step}</step>${sp.alter ? `<alter>${sp.alter}</alter>` : ''}<octave>${sp.octave}</octave></pitch><duration>${it.len}</duration>`
+            + (it.tieStop ? '<tie type="stop"/>' : '') + (it.tieStart ? '<tie type="start"/>' : '')
+            + `<voice>1</voice><type>${it.type}</type>${it.dot ? '<dot/>' : ''}${acc}`
+            + (c ? `<notehead color="${c.hex}">${c.uv ? 'triangle' : 'normal'}</notehead>` : '')
+            + (it.tieStart || it.tieStop ? `<notations>${it.tieStop ? '<tied type="stop"/>' : ''}${it.tieStart ? '<tied type="start"/>' : ''}</notations>` : '')
+            + (c && it.first ? `<lyric number="1"><syllabic>single</syllabic><text>${it.tone}</text></lyric>` : '')
+            + '</note>';
+        }
+        out.push(x + '</measure>');
+      });
+      return `<part id="${id}">${out.join('')}</part>`;
+    };
+    return '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n'
+      + '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n'
+      + `<score-partwise version="4.0"><work><work-title>${xesc(M.title || 'Transcrição')}</work-title></work>`
+      + `<identification><encoding><software>${xesc(software)}</software></encoding><miscellaneous><miscellaneous-field name="nota">Transcrição automática: melodia monofônica e baixo inferido dos acordes.${colored ? ' Cores e números = tons Croma (Verde 0 = ' + xesc(opt.refName || 'Ré') + '); cabeça triangular = tom ultravioleta.' : ''}</miscellaneous-field></miscellaneous></identification>`
+      + '<part-list><score-part id="P1"><part-name>Melodia</part-name></score-part><score-part id="P2"><part-name>Baixo</part-name></score-part></part-list>'
+      + partXML('P1', sc.melodyMeasures, sc.melodyClef, true) + partXML('P2', sc.bassMeasures, 'bass', false)
+      + '</score-partwise>\n';
+  }
+
+  // ---- MIDI (SMF tipo 1): andamento/compasso/armadura, melodia (canal 1) e baixo (canal 2) ----
+  function midiFile(sc) {
+    const M = sc.meta, TPQ = 480, t16 = TPQ / 4, bytes = [];
+    const str = s => [...s].map(ch => ch.charCodeAt(0));
+    const u32 = n => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
+    const vlq = n => { const b = [n & 0x7f]; while ((n >>>= 7)) b.unshift((n & 0x7f) | 0x80); return b; };
+    const track = evs => {
+      evs.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      let last = 0; const data = [];
+      for (const [tk, , b] of evs) { data.push(...vlq(tk - last), ...b); last = tk; }
+      data.push(0, 0xff, 0x2f, 0);
+      return [...str('MTrk'), ...u32(data.length), ...data];
+    };
+    const name = s => { const b = [...new TextEncoder().encode(s)]; return [0xff, 0x03, ...vlq(b.length), ...b]; };
+    const mpq = Math.round(60e6 / (M.bpm * M.upb / 4));
+    const meta = [[0, 0, name(M.title || 'Cromasfera')], [0, 0, [0xff, 0x51, 3, (mpq >> 16) & 255, (mpq >> 8) & 255, mpq & 255]],
+      [0, 0, [0xff, 0x58, 4, M.beats, Math.log2(M.beatType), 24, 8]], [0, 0, [0xff, 0x59, 2, M.key.fifths & 255, M.key.mode === 'minor' ? 1 : 0]]];
+    const notes = (list, ch, program, label) => {
+      const ev = [[0, 0, name(label)], [0, 0, [0xc0 | ch, program]]];
+      list.forEach(e => { ev.push([e.qs * t16, 1, [0x90 | ch, e.midi, 88]], [e.qe * t16, 0, [0x80 | ch, e.midi, 0]]); });
+      return ev;
+    };
+    bytes.push(...str('MThd'), ...u32(6), 0, 1, 0, 3, (TPQ >> 8) & 255, TPQ & 255);
+    bytes.push(...track(meta), ...track(notes(sc.melody, 0, 4, 'Melodia')), ...track(notes(sc.bass, 1, 33, 'Baixo')));
+    return new Uint8Array(bytes);
+  }
+
+  return { METERS, FIG, TRIADS, cleanMelody, refineGrid, tempoFromOnsets, estimateKey, keySignature, spell, chordSymbol, keyAlters, onsetEnv, beatPhase, beatChroma, triadOf, beatChords, chooseDownbeat, quantize, chunks, toMeasures, buildScore, musicXML, midiFile };
+}
+const SCORE = scoreCore();
 try {
   const c = JSON.parse(localStorage.getItem('croma.calib') || 'null');
   if (c && Number.isInteger(c.ref) && c.ref >= 0 && c.ref < 12) REF_PC = c.ref;
@@ -3789,6 +4335,7 @@ function updateLaudoButtons() {
 // ---------- painel do laudo ----------
 function openReport() { $('report').classList.add('show'); $('report').setAttribute('aria-hidden', 'false'); $('report').scrollTop = 0; }
 function closeReport() {
+  if (typeof scoreStop === 'function') scoreStop();
   $('report').classList.remove('show'); $('report').setAttribute('aria-hidden', 'true'); $('rtip').style.display = 'none';
   if (RP.raf) { cancelAnimationFrame(RP.raf); RP.raf = 0; }
   RP.playing = false;
@@ -3962,6 +4509,8 @@ function renderReportBody(res) {
     <div class="r-lbl">Intervalos melódicos entre notas seguidas (semitons; − desce, + sobe)</div>${cw('melint', 110)}
   </section>
 
+  ${scoreHTML()}
+
   <div class="r-two">
     <section class="r-card">
       <h2>Tonalidade</h2>
@@ -4017,6 +4566,7 @@ function renderReportBody(res) {
   RP.t = 0; RP.playing = false; RP.last = 0;
   if (!RP.raf) RP.raf = requestAnimationFrame(replayTick);
   requestAnimationFrame(drawAllCharts);
+  requestAnimationFrame(() => scoreInit(res));
 }
 
 // ---------- gráficos (canvas) ----------
@@ -4703,8 +5253,26 @@ function laudoJSON(res) {
       t: rd(tl.t, 3), rmsDb: rd(tl.rmsDb, 1), centroid: rd(tl.centroid, 0), flux: rd(tl.flux, 5), level: rd(tl.level, 3),
       active: Array.from(tl.active), dom: Array.from(tl.dom), tension: rd(tl.tension, 3), chord: Array.from(tl.chord),
       chroma: rd(tl.chroma, 3), raw: rd(tl.raw, 3), f0: tl.f0 ? rd(tl.f0, 2) : undefined, clar: tl.clar ? rd(tl.clar, 2) : undefined,
+      mcf: tl.mcf ? rd(tl.mcf, 1) : undefined, mcs: tl.mcs ? rd(tl.mcs, 3) : undefined, mtot: tl.mtot ? Array.from(tl.mtot, v => +(+v).toPrecision(3)) : undefined,
     },
   });
+}
+// zip sem compressão: quando o salvamento do artifact não aceita a extensão (.musicxml, .mid), o arquivo vai dentro de um .zip
+function zipStore(files) {
+  const T = zipStore.t || (zipStore.t = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; }));
+  const crc = d => { let c = 0xffffffff; for (let i = 0; i < d.length; i++) c = T[(c ^ d[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const u16 = v => [v & 255, (v >> 8) & 255], u32 = v => [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255];
+  const enc = new TextEncoder(), parts = [], cen = [];
+  let off = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), d = f.data, c = crc(d);
+    const head = [0x50, 0x4b, 3, 4, ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(c), ...u32(d.length), ...u32(d.length), ...u16(name.length), ...u16(0)];
+    parts.push(new Uint8Array(head), name, d);
+    cen.push(...[0x50, 0x4b, 1, 2, ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0x21), ...u32(c), ...u32(d.length), ...u32(d.length), ...u16(name.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(off)], ...name);
+    off += head.length + name.length + d.length;
+  }
+  const cd = new Uint8Array(cen), end = [0x50, 0x4b, 5, 6, 0, 0, 0, 0, ...u16(files.length), ...u16(files.length), ...u32(cd.length), ...u32(off), 0, 0];
+  return new Blob([...parts, cd, new Uint8Array(end)], { type: 'application/zip' });
 }
 async function saveFile(filename, data) {
   try {
@@ -4714,6 +5282,10 @@ async function saveFile(filename, data) {
     }
   } catch (e) {
     if (e && e.code === 'declined') return;
+    if (e && e.code === 'rejected_extension' && !/\.zip$/i.test(filename)) {
+      const bytes = new Uint8Array(await (data instanceof Blob ? data : new Blob([data])).arrayBuffer());
+      return saveFile(filename + '.zip', zipStore([{ name: filename, data: bytes }]));
+    }
     if (e && e.code && e.code !== 'unavailable') { toast('Não foi possível salvar: ' + (e.message || e.code), 4000); return; }
   }
   const blob = data instanceof Blob ? data : new Blob([data], { type: 'application/json' });
@@ -6245,6 +6817,343 @@ document.addEventListener('click', e => {
   e.preventDefault();
   if (a.dataset.guiaLink != null) guiaGo(decodeURIComponent(a.dataset.guiaLink));
   else openGuia(a.dataset.guia);
+});
+
+/* =====================================================================
+   14. PARTITURA — a transcrição do laudo em pauta convencional, pauta
+   colorida e pauta cromática de 12 linhas (formas Cromasônicas); ouvir
+   a transcrição; exportar MusicXML e MIDI. O motor de partitura (VexFlow)
+   é carregado só quando a seção é desenhada.
+   ===================================================================== */
+const VEX_URL = 'https://cdn.jsdelivr.net/npm/vexflow@4.2.3/build/cjs/vexflow.js';
+let vexLoading = null;
+function loadVex() {
+  if (window.Vex && window.Vex.Flow) return Promise.resolve(window.Vex);
+  if (!vexLoading) vexLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = VEX_URL; s.async = true;
+    s.onload = () => (window.Vex && window.Vex.Flow ? resolve(window.Vex) : reject(new Error('o motor de partitura não carregou')));
+    s.onerror = () => { vexLoading = null; reject(new Error('não foi possível baixar o motor de partitura (sem internet?)')); };
+    document.head.appendChild(s);
+  });
+  return vexLoading;
+}
+const SCV = { res: null, opt: null, sc: null, err: '', view: 'conv', play: null, roll: null, renderId: 0 };
+const SC_COLOR = t => ({ hex: TONES[t].hex, uv: TONES[t].uv });
+function scoreDefaults(res) {
+  const S = res.summary;
+  // com pouca harmonia no áudio (melodia solo), as cifras seriam só implícitas: começam desligadas
+  return { bpm: S.bpm || 0, meter: '4/4', unit: 1, shift: 0, chords: !!(S.chords && S.chords.coverage >= 0.15) };
+}
+function scoreBuild() {
+  const res = SCV.res, tl = res && res.timeline, S = res && res.summary;
+  SCV.sc = null; SCV.err = '';
+  if (!tl || !tl.mcf) { SCV.err = 'old'; return; }
+  const P = res.params, dt = P.frameDt || (tl.t[1] - tl.t[0]), ref = laudoRef(res), a4 = A4_HZ_OF(res), o = SCV.opt;
+  const ev = CORE.melodyLine(tl, tl.t.length, dt, a4);
+  const notes = ev.map(e => ({ midi: e.r, t0: tl.t[e.start] - dt / 2, t1: tl.t[e.end] + dt / 2 }));
+  const chords = o.chords ? ((S.chords && S.chords.sequence) || []).map(c => ({ t0: c.t0, t1: c.t1, rootPc: (c.root + ref) % 12, quality: c.quality })) : [];
+  if (!notes.length && !o.chords) { SCV.err = 'empty'; return; }
+  SCV.sc = SCORE.buildScore({
+    notes, chords, chroma: o.chords && tl.raw ? { raw: tl.raw, ref, active: tl.active } : null, bpm: o.bpm, meter: o.meter, unit: o.unit, shift: o.shift,
+    keyHint: { rootPc: S.key.root, mode: S.key.mode }, ref, flux: tl.flux, t: tl.t, dt, duration: (res.source && res.source.duration) || 0,
+    title: (res.source && res.source.name) || 'Transcrição',
+  });
+  if (!SCV.sc.melody.length && !SCV.sc.chords.length) { SCV.err = 'empty'; SCV.sc = null; }
+  else if (!SCV.sc.melody.length) SCV.err = 'nomel';
+}
+function scoreHTML() {
+  return `<section class="r-card" id="sc-card">
+    <div class="r-head"><div><h2>Partitura</h2><p class="r-sub">Transcrição automática: a melodia predominante (a voz de cima), as cifras por meio compasso e um baixo inferido das cifras. É um rascunho para conferir de ouvido e corrigir num editor de partituras (MusicXML), não uma prova.</p></div>
+      <div class="r-tools"><div class="mini-seg" id="sc-tabs"><button data-sc-view="conv">Convencional</button><button data-sc-view="color">Pauta colorida</button><button data-sc-view="roll">Pauta cromática</button></div></div></div>
+    <div class="sc-ctl">
+      <label>Andamento <input type="number" id="sc-bpm" class="ab-t" min="30" max="260" step="1" aria-label="Andamento em BPM"> BPM</label>
+      <span class="sc-g"><button class="mini-btn" data-sc="half" title="Metade do andamento">÷2</button><button class="mini-btn" data-sc="double" title="Dobro do andamento">×2</button></span>
+      <label>Compasso <select id="sc-meter" class="ref-select">${['4/4', '3/4', '2/4', '6/8'].map(m => `<option>${m}</option>`).join('')}</select></label>
+      <span class="sc-g">Menor figura <span class="mini-seg" id="sc-unit"><button data-sc-unit="1">semicolcheia</button><button data-sc-unit="2">colcheia</button></span></span>
+      <span class="sc-g">Início do compasso <button class="mini-btn" data-sc="left" title="Começar um tempo antes">◀</button><button class="mini-btn" data-sc="right" title="Começar um tempo depois">▶</button></span>
+      <label><input type="checkbox" id="sc-chords"> Cifras e baixo</label>
+    </div>
+    <div class="r-chips sc-actions"><button class="mini-btn" id="sc-play">▶ Ouvir a transcrição</button><button class="mini-btn" id="sc-xml">Baixar MusicXML</button><button class="mini-btn" id="sc-xmlc">MusicXML colorido</button><button class="mini-btn" id="sc-midi">Baixar MIDI</button></div>
+    <p class="r-sub" id="sc-info">Preparando a partitura…</p>
+    <div id="sc-out">
+      <div class="sc-pane" data-pane="conv"><h3 class="sc-print-h">Partitura convencional</h3><div class="sc-paper" id="sc-conv"></div></div>
+      <div class="sc-pane" data-pane="color"><h3 class="sc-print-h">Cromasônica · pauta colorida</h3><p class="r-sub">Cada nota na cor do seu tom; ● natural, ▲ ultravioleta; o número embaixo é o tom Croma.</p><div class="sc-paper dark" id="sc-color"></div></div>
+      <div class="sc-pane" data-pane="roll"><h3 class="sc-print-h">Cromasônica · pauta cromática</h3><p class="r-sub">Doze linhas por oitava, uma por tom (Verde 0 embaixo, Azul-UV 11 em cima); as notas são barras na cor do tom. Em cima, as cifras; embaixo, o baixo.</p><div class="sc-paper dark" id="sc-roll"></div></div>
+      <div class="sc-legend" id="sc-legend"></div>
+    </div>
+  </section>`;
+}
+function scoreInit(res) {
+  scoreStop();
+  SCV.res = res; SCV.opt = scoreDefaults(res);
+  scoreRefresh();
+}
+function scoreRefresh() {
+  if (!$('sc-card')) return;
+  scoreBuild();
+  const o = SCV.opt, sc = SCV.sc;
+  $('sc-bpm').value = sc ? Math.round(sc.meta.bpm) : (o.bpm || '');
+  $('sc-meter').value = o.meter; $('sc-chords').checked = o.chords;
+  document.querySelectorAll('#sc-unit [data-sc-unit]').forEach(b => b.classList.toggle('on', +b.dataset.scUnit === o.unit));
+  document.querySelectorAll('#sc-tabs [data-sc-view]').forEach(b => b.classList.toggle('on', b.dataset.scView === SCV.view));
+  document.querySelectorAll('#sc-out .sc-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === SCV.view));
+  ['sc-play', 'sc-xml', 'sc-xmlc', 'sc-midi'].forEach(id => { $(id).disabled = !sc; });
+  $('sc-info').innerHTML = scoreInfo();
+  scoreRender();
+}
+function scoreInfo() {
+  const sc = SCV.sc, res = SCV.res;
+  if (SCV.err === 'old') return 'Este laudo foi gerado por uma versão anterior do aplicativo, sem os dados de melodia predominante. Analise o áudio de novo para obter a partitura.';
+  if (SCV.err === 'empty') return 'Não há melodia definida nem acordes reconhecíveis neste áudio (percussão, fala ou ruído): não há o que escrever na pauta.';
+  const M = sc.meta, S = res.summary, rf = laudoRef(res);
+  const sig = M.key.fifths > 0 ? `${M.key.fifths}♯` : M.key.fifths < 0 ? `${-M.key.fifths}♭` : 'sem acidentes';
+  const keyTxt = withNames(rf, () => keyLabel((M.key.rootPc - rf + 12) % 12, M.key.modePt)) + ` (${sig})`
+    + (M.key.rootPc !== S.key.root || M.key.modePt !== S.key.mode ? `, estimada pela transcrição (o laudo indicou ${withNames(rf, () => keyLabel(S.key.tone, S.key.mode))})` : '');
+  const tempoTxt = M.tempoGuessed ? `♩ ≈ ${num(M.bpm, 1)} (estimado pela melodia: o laudo não detectou andamento)` : Math.abs(M.bpm - M.bpmIn) > 0.05 ? `♩ = ${num(M.bpm, 1)} (ajuste fino de ${Math.round(M.bpmIn)})` : `♩ = ${Math.round(M.bpm)}`;
+  const parts = [`${sc.nBars} compasso(s)`, `${sc.melody.length} notas na melodia`, `tonalidade ${keyTxt}`, `${M.meter}`, tempoTxt,
+    SCV.opt.chords ? `${sc.chords.length} cifras` : `cifras desligadas${S.chords && S.chords.coverage < 0.15 ? ' (o áudio tem pouca harmonia: as cifras seriam só implícitas pela melodia)' : ''}`];
+  return parts.join(' · ') + (SCV.err === 'nomel' ? '. <b>Sem melodia definida</b>: a pauta mostra só cifras e baixo.' : '.');
+}
+function scoreRender() {
+  const id = ++SCV.renderId, sc = SCV.sc;
+  ['sc-conv', 'sc-color', 'sc-roll'].forEach(k => { $(k).innerHTML = ''; });
+  $('sc-legend').innerHTML = '';
+  if (!sc) return;
+  withNames(laudoRef(SCV.res), () => {
+    const r = rollSVG(sc, Math.max(300, $('sc-roll').clientWidth || $('sc-out').clientWidth || 800));
+    $('sc-roll').innerHTML = r.svg; SCV.roll = r.geo;
+    $('sc-legend').innerHTML = scoreLegend(sc);
+  });
+  loadVex().then(Vex => {
+    if (id !== SCV.renderId || !$('sc-conv')) return;
+    withNames(laudoRef(SCV.res), () => {
+      try {
+        renderStaff(Vex, $('sc-conv'), sc, false);
+        renderStaff(Vex, $('sc-color'), sc, true);
+      } catch (err) { console.error(err); $('sc-conv').innerHTML = `<p class="sc-msg">Não foi possível desenhar a pauta: ${esc(err.message)}</p>`; }
+    });
+  }).catch(err => {
+    if (id !== SCV.renderId) return;
+    const msg = `<p class="sc-msg">A pauta convencional e a colorida precisam do motor de partitura, que ${esc(err.message)}. A pauta cromática e os arquivos MusicXML e MIDI funcionam mesmo assim.</p>`;
+    $('sc-conv').innerHTML = msg; $('sc-color').innerHTML = msg;
+  });
+}
+function scoreLegend(sc) {
+  const used = new Set([...sc.melody, ...sc.bass].map(e => e.tone));
+  return `<div class="label" style="margin-bottom:6px">Os doze tons nesta música (Verde 0 = ${TONES[0].pt})</div><div class="sc-leg">` + TONES.map((T, t) =>
+    `<span class="${used.has(t) ? '' : 'dim'}"><i class="${T.uv ? 'tri' : ''}" style="background:${T.hex}"></i><b>${t}</b> ${T.name} · ${T.pt}</span>`).join('') + '</div>';
+}
+// ---- pauta convencional e colorida (VexFlow) ----
+function renderStaff(Vex, el, sc, colored) {
+  const VF = Vex.Flow, M = sc.meta, W = Math.max(300, el.clientWidth || 800), withBass = sc.bass.length > 0;
+  const ink = colored ? '#e8e2f2' : '#1b1622', perLine = clamp(Math.floor((W - 90) / 240), 1, 4);
+  const sysH = withBass ? 250 : 150, top = 10, lines = Math.ceil(sc.nBars / perLine);
+  const keySpec = M.key.vex, timeSpec = `${M.beats}/${M.beatType}`, ext = 62 + Math.abs(M.key.fifths) * 11;
+  el.innerHTML = '';
+  const renderer = new VF.Renderer(el, VF.Renderer.Backends.SVG);
+  renderer.resize(W, top + lines * sysH + 10);
+  const ctx = renderer.getContext();
+  ctx.setFillStyle(ink); ctx.setStrokeStyle(ink);
+  const groups = VF.Beam.getDefaultBeamGroups(timeSpec);
+  let pendTie = { mel: null, bass: null };
+  const mk = (items, clef, isMel) => items.map(it => {
+    let n;
+    if (it.rest) n = new VF.StaveNote({ keys: [clef === 'bass' ? 'd/3' : 'b/4'], duration: (it.measureRest ? 'w' : it.fig) + 'r', clef, align_center: !!it.measureRest });
+    else {
+      const sp = SCORE.spell(it.midi, M.key), acc = sp.alter > 0 ? '#' : sp.alter < 0 ? 'b' : '';
+      const head = colored && TONES[it.tone].uv ? '/' + (it.fig === 'w' ? 't0' : it.fig === 'h' ? 't1' : 't2') : '';
+      n = new VF.StaveNote({ keys: [`${sp.step.toLowerCase()}${acc}/${sp.octave}${head}`], duration: it.fig, clef, auto_stem: true });
+    }
+    if (it.dot && !it.measureRest) VF.Dot.buildAndAttach([n], { all: true });
+    if (colored && !it.rest && isMel && it.first) n.addModifier(new VF.Annotation(String(it.tone)).setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM).setFont('Inter, sans-serif', 10, 'bold'), 0);
+    n._it = it;
+    return n;
+  });
+  const paint = (notes, isMel) => notes.forEach(n => {
+    const it = n._it;
+    if (!colored || it.rest) { n.setStyle({ fillStyle: ink, strokeStyle: ink }); n.setLedgerLineStyle({ fillStyle: ink, strokeStyle: ink }); return; }
+    const hex = TONES[it.tone].hex;
+    n.setStyle({ fillStyle: hex, strokeStyle: hex }); n.setLedgerLineStyle({ fillStyle: ink, strokeStyle: ink });
+    n.getModifiers().forEach(m => { if (m.setStyle) m.setStyle({ fillStyle: hex, strokeStyle: hex }); });
+  });
+  for (let bi = 0; bi < sc.nBars; bi++) {
+    const line = Math.floor(bi / perLine), col = bi % perLine, mw = (W - 20 - ext) / perLine;
+    const x = 10 + (col === 0 ? 0 : ext + col * mw), w = col === 0 ? mw + ext : mw, y = top + line * sysH;
+    const st = new VF.Stave(x, y + 20, w), sb = withBass ? new VF.Stave(x, y + 125, w) : null;
+    if (col === 0) {
+      st.addClef(sc.melodyClef).addKeySignature(keySpec); if (sb) sb.addClef('bass').addKeySignature(keySpec);
+      if (bi === 0) { st.addTimeSignature(timeSpec); if (sb) sb.addTimeSignature(timeSpec); }
+    }
+    st.setContext(ctx).draw(); if (sb) sb.setContext(ctx).draw();
+    if (sb && col === 0) { new VF.StaveConnector(st, sb).setType('brace').setContext(ctx).draw(); new VF.StaveConnector(st, sb).setType('singleLeft').setContext(ctx).draw(); }
+    if (sb) new VF.StaveConnector(st, sb).setType(bi === sc.nBars - 1 ? 'boldDoubleRight' : 'singleRight').setContext(ctx).draw();
+    ctx.save(); ctx.setFont('Inter, sans-serif', 9, ''); ctx.setFillStyle(colored ? '#a39cb5' : '#5b5468'); ctx.fillText(String(bi + 1), x + (col === 0 ? 2 : 4), y + 22); ctx.restore();
+    const mel = mk(sc.melodyMeasures[bi], sc.melodyClef, true), bas = sb ? mk(sc.bassMeasures[bi], 'bass', false) : [];
+    const vm = new VF.Voice({ num_beats: M.beats, beat_value: M.beatType }).setMode(VF.Voice.Mode.SOFT).addTickables(mel);
+    const voices = [vm];
+    VF.Accidental.applyAccidentals([vm], keySpec);
+    let vb = null;
+    if (sb) { vb = new VF.Voice({ num_beats: M.beats, beat_value: M.beatType }).setMode(VF.Voice.Mode.SOFT).addTickables(bas); VF.Accidental.applyAccidentals([vb], keySpec); voices.push(vb); }
+    paint(mel, true); paint(bas, false);
+    const beams = VF.Beam.generateBeams(mel.filter(n => !n._it.rest), { groups }).concat(sb ? VF.Beam.generateBeams(bas.filter(n => !n._it.rest), { groups }) : []);
+    const fmt = new VF.Formatter(); fmt.joinVoices([vm]); if (vb) fmt.joinVoices([vb]);
+    fmt.format(voices, Math.max(40, w - (st.getNoteStartX() - st.getX()) - 14));
+    vm.draw(ctx, st); if (vb) vb.draw(ctx, sb);
+    beams.forEach(b => { b.setStyle({ fillStyle: ink, strokeStyle: ink }); b.setContext(ctx).draw(); });
+    // ligaduras (inclusive de um compasso ou sistema para o outro)
+    const ties = (notes, k) => notes.forEach(n => {
+      const it = n._it; if (it.rest) return;
+      if (it.tieStop && pendTie[k]) {
+        const a = pendTie[k], sameLine = a._line === line;
+        const tie = sameLine ? new VF.StaveTie({ first_note: a, last_note: n, first_indices: [0], last_indices: [0] }) : null;
+        if (tie) tie.setContext(ctx).draw();
+        else { new VF.StaveTie({ first_note: a, first_indices: [0] }).setContext(ctx).draw(); new VF.StaveTie({ last_note: n, last_indices: [0] }).setContext(ctx).draw(); }
+      }
+      n._line = line; pendTie[k] = it.tieStart ? n : null;
+    });
+    ties(mel, 'mel'); ties(bas, 'bass');
+    // cifras: em cima da pauta, na posição do baixo (que muda junto com a cifra)
+    const start = bi * M.upbar;
+    sc.chords.filter(c => c.qs >= start && c.qs < start + M.upbar).forEach(c => {
+      const pos = c.qs - start, anchor = (sb ? bas : mel).find(n => n._it.pos === pos) || mel.find(n => n._it.pos <= pos && pos < n._it.pos + n._it.len);
+      if (!anchor) return;
+      const cx = anchor.getAbsoluteX(), cy = y + 22;
+      ctx.save(); ctx.setFont('Inter, sans-serif', 13, 'bold');
+      if (colored) { ctx.setFillStyle(TONES[c.tone].hex); ctx.fillText(`${c.symbol} · ${c.tone}`, cx, cy); }
+      else { ctx.setFillStyle(ink); ctx.fillText(c.symbol, cx, cy); }
+      ctx.restore();
+    });
+  }
+  const svg = el.querySelector('svg');
+  if (svg) { svg.setAttribute('viewBox', `0 0 ${W} ${top + lines * sysH + 10}`); svg.style.width = '100%'; svg.style.height = 'auto'; svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', colored ? 'Partitura Cromasônica: pauta colorida' : 'Partitura convencional'); }
+}
+// ---- pauta cromática de 12 linhas (SVG próprio) ----
+function rollSVG(sc, W) {
+  const M = sc.meta, ref = M.ref, upbar = M.upbar, labelW = 46, perLine = clamp(Math.floor((W - labelW - 10) / 150), 1, 8), rowH = 6;
+  const bandOf = midi => Math.floor((midi - ref) / 12), toneOf = midi => ((midi - ref) % 12 + 12) % 12;
+  const mb = sc.melody.map(e => bandOf(e.midi)), b0 = mb.length ? Math.min(...mb) : 0, b1 = mb.length ? Math.max(...mb) : -1, nb = Math.max(0, b1 - b0 + 1);
+  const chordH = sc.chords.length ? 22 : 0, melH = nb * 12 * rowH, bassH = sc.bass.length ? 12 * 4 : 0;
+  const sysH = 18 + chordH + (melH ? melH + 6 : 0) + (bassH ? bassH + 6 : 0) + 12, lines = Math.ceil(sc.nBars / perLine), H = lines * sysH + 6;
+  const span = perLine * upbar, xs = (q, s) => labelW + (q - s * span) * (W - labelW - 10) / span;
+  const ink = '#e8e2f2', dim = '#a39cb5', o = [];
+  const lum = hex => { const v = parseInt(hex.slice(1), 16); return (0.299 * (v >> 16) + 0.587 * ((v >> 8) & 255) + 0.114 * (v & 255)) / 255; };
+  const mark = (x, y, t, r = 3.4) => TONES[t].uv
+    ? `<path d="M${x} ${y - r - 0.6} L${x + r + 0.6} ${y + r} L${x - r - 0.6} ${y + r} Z" fill="${TONES[t].hex}" stroke="#0c0a12" stroke-width="1"/>`
+    : `<circle cx="${x}" cy="${y}" r="${r}" fill="${TONES[t].hex}" stroke="#0c0a12" stroke-width="1"/>`;
+  for (let s = 0; s < lines; s++) {
+    const y0 = s * sysH + 6, firstBar = s * perLine, lastBar = Math.min(sc.nBars, firstBar + perLine), xEnd = xs(lastBar * upbar, s);
+    let y = y0 + 14;
+    // compassos
+    for (let b = firstBar; b <= lastBar; b++) {
+      const x = xs(b * upbar, s);
+      o.push(`<line x1="${x}" y1="${y0 + 12}" x2="${x}" y2="${y0 + sysH - 10}" stroke="${dim}" stroke-opacity="${b === firstBar || b === lastBar ? 0.6 : 0.35}" stroke-width="1"/>`);
+      if (b < lastBar) o.push(`<text x="${x + 3}" y="${y0 + 10}" fill="${dim}" font-size="9" font-family="Inter, sans-serif">${b + 1}</text>`);
+      if (b < lastBar) for (let k = 1; k < upbar / M.upb; k++) { const xb = xs(b * upbar + k * M.upb, s); o.push(`<line x1="${xb}" y1="${y0 + 14}" x2="${xb}" y2="${y0 + sysH - 12}" stroke="${dim}" stroke-opacity="0.12" stroke-width="1"/>`); }
+    }
+    // cifras
+    if (chordH) {
+      o.push(`<text x="4" y="${y + 13}" fill="${dim}" font-size="9" font-family="Inter, sans-serif">cifras</text>`);
+      sc.chords.filter(c => c.qe > firstBar * upbar && c.qs < lastBar * upbar).forEach(c => {
+        const xa = Math.max(xs(c.qs, s), labelW), xb = Math.min(xs(c.qe, s), xEnd), hex = TONES[c.tone].hex;
+        o.push(`<rect x="${xa + 1}" y="${y}" width="${Math.max(2, xb - xa - 2)}" height="16" rx="4" fill="${hex}" fill-opacity="0.9"/>`);
+        if (xb - xa > 30) o.push(`<text x="${xa + 6}" y="${y + 12}" fill="${lum(hex) > 0.55 ? '#14101b' : '#fff'}" font-size="11" font-weight="700" font-family="Inter, sans-serif">${esc(c.symbol)} · ${c.tone}</text>`);
+      });
+      y += chordH;
+    }
+    // melodia: faixas de 12 linhas por oitava (a de cima é a mais aguda)
+    const rowY = (band, t) => y + ((b1 - band) * 12 + (11 - t)) * rowH + rowH / 2;
+    for (let band = b1; band >= b0; band--) {
+      for (let t = 11; t >= 0; t--) {
+        const yy = rowY(band, t);
+        o.push(`<line x1="${labelW}" y1="${yy}" x2="${xEnd}" y2="${yy}" stroke="${TONES[t].hex}" stroke-opacity="${t === 0 ? 0.55 : 0.22}" stroke-width="${t === 0 ? 1.2 : 1}" ${TONES[t].uv ? 'stroke-dasharray="2 3"' : ''}/>`);
+      }
+      o.push(`<text x="4" y="${rowY(band, 0) + 3}" fill="${TONES[0].hex}" font-size="9" font-weight="600" font-family="Inter, sans-serif">0 · ${esc(PC_PT[ref])}${Math.floor((ref + 12 * band) / 12) - 1}</text>`);
+    }
+    sc.melody.filter(e => e.qe > firstBar * upbar && e.qs < lastBar * upbar).forEach(e => {
+      const t = toneOf(e.midi), band = bandOf(e.midi), yy = rowY(band, t), xa = Math.max(xs(e.qs, s), labelW), xb = Math.min(xs(e.qe, s), xEnd);
+      o.push(`<rect x="${xa}" y="${yy - rowH / 2 + 0.5}" width="${Math.max(2, xb - xa - 1.5)}" height="${rowH - 1}" rx="2" fill="${TONES[t].hex}"/>`);
+      if (e.qs >= firstBar * upbar) o.push(mark(xa + 3.5, yy, t));
+    });
+    if (melH) y += melH + 6;
+    // baixo: uma oitava
+    if (bassH) {
+      const bRow = t => y + (11 - t) * 4 + 2;
+      for (let t = 11; t >= 0; t--) o.push(`<line x1="${labelW}" y1="${bRow(t)}" x2="${xEnd}" y2="${bRow(t)}" stroke="${TONES[t].hex}" stroke-opacity="${t === 0 ? 0.5 : 0.16}" stroke-width="1"/>`);
+      o.push(`<text x="4" y="${bRow(6) + 3}" fill="${dim}" font-size="9" font-family="Inter, sans-serif">baixo</text>`);
+      sc.bass.filter(e => e.qe > firstBar * upbar && e.qs < lastBar * upbar).forEach(e => {
+        const t = toneOf(e.midi), yy = bRow(t), xa = Math.max(xs(e.qs, s), labelW), xb = Math.min(xs(e.qe, s), xEnd);
+        o.push(`<rect x="${xa}" y="${yy - 1.5}" width="${Math.max(2, xb - xa - 1.5)}" height="3" rx="1.5" fill="${TONES[t].hex}"/>`);
+        if (e.qs >= firstBar * upbar) o.push(mark(xa + 3, yy, t, 2.6));
+      });
+    }
+  }
+  o.push(`<line id="sc-head" x1="0" y1="0" x2="0" y2="0" stroke="#fff" stroke-width="1.5" opacity="0"/>`);
+  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="height:auto;display:block" role="img" aria-label="Partitura Cromasônica: pauta cromática de 12 linhas" xmlns="http://www.w3.org/2000/svg">${o.join('')}</svg>`;
+  return { svg, geo: { W, perLine, span, sysH, labelW, lines } };
+}
+// ---- ouvir a transcrição (melodia no piano elétrico, baixo no baixo analógico) ----
+function scorePlay() {
+  if (SCV.play) { scoreStop(); return; }
+  const sc = SCV.sc; if (!sc) return;
+  ensureAudio();
+  const c = A.ctx, bus = c.createGain(); bus.gain.value = 0.8; bus.connect(A.outGain);
+  const t0 = c.currentTime + 0.15, s16 = sc.meta.sec16, a4 = A4_HZ_OF(SCV.res), fq = m => a4 * Math.pow(2, (m - 69) / 12);
+  sc.melody.forEach(e => INSTRUMENTS.epiano.play(c, fq(e.midi), t0 + e.qs * s16, bus).release(t0 + e.qe * s16));
+  sc.bass.forEach(e => INSTRUMENTS.bass.play(c, fq(e.midi), t0 + e.qs * s16, bus).release(t0 + e.qe * s16 - 0.02));
+  const total = sc.nBars * sc.meta.upbar * s16;
+  SCV.play = { bus, t0, total, timer: setTimeout(scoreStop, (total + 0.8) * 1000), raf: 0 };
+  $('sc-play').textContent = '■ Parar';
+  const head = () => {
+    if (!SCV.play) return;
+    const el = document.getElementById('sc-head'), g = SCV.roll, q = (A.ctx.currentTime - SCV.play.t0) / s16;
+    if (el && g && q >= 0) {
+      const s = Math.floor(q / g.span), x = g.labelW + (q - s * g.span) * (g.W - g.labelW - 10) / g.span;
+      el.setAttribute('x1', x); el.setAttribute('x2', x); el.setAttribute('y1', s * g.sysH + 18); el.setAttribute('y2', s * g.sysH + g.sysH - 8); el.setAttribute('opacity', 0.9);
+    }
+    SCV.play.raf = requestAnimationFrame(head);
+  };
+  head();
+}
+function scoreStop() {
+  if (!SCV.play) return;
+  try { SCV.play.bus.disconnect(); } catch (e) { /* já desligado */ }
+  clearTimeout(SCV.play.timer); cancelAnimationFrame(SCV.play.raf); SCV.play = null;
+  const b = $('sc-play'); if (b) b.textContent = '▶ Ouvir a transcrição';
+  const el = document.getElementById('sc-head'); if (el) el.setAttribute('opacity', 0);
+}
+function scoreExport(kind) {
+  const sc = SCV.sc; if (!sc) return;
+  const name = 'partitura-' + baseName();
+  if (kind === 'midi') { saveFile(name + '.mid', new Blob([SCORE.midiFile(sc)], { type: 'audio/midi' })); return; }
+  const xml = withNames(laudoRef(SCV.res), () => SCORE.musicXML(sc, { colored: kind === 'xmlc', colorOf: SC_COLOR, refName: PC_PT[laudoRef(SCV.res)] }));
+  saveFile(name + (kind === 'xmlc' ? '-cromasonica' : '') + '.musicxml', new Blob([xml], { type: 'application/vnd.recordare.musicxml+xml' }));
+}
+$('r-body').addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('#sc-card button'); if (!b || !SCV.res) return;
+  const o = SCV.opt, cur = SCV.sc ? SCV.sc.meta.bpm : (o.bpm || 100);
+  if (b.dataset.scView) { SCV.view = b.dataset.scView; document.querySelectorAll('#sc-tabs [data-sc-view]').forEach(x => x.classList.toggle('on', x === b)); document.querySelectorAll('#sc-out .sc-pane').forEach(p => p.classList.toggle('on', p.dataset.pane === SCV.view)); return; }
+  if (b.dataset.scUnit) { o.unit = +b.dataset.scUnit; scoreRefresh(); return; }
+  if (b.dataset.sc === 'half') { o.bpm = Math.max(30, cur / 2); scoreRefresh(); }
+  else if (b.dataset.sc === 'double') { o.bpm = Math.min(260, cur * 2); scoreRefresh(); }
+  else if (b.dataset.sc === 'left') { o.shift -= 1; o.bpm = cur; scoreRefresh(); }
+  else if (b.dataset.sc === 'right') { o.shift += 1; o.bpm = cur; scoreRefresh(); }
+  else if (b.id === 'sc-play') scorePlay();
+  else if (b.id === 'sc-xml') scoreExport('xml');
+  else if (b.id === 'sc-xmlc') scoreExport('xmlc');
+  else if (b.id === 'sc-midi') scoreExport('midi');
+});
+$('r-body').addEventListener('change', e => {
+  if (!SCV.res || !e.target.closest || !e.target.closest('#sc-card')) return;
+  const o = SCV.opt;
+  if (e.target.id === 'sc-bpm') { const v = +e.target.value; if (v >= 30 && v <= 260) { o.bpm = v; scoreRefresh(); } }
+  else if (e.target.id === 'sc-meter') { o.meter = e.target.value; o.bpm = SCV.sc ? SCV.sc.meta.bpm : o.bpm; scoreRefresh(); }
+  else if (e.target.id === 'sc-chords') { o.chords = e.target.checked; scoreRefresh(); }
+});
+let scResizeT = 0, scLastW = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(scResizeT);
+  scResizeT = setTimeout(() => { const el = $('sc-out'); if (!el || !SCV.sc || !$('report').classList.contains('show')) return; const w = el.clientWidth; if (Math.abs(w - scLastW) > 40) { scLastW = w; scoreRender(); } }, 200);
 });
 
 // layout de celular: painéis recolhidos e painel de entrada logo acima do teclado

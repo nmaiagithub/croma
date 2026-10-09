@@ -220,7 +220,8 @@ O laudo mostra esses avisos automaticamente, no topo.
    - *coocorrência*: quais soam juntas;
    - *intervalos*: consonantes (terças, quartas, quintas) × dissonantes (segundas, trítono).
 7. **Melodia** (pensada para voz ou instrumento solo): extensão, afinação em cents, passos × saltos.
-8. **Método e limitações:** as condições daquela análise.
+8. **Partitura:** a transcrição da música em notação convencional e nas duas formas Cromasônicas (ver [Partitura](#partitura)).
+9. **Método e limitações:** as condições daquela análise.
 
 > **Regra de decisão (laudo).** Um laudo **não prova** nada sobre percepção; ele descreve a leitura do modelo. Use-o para afirmar "segundo o modelo, a música X é predominantemente Verde, no quadrante Rosa–Azul, Ar/Terra +0,01 (equilíbrio)", sempre com a confiança da tonalidade e os avisos. Para comparar duas músicas, use a Comparação A/B. Para afirmar algo sobre como as pessoas sentem, use o Experimento.
 
@@ -230,6 +231,48 @@ O laudo mostra esses avisos automaticamente, no topo.
 - Ler a leitura relativa com tonalidade de confiança baixa (r < 0,50).
 - Tomar a média da música inteira por "a cor da música" quando a linha do tempo mostra partes muito diferentes. Nesse caso, analise trechos.
 - Percussão e ruído espalham energia por todos os tons e puxam a música para o centro do Sentirama.
+
+### Partitura
+
+O laudo transcreve a música em pauta, em três formas:
+
+| Forma | O que mostra |
+|---|---|
+| **Convencional** | Pauta dupla: melodia (clave de sol, ou de fá se for grave) e baixo (clave de fá), com armadura, fórmula de compasso, cifras e ligaduras. |
+| **Cromasônica · pauta colorida** | A mesma pauta com cada nota na cor do seu tom: cabeça redonda nos tons naturais, triangular nos ultravioleta, e o número do tom Croma embaixo. As cifras aparecem coloridas com o número do tom da fundamental (ex.: "D · 0"). |
+| **Cromasônica · pauta cromática** | Doze linhas por oitava, uma por tom (Verde 0 embaixo, Azul-UV 11 em cima), com as notas como barras na cor do tom e um ● ou ▲ no ataque; em cima, a faixa das cifras; embaixo, a do baixo; mesmas barras de compasso da pauta convencional. |
+
+**Como é feita a transcrição.**
+
+1. **Melodia predominante:** em cada quadro (~46 ms), os candidatos a nota (picos fortes do espectro e seus sub-harmônicos, de 110 a 1500 Hz) são pontuados pela soma dos seus harmônicos. Entre os fortes, vale a voz de cima, e a nota que já soava continua enquanto ainda estiver presente. Uma nota repetida conta de novo quando há novo ataque. Notas curtas que mergulham uma quinta abaixo das vizinhas são tratadas como acompanhamento.
+2. **Grade de tempo:** o andamento do laudo é afinado por mínimos quadrados sobre os ataques da melodia (±3%). Sem andamento no laudo (melodia solo), ele é estimado pelos intervalos entre ataques.
+3. **Acordes:** o cromagrama é somado por meio compasso (por compasso em 3/4) e comparado com as 24 tríades maiores e menores. O 1º tempo do compasso é o que recebe mais trocas de acorde.
+4. **Quantização:** ataques e finais vão para a semicolcheia (ou colcheia) mais próxima. Em legato, cada nota vai até o próximo ataque quando a pausa entre elas é menor que ¾ de tempo.
+5. **Baixo:** a fundamental de cada cifra, entre Mi 2 e Ré# 3. É **inferido**, não ouvido nota a nota.
+6. **Tonalidade da partitura:** estimada pela própria transcrição (perfis de Krumhansl sobre as notas e os acordes, com bônus para a cadência final). Pode diferir da tonalidade global do laudo; o app avisa.
+
+**Controles:** andamento (com ÷2 e ×2 para corrigir meio/dobro), compasso (4/4, 3/4, 2/4, 6/8), menor figura (semicolcheia ou colcheia), início do compasso (◀ ▶ deslocam um tempo) e cifras ligadas/desligadas. Em áudio com pouca harmonia (melodia solo), as cifras começam desligadas, porque seriam só implícitas pela melodia.
+
+**Saídas:** **Ouvir a transcrição** (piano elétrico + baixo analógico, com um cursor na pauta cromática), **MusicXML** (abre no MuseScore, Finale, Sibelius ou Dorico), **MusicXML colorido** (as cores, as cabeças triangulares e os números dos tons vão junto) e **MIDI** (duas trilhas: melodia e baixo). **Imprimir / PDF** inclui as três formas.
+
+**Acurácia medida** (estímulos com resposta conhecida, gerados pelo próprio app):
+
+| Estímulo | Resultado |
+|---|---|
+| Ode à Alegria, Ré maior, 100 BPM: melodia de piano elétrico + acordes de órgão + bumbo (30 notas, 9 cifras) | 27 de 30 notas com altura e ataque exatos; 25 de 30 com a duração exata; 27 das 28 notas transcritas estão certas; 8 de 9 cifras certas; 1º compasso e armadura corretos |
+| Escala de Dó maior solo, 0,5 s por nota, sem percussão | 11 de 11 notas certas; andamento estimado em 120 BPM (o laudo não tinha detectado) |
+| Progressão de demonstração (16 acordes de órgão) | 16 de 16 cifras certas |
+
+Os erros na Ode à Alegria mostram as limitações típicas: duas notas repetidas (Lá Lá, Mi Mi) saíram unidas numa só, um Ré 4 foi lido como Lá 3 (o acompanhamento venceu a melodia que decaía) e meio compasso de Lá maior saiu como Fá# menor.
+
+> **Regra de decisão (partitura).** A partitura é uma **transcrição automática**: serve para ler a música no modelo (em especial na pauta cromática) e como rascunho de transcrição. Para usar notas e ritmos como dado de pesquisa, **confira de ouvido** com *Ouvir a transcrição* e corrija o MusicXML num editor. Não use a partitura automática para afirmar o que a música "é" sem essa revisão.
+
+**Armadilhas.**
+
+- Andamento em meio ou dobro: se as figuras parecerem longas ou curtas demais, use ÷2 ou ×2.
+- O 1º tempo do compasso pode sair deslocado em músicas com anacruse ou acordes que mudam fora do 1º tempo: ajuste com ◀ ▶.
+- Polifonia: só a voz de cima vira melodia; vozes internas, contracantos e o baixo real não são transcritos.
+- Percussão sem altura não aparece; voz falada, ruído e percussão produzem notas espúrias ou nenhuma.
 
 ## Comparação A/B
 
@@ -756,7 +799,11 @@ Pessoas com sinestesia som-cor podem ter associações fortes e idiossincrática
 - `params`: FFT, salto, taxa, janela, suavização, A4, ref, airWeights, versão do método;
 - `source`: nome, tipo, duração;
 - `summary`: todas as medidas do laudo;
-- `timeline`: por quadro de ~46 ms, com tempo, nível, centroide, nota dominante, tensão, acorde, cromagrama de 12 tons (suavizado e bruto), f0 e clareza.
+- `timeline`: por quadro de ~46 ms, com tempo, nível, centroide, nota dominante, tensão, acorde, cromagrama de 12 tons (suavizado e bruto), f0 e clareza (YIN), e a melodia predominante (`mcf`/`mcs`: os 4 melhores candidatos a nota por quadro, frequência e fração da energia; `mtot`: energia total dos picos), usada pela partitura.
+
+**MusicXML da partitura:** MusicXML 4.0 *partwise* com duas partes (Melodia e Baixo), armadura, fórmula de compasso, andamento, cifras (`<harmony>`) e ligaduras. Na versão colorida, cada nota tem `color`, a cabeça é `triangle` nos tons ultravioleta e o número do tom vai como letra (`<lyric>`).
+
+**MIDI da partitura:** SMF tipo 1, 480 *ticks* por semínima: trilha de andamento, compasso e armadura; melodia no canal 1 (piano elétrico) e baixo no canal 2.
 
 **JSON do experimento:** `format: "cromasfera-experimento"` e `sessions` (participante, configurações, respostas com a previsão completa).
 

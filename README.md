@@ -42,6 +42,10 @@ Além do tempo real, o app gera um **laudo** do áudio inteiro:
 - **Replay no Sentirama:** um ponto com rastro percorre a trajetória da música, sincronizado com o player.
 - **Melodia:** f0 por quadro (YIN via FFT, 55–1500 Hz), contorno no tempo, extensão, altura mediana, % do tempo com nota definida, desvio médio em cents e histograma de intervalos melódicos (±12 semitons).
 
+### Partitura
+
+O laudo traz a seção **Partitura**: a transcrição automática da música em três formas — **convencional** (pauta dupla com melodia, cifras e baixo), **Cromasônica · pauta colorida** (cada nota na cor do tom, cabeça triangular nos ultravioleta, número do tom embaixo) e **Cromasônica · pauta cromática** (12 linhas por oitava, uma por tom/cor). A melodia vem de um extrator de **melodia predominante** (soma harmônica dos picos espectrais, voz de cima, novo ataque em notas repetidas), as cifras do cromagrama por meio compasso e o baixo é inferido das cifras; a grade de tempo é afinada pelos ataques e a tonalidade é estimada pela própria transcrição. Há controles de andamento (÷2/×2), compasso, menor figura, início do compasso e cifras; **Ouvir a transcrição**; e download em **MusicXML** (comum e colorido) e **MIDI**. Na Ode à Alegria sintetizada pelo app (melodia + acordes + bumbo): 27 de 30 notas exatas, 25 de 30 durações e 8 de 9 cifras. É um rascunho para conferir e corrigir num editor, não uma prova. O motor de pauta (VexFlow 4.2.3) é carregado do jsDelivr só quando a seção aparece.
+
 ### Afinador
 
 O botão **Afinador** na barra superior abre, acima do teclado, a nota com oitava, o ponteiro de −50 a +50 cents na cor do tom, a frequência e o contorno melódico dos últimos ~8 s. Segue a afinação e a referência escolhidas.
