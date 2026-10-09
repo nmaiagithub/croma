@@ -174,7 +174,7 @@ O laudo mostra esses avisos automaticamente, no topo.
 **Como realizar.**
 
 1. Painel de entrada → **Pesquisa** → **Bancada**.
-2. Escolha o instrumento no seletor ao lado de *Rodar bancada*: piano elétrico, órgão (padrão), cordas, pad, flauta, harpa ou sino.
+2. Escolha o instrumento no seletor ao lado de *Rodar bancada*: um dos sete clássicos (piano elétrico, órgão — o padrão —, cordas, pad, flauta, harpa, sino) ou um dos cinco analógicos (baixo, lead, metais, cordas de ensemble, pad PWM). Os resultados de referência deste guia usam o órgão; timbres com filtro ressonante podem mudar algumas leituras, por isso rode a bancada com o instrumento que for usar nos estímulos.
 3. Confira a calibração no painel de entrada (afinação e Verde 0). A bancada usa a calibração atual.
 4. Clique em **Rodar bancada**. Leva alguns minutos.
 5. Em cada linha você pode **▶ Ouvir**, abrir o **Laudo**, baixar o **WAV**, mandar para o **A** ou o **B** da comparação, ou usar **+ Experimento** para incluir o estímulo no teste de escuta.
@@ -478,30 +478,36 @@ Resultado: **32 de 33 verificações aprovadas (97%)**, 1 reprovada e 7 informat
 | Estímulo | Expectativa | Obtido | Resultado |
 |---|---|---|---|
 | 12 notas isoladas (Ré 4 … Dó# 4) | nota dominante = tom k | tom correto em 100% do tempo, nas 12 | 12 aprovados |
-| Ré maior / Ré menor | acorde e modo | Ré maior, Ar +0,34 / Ré menor, Ar −0,67 | aprovados |
+| Ré maior / Ré menor | acorde e modo | Ré maior, Ar +0,33 / Ré menor, Ar −0,67 | aprovados |
 | Sol maior / Sol menor | acorde e modo | Sol maior, Ar +0,42 / Sol menor, Ar −0,59 | aprovados |
 | Lá maior / Lá menor | acorde e modo | Lá maior, Ar +0,45 / Lá menor, Ar −0,55 | aprovados |
-| 3 pares maior × menor | Ar(maior) > Ar(menor) | +0,34 × −0,67; +0,42 × −0,59; +0,45 × −0,55 | 3 aprovados |
-| Fá + Si | tensão > 50% em mais da metade | média 90%, acima de 50% em 93% do tempo | aprovado |
+| 3 pares maior × menor | Ar(maior) > Ar(menor) | +0,33 × −0,67; +0,42 × −0,59; +0,45 × −0,55 | 3 aprovados |
+| Fá + Si | tensão > 50% em mais da metade | média 95%, acima de 50% em 96% do tempo | aprovado |
 | Ré sustentado | Ré dominante > 60% | 100% | aprovado |
-| Ré Jônio | Ré maior | Ré maior (r 0,87), Ar +0,31 | aprovado |
-| Ré Eólio | Ré menor | **Ré maior** (r 0,79), Ar −0,09 | **reprovado** |
-| Jônio × Eólio | Ar(jônio) > Ar(eólio) | +0,31 × −0,09 | aprovado |
-| Ré Dórico · Frígio · Lídio · Mixolídio | informativo | todos Ré maior (r 0,77–0,87); Ar +0,10 · −0,15 · +0,31 · +0,31 | informativos |
-| Ré Lócrio | informativo | Sol# maior (r 0,42, confiança baixa), Ar −0,02 | informativo |
+| Ré Jônio | Ré maior | Ré maior (r 0,88), Ar +0,20 | aprovado |
+| Ré Eólio | Ré menor | **Ré maior** (r 0,79), Ar −0,28 | **reprovado** |
+| Jônio × Eólio | Ar(jônio) > Ar(eólio) | +0,20 × −0,28 | aprovado |
+| Ré Lídio · Mixolídio · Dórico | informativo | Ré maior (r 0,84 · 0,88 · 0,83); Ar +0,21 · +0,20 · −0,04 | informativos |
+| Ré Frígio | informativo | Ré menor (r 0,78), Ar −0,35 | informativo |
+| Ré Lócrio | informativo | Sol# maior (r 0,41, confiança baixa), Ar −0,22 | informativo |
 | I–IV–V–I a 60 / 120 / 180 BPM | BPM ± 5% | 61 / 118 / 184 BPM | 3 aprovados |
-| 120 × 60 e 180 × 120 BPM | Ar sobe com o andamento | +0,34 × +0,14; +0,48 × +0,34 | 2 aprovados |
-| Progressão em 432 Hz, analisada em 440 | 432 ± 2 Hz | 432,1 Hz (−31 cents) | aprovado |
-| Ré maior suave / brilhante | informativo | centroide 313 Hz, Ar +0,18 / 2845 Hz, Ar +0,63 | informativos |
-| Brilhante × suave | centroide e Ar maiores no brilhante | 2845 × 313 Hz; +0,63 × +0,18 | aprovado |
+| 120 × 60 e 180 × 120 BPM | Ar sobe com o andamento | +0,42 × +0,15; +0,54 × +0,42 | 2 aprovados |
+| Progressão em 432 Hz, analisada em 440 | 432 ± 2 Hz | 432,1 Hz (−32 cents) | aprovado |
+| Ré maior suave / brilhante | informativo | centroide 313 Hz, Ar +0,18 / 2827 Hz, Ar +0,61 | informativos |
+| Brilhante × suave | centroide e Ar maiores no brilhante | 2827 × 313 Hz; +0,61 × +0,18 | aprovado |
 
 **Leitura.**
 
 - **Medição:** a medição de nota, acorde, tensão, estabilidade, andamento, afinação e brilho está correta para esses sons. Pela regra T, o app está apto para experimentos com música tonal com acordes, nesta calibração.
-- **Modos:** a escala de Ré eólio sobre um bordão de Ré e Lá é lida como Ré maior. Com a melodia passando rápido e o bordão (tônica + quinta) soando o tempo todo, a terça menor pesa pouco, e o perfil tonal fica ambíguo (r maior 0,79 × r menor 0,76).
-  - Dos 7 modos, 6 saem como "Ré maior". O Ar/Terra, porém, ainda ordena os modos de forma coerente: Lídio, Mixolídio e Jônio (+0,31) > Dórico (+0,10) > Eólio (−0,09) > Frígio (−0,15).
+- **Modos:** a escala de Ré eólio sobre um bordão de Ré e Lá é lida como Ré maior. Com a melodia passando rápido e o bordão (tônica + quinta) soando o tempo todo, a terça menor pesa pouco, e o perfil tonal fica ambíguo.
+  - Dos 7 modos, 5 saem como "Ré maior", o Frígio como "Ré menor" e o Lócrio como "Sol# maior" (confiança baixa).
+  - O Ar/Terra, porém, ordena os modos de forma coerente: Lídio, Jônio e Mixolídio (+0,20 a +0,21) > Dórico (−0,04) > Lócrio (−0,22) > Eólio (−0,28) > Frígio (−0,35). É quase a ordem clássica de "brilho" dos modos (Lídio > Jônio > Mixolídio > Dórico > Eólio > Frígio > Lócrio); só o Lócrio fica fora do lugar.
   - **Conclusão:** nesses estímulos, o *nome* da tonalidade (maior/menor) não é confiável. O componente *modo* ainda carrega informação útil, como diferença contínua.
 - **Notas isoladas:** uma nota de órgão sozinha sai com modo +0,22, levemente "maior", porque os harmônicos naturais (quinta e terça maior) entram no cromagrama. O componente modo não é neutro para sons sem harmonia.
+- **O timbre muda a medição.** A mesma bancada com timbres analógicos:
+  - **Baixo analógico: 31 de 33.** Além do Ré eólio, o andamento de 60 BPM não é detectado.
+  - **Pad PWM: 28 de 33.** O ataque lento e o sub-oscilador fazem a quinta do bordão dominar: as escalas modais são lidas como "Lá maior" (Jônio e Eólio reprovam, e Jônio × Eólio empata em +0,26). O andamento de 60 BPM é lido como 117 (o dobro).
+  - **Conclusão:** para estímulos de pesquisa, use timbres de ataque definido e sem sub-oscilador (órgão, piano elétrico) ou rode a bancada com o timbre escolhido antes de usá-lo.
 
 ### Exemplo 2 — Laudo da progressão de demonstração
 
@@ -518,7 +524,7 @@ Arquivo `demo-progressao.wav`: 32 s de progressão sintetizada (Ré, Sol, Lá, R
 
 ### Exemplo 3 — A/B Ré maior × Ré menor
 
-- **A** = tríade de Ré maior; **B** = tríade de Ré menor (estímulos da bancada).
+- **A** = tríade de Ré maior; **B** = tríade de Ré menor (estímulos da bancada, com órgão).
 - **Síntese:** "B está mais Terra que A (−1,01 no índice Ar/Terra); no Sentirama, B é mais denso (vermelho) (y −0,16); a cor predominante é a mesma (Verde); a tônica estimada passa de Ré maior para Ré menor."
 
 **Tabela (trecho):**
@@ -526,9 +532,9 @@ Arquivo `demo-progressao.wav`: 32 s de progressão sintetizada (Ré, Sol, Lá, R
 | Medida | A | B | Δ |
 |---|---|---|---|
 | modo | +1,00 | −1,00 | −2,00 |
-| brilho | −0,51 | −0,53 | −0,02 |
-| Ar/Terra | +0,34 | −0,67 | −1,01 |
-| Quadrante | Rosa–Amarelo 100% | Vermelho–Amarelo 94% | ≠ |
+| brilho | −0,52 | −0,54 | −0,02 |
+| Ar/Terra | +0,33 | −0,67 | −1,01 |
+| Quadrante | Rosa–Amarelo 100% | Vermelho–Amarelo 97% | ≠ |
 
 **Leitura.** Toda a diferença vem do componente modo; brilho e andamento são iguais. O resultado ilustra a previsão "maior = Ar, menor = Terra". Pela regra do A/B, porém, é **um par**: para afirmar a regra em geral, repita com vários pares independentes (outros instrumentos, tônicas, músicas) e aplique o teste do sinal.
 
@@ -602,7 +608,11 @@ Este é o balanço até a versão `croma-dsp 1.4`. É uma conclusão provisória
 - mede o andamento (± 5%) e a afinação (432 × 440 Hz, ± 2 Hz);
 - ordena corretamente Ar/Terra por modo (maior > menor), andamento (rápido > lento) e timbre (brilhante > suave).
 
-**2. Limitação demonstrada.** Escalas modais sobre bordão têm o nome da tonalidade lido como maior, e o Ré eólio falha. Nesses sons, o maior/menor do laudo não deve ser citado como fato; o componente *modo* do Ar/Terra ainda ordena os modos de forma coerente. Notas isoladas aparecem levemente "maiores" por causa dos harmônicos.
+**2. Limitações demonstradas.**
+
+- Escalas modais sobre bordão têm o nome da tonalidade lido quase sempre como maior, e o Ré eólio falha. Nesses sons, o maior/menor do laudo não deve ser citado como fato; o componente *modo* do Ar/Terra ainda ordena os modos de forma coerente.
+- Notas isoladas aparecem levemente "maiores" por causa dos harmônicos.
+- O timbre afeta a medição: com o pad PWM (ataque lento, sub-oscilador) a bancada cai para 28 de 33. Os resultados acima valem para timbres de ataque definido, como o órgão.
 
 **3. O que é escolha deste aplicativo, e não afirmação do livro:**
 

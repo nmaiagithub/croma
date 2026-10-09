@@ -165,6 +165,7 @@
   .mini-seg button.on { background: rgba(255,255,255,.15); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
   .ref-select { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); color: var(--text); border-radius: 10px; padding: .35rem .5rem; font-size: .78rem; max-width: 160px; }
   .ref-select option { background: #17131f; color: #ece6f5; }
+  .ref-select optgroup { background: #17131f; color: #a39cb5; font-style: normal; }
   /* ---------- afinador ---------- */
   .tn-meter { position: relative; height: 10px; border-radius: 10px; background: rgba(255,255,255,.08); }
   .tn-zone { position: absolute; left: 45%; width: 10%; top: 0; bottom: 0; background: rgba(67,194,74,.25); border-radius: 4px; }
@@ -847,7 +848,7 @@ O laudo mostra esses avisos automaticamente, no topo.
 **Como realizar.**
 
 1. Painel de entrada → **Pesquisa** → **Bancada**.
-2. Escolha o instrumento no seletor ao lado de *Rodar bancada*: piano elétrico, órgão (padrão), cordas, pad, flauta, harpa ou sino.
+2. Escolha o instrumento no seletor ao lado de *Rodar bancada*: um dos sete clássicos (piano elétrico, órgão — o padrão —, cordas, pad, flauta, harpa, sino) ou um dos cinco analógicos (baixo, lead, metais, cordas de ensemble, pad PWM). Os resultados de referência deste guia usam o órgão; timbres com filtro ressonante podem mudar algumas leituras, por isso rode a bancada com o instrumento que for usar nos estímulos.
 3. Confira a calibração no painel de entrada (afinação e Verde 0). A bancada usa a calibração atual.
 4. Clique em **Rodar bancada**. Leva alguns minutos.
 5. Em cada linha você pode **▶ Ouvir**, abrir o **Laudo**, baixar o **WAV**, mandar para o **A** ou o **B** da comparação, ou usar **+ Experimento** para incluir o estímulo no teste de escuta.
@@ -1151,30 +1152,36 @@ Resultado: **32 de 33 verificações aprovadas (97%)**, 1 reprovada e 7 informat
 | Estímulo | Expectativa | Obtido | Resultado |
 |---|---|---|---|
 | 12 notas isoladas (Ré 4 … Dó# 4) | nota dominante = tom k | tom correto em 100% do tempo, nas 12 | 12 aprovados |
-| Ré maior / Ré menor | acorde e modo | Ré maior, Ar +0,34 / Ré menor, Ar −0,67 | aprovados |
+| Ré maior / Ré menor | acorde e modo | Ré maior, Ar +0,33 / Ré menor, Ar −0,67 | aprovados |
 | Sol maior / Sol menor | acorde e modo | Sol maior, Ar +0,42 / Sol menor, Ar −0,59 | aprovados |
 | Lá maior / Lá menor | acorde e modo | Lá maior, Ar +0,45 / Lá menor, Ar −0,55 | aprovados |
-| 3 pares maior × menor | Ar(maior) > Ar(menor) | +0,34 × −0,67; +0,42 × −0,59; +0,45 × −0,55 | 3 aprovados |
-| Fá + Si | tensão > 50% em mais da metade | média 90%, acima de 50% em 93% do tempo | aprovado |
+| 3 pares maior × menor | Ar(maior) > Ar(menor) | +0,33 × −0,67; +0,42 × −0,59; +0,45 × −0,55 | 3 aprovados |
+| Fá + Si | tensão > 50% em mais da metade | média 95%, acima de 50% em 96% do tempo | aprovado |
 | Ré sustentado | Ré dominante > 60% | 100% | aprovado |
-| Ré Jônio | Ré maior | Ré maior (r 0,87), Ar +0,31 | aprovado |
-| Ré Eólio | Ré menor | **Ré maior** (r 0,79), Ar −0,09 | **reprovado** |
-| Jônio × Eólio | Ar(jônio) > Ar(eólio) | +0,31 × −0,09 | aprovado |
-| Ré Dórico · Frígio · Lídio · Mixolídio | informativo | todos Ré maior (r 0,77–0,87); Ar +0,10 · −0,15 · +0,31 · +0,31 | informativos |
-| Ré Lócrio | informativo | Sol# maior (r 0,42, confiança baixa), Ar −0,02 | informativo |
+| Ré Jônio | Ré maior | Ré maior (r 0,88), Ar +0,20 | aprovado |
+| Ré Eólio | Ré menor | **Ré maior** (r 0,79), Ar −0,28 | **reprovado** |
+| Jônio × Eólio | Ar(jônio) > Ar(eólio) | +0,20 × −0,28 | aprovado |
+| Ré Lídio · Mixolídio · Dórico | informativo | Ré maior (r 0,84 · 0,88 · 0,83); Ar +0,21 · +0,20 · −0,04 | informativos |
+| Ré Frígio | informativo | Ré menor (r 0,78), Ar −0,35 | informativo |
+| Ré Lócrio | informativo | Sol# maior (r 0,41, confiança baixa), Ar −0,22 | informativo |
 | I–IV–V–I a 60 / 120 / 180 BPM | BPM ± 5% | 61 / 118 / 184 BPM | 3 aprovados |
-| 120 × 60 e 180 × 120 BPM | Ar sobe com o andamento | +0,34 × +0,14; +0,48 × +0,34 | 2 aprovados |
-| Progressão em 432 Hz, analisada em 440 | 432 ± 2 Hz | 432,1 Hz (−31 cents) | aprovado |
-| Ré maior suave / brilhante | informativo | centroide 313 Hz, Ar +0,18 / 2845 Hz, Ar +0,63 | informativos |
-| Brilhante × suave | centroide e Ar maiores no brilhante | 2845 × 313 Hz; +0,63 × +0,18 | aprovado |
+| 120 × 60 e 180 × 120 BPM | Ar sobe com o andamento | +0,42 × +0,15; +0,54 × +0,42 | 2 aprovados |
+| Progressão em 432 Hz, analisada em 440 | 432 ± 2 Hz | 432,1 Hz (−32 cents) | aprovado |
+| Ré maior suave / brilhante | informativo | centroide 313 Hz, Ar +0,18 / 2827 Hz, Ar +0,61 | informativos |
+| Brilhante × suave | centroide e Ar maiores no brilhante | 2827 × 313 Hz; +0,61 × +0,18 | aprovado |
 
 **Leitura.**
 
 - **Medição:** a medição de nota, acorde, tensão, estabilidade, andamento, afinação e brilho está correta para esses sons. Pela regra T, o app está apto para experimentos com música tonal com acordes, nesta calibração.
-- **Modos:** a escala de Ré eólio sobre um bordão de Ré e Lá é lida como Ré maior. Com a melodia passando rápido e o bordão (tônica + quinta) soando o tempo todo, a terça menor pesa pouco, e o perfil tonal fica ambíguo (r maior 0,79 × r menor 0,76).
-  - Dos 7 modos, 6 saem como "Ré maior". O Ar/Terra, porém, ainda ordena os modos de forma coerente: Lídio, Mixolídio e Jônio (+0,31) > Dórico (+0,10) > Eólio (−0,09) > Frígio (−0,15).
+- **Modos:** a escala de Ré eólio sobre um bordão de Ré e Lá é lida como Ré maior. Com a melodia passando rápido e o bordão (tônica + quinta) soando o tempo todo, a terça menor pesa pouco, e o perfil tonal fica ambíguo.
+  - Dos 7 modos, 5 saem como "Ré maior", o Frígio como "Ré menor" e o Lócrio como "Sol# maior" (confiança baixa).
+  - O Ar/Terra, porém, ordena os modos de forma coerente: Lídio, Jônio e Mixolídio (+0,20 a +0,21) > Dórico (−0,04) > Lócrio (−0,22) > Eólio (−0,28) > Frígio (−0,35). É quase a ordem clássica de "brilho" dos modos (Lídio > Jônio > Mixolídio > Dórico > Eólio > Frígio > Lócrio); só o Lócrio fica fora do lugar.
   - **Conclusão:** nesses estímulos, o *nome* da tonalidade (maior/menor) não é confiável. O componente *modo* ainda carrega informação útil, como diferença contínua.
 - **Notas isoladas:** uma nota de órgão sozinha sai com modo +0,22, levemente "maior", porque os harmônicos naturais (quinta e terça maior) entram no cromagrama. O componente modo não é neutro para sons sem harmonia.
+- **O timbre muda a medição.** A mesma bancada com timbres analógicos:
+  - **Baixo analógico: 31 de 33.** Além do Ré eólio, o andamento de 60 BPM não é detectado.
+  - **Pad PWM: 28 de 33.** O ataque lento e o sub-oscilador fazem a quinta do bordão dominar: as escalas modais são lidas como "Lá maior" (Jônio e Eólio reprovam, e Jônio × Eólio empata em +0,26). O andamento de 60 BPM é lido como 117 (o dobro).
+  - **Conclusão:** para estímulos de pesquisa, use timbres de ataque definido e sem sub-oscilador (órgão, piano elétrico) ou rode a bancada com o timbre escolhido antes de usá-lo.
 
 ### Exemplo 2 — Laudo da progressão de demonstração
 
@@ -1191,7 +1198,7 @@ Arquivo `demo-progressao.wav`: 32 s de progressão sintetizada (Ré, Sol, Lá, R
 
 ### Exemplo 3 — A/B Ré maior × Ré menor
 
-- **A** = tríade de Ré maior; **B** = tríade de Ré menor (estímulos da bancada).
+- **A** = tríade de Ré maior; **B** = tríade de Ré menor (estímulos da bancada, com órgão).
 - **Síntese:** "B está mais Terra que A (−1,01 no índice Ar/Terra); no Sentirama, B é mais denso (vermelho) (y −0,16); a cor predominante é a mesma (Verde); a tônica estimada passa de Ré maior para Ré menor."
 
 **Tabela (trecho):**
@@ -1199,9 +1206,9 @@ Arquivo `demo-progressao.wav`: 32 s de progressão sintetizada (Ré, Sol, Lá, R
 | Medida | A | B | Δ |
 |---|---|---|---|
 | modo | +1,00 | −1,00 | −2,00 |
-| brilho | −0,51 | −0,53 | −0,02 |
-| Ar/Terra | +0,34 | −0,67 | −1,01 |
-| Quadrante | Rosa–Amarelo 100% | Vermelho–Amarelo 94% | ≠ |
+| brilho | −0,52 | −0,54 | −0,02 |
+| Ar/Terra | +0,33 | −0,67 | −1,01 |
+| Quadrante | Rosa–Amarelo 100% | Vermelho–Amarelo 97% | ≠ |
 
 **Leitura.** Toda a diferença vem do componente modo; brilho e andamento são iguais. O resultado ilustra a previsão "maior = Ar, menor = Terra". Pela regra do A/B, porém, é **um par**: para afirmar a regra em geral, repita com vários pares independentes (outros instrumentos, tônicas, músicas) e aplique o teste do sinal.
 
@@ -1275,7 +1282,11 @@ Este é o balanço até a versão `croma-dsp 1.4`. É uma conclusão provisória
 - mede o andamento (± 5%) e a afinação (432 × 440 Hz, ± 2 Hz);
 - ordena corretamente Ar/Terra por modo (maior > menor), andamento (rápido > lento) e timbre (brilhante > suave).
 
-**2. Limitação demonstrada.** Escalas modais sobre bordão têm o nome da tonalidade lido como maior, e o Ré eólio falha. Nesses sons, o maior/menor do laudo não deve ser citado como fato; o componente *modo* do Ar/Terra ainda ordena os modos de forma coerente. Notas isoladas aparecem levemente "maiores" por causa dos harmônicos.
+**2. Limitações demonstradas.**
+
+- Escalas modais sobre bordão têm o nome da tonalidade lido quase sempre como maior, e o Ré eólio falha. Nesses sons, o maior/menor do laudo não deve ser citado como fato; o componente *modo* do Ar/Terra ainda ordena os modos de forma coerente.
+- Notas isoladas aparecem levemente "maiores" por causa dos harmônicos.
+- O timbre afeta a medição: com o pad PWM (ataque lento, sub-oscilador) a bancada cai para 28 de 33. Os resultados acima valem para timbres de ataque definido, como o órgão.
 
 **3. O que é escolha deste aplicativo, e não afirmação do livro:**
 
@@ -1549,7 +1560,7 @@ print(m.summary())
       </div>
     </div>
     <h3>Teclado musical</h3>
-    <p>Ligue <strong>Teclado musical</strong> para tocar com o teclado do computador: <strong>Q W E R T Y U I O P</strong> são as teclas brancas (Dó Ré Mi Fá Sol Lá Si Dó Ré Mi) e <strong>2 3 · 5 6 7 · 9 0</strong> as pretas (sustenidos). <strong>Z</strong> e <strong>X</strong> descem e sobem a oitava. Há sete instrumentos sintetizados (piano elétrico, órgão, cordas, pad etéreo, flauta, harpa e sino de cristal), e o teclado na base da tela também toca com clique ou toque. O que você toca entra na análise em tempo real e pode ser gravado com <strong>Gravar sessão</strong> para gerar um laudo.</p>
+    <p>Ligue <strong>Teclado musical</strong> para tocar com o teclado do computador: <strong>Q W E R T Y U I O P</strong> são as teclas brancas (Dó Ré Mi Fá Sol Lá Si Dó Ré Mi) e <strong>2 3 · 5 6 7 · 9 0</strong> as pretas (sustenidos). <strong>Z</strong> e <strong>X</strong> descem e sobem a oitava. Há doze instrumentos sintetizados: sete clássicos (piano elétrico, órgão, cordas, pad etéreo, flauta, harpa e sino de cristal) e cinco analógicos, que imitam sintetizadores dos anos 70/80 (baixo analógico, lead com glide, metais sintéticos, cordas de ensemble e pad PWM), e o teclado na base da tela também toca com clique ou toque. O que você toca entra na análise em tempo real e pode ser gravado com <strong>Gravar sessão</strong> para gerar um laudo.</p>
     <h3>Laudo: a música inteira no modelo</h3>
     <p>Além do tempo real, o botão <strong>Analisar música inteira</strong> (ou <strong>Laudo</strong>, no player) processa o arquivo do começo ao fim, e <strong>Gravar sessão</strong> grava o microfone e analisa a gravação ao parar. O laudo mostra:</p>
     <ul class="list-disc pl-5 space-y-1 mt-2">
@@ -4774,7 +4785,7 @@ window.addEventListener('resize', () => { clearTimeout(reportResizeT); reportRes
    seguinte); 2 3 · 5 6 7 · 9 0 = teclas pretas. Lido pela posição física da
    tecla (e.code), então funciona em qualquer layout (ABNT, AZERTY…).
    ===================================================================== */
-const KEYS = { on: false, instrument: 'epiano', octave: 4, voices: new Map(), lastNote: 0, bus: null, noise: null };
+const KEYS = { on: false, instrument: 'epiano', octave: 4, voices: new Map(), lastNote: 0, lastFreq: 0, bus: null, noise: null };
 const KEYMAP = {
   KeyQ: 0, Digit2: 1, KeyW: 2, Digit3: 3, KeyE: 4, KeyR: 5, Digit5: 6, KeyT: 7, Digit6: 8, KeyY: 9, Digit7: 10, KeyU: 11,
   KeyI: 12, Digit9: 13, KeyO: 14, Digit0: 15, KeyP: 16,
@@ -4807,8 +4818,11 @@ function vOsc(c, type, f, t, dest, detune = 0) {
 function vRelease(g, srcs, t, rel) {
   const p = g.gain;
   if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(t);
-  else { p.cancelScheduledValues(t); p.setValueAtTime(Math.max(p.value, 0.0001), t); }
-  p.exponentialRampToValueAtTime(0.0001, t + rel);
+  else { p.cancelScheduledValues(t); if (t <= g.context.currentTime + 0.01) p.setValueAtTime(Math.max(p.value, 0.0001), t); }
+  // setTargetAtTime parte do valor que o envelope tiver em t: vale tanto para a tecla solta agora quanto para
+  // a soltura agendada antes de renderizar (bancada), em que cancelAndHold não segura nada e uma rampa
+  // exponencial começaria logo depois do ataque
+  p.setTargetAtTime(0, t, rel / 6);
   srcs.forEach(o => { try { o.stop(t + rel + 0.05); } catch (e) { /* já parado */ } });
 }
 function vVibrato(c, t, srcs, rate, cents, delay) {
@@ -4816,6 +4830,18 @@ function vVibrato(c, t, srcs, rate, cents, delay) {
   lfo.frequency.value = rate; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(cents, t + delay);
   lfo.connect(lg); srcs.forEach(o => lg.connect(o.detune)); lfo.start(t);
   return lfo;
+}
+// filtro passa-baixa de 24 dB/oitava (dois biquads em série), como o “ladder” dos sintetizadores analógicos
+function vLowpass24(c, cutoff, q, dest) {
+  const a = c.createBiquadFilter(), b = c.createBiquadFilter();
+  a.type = 'lowpass'; b.type = 'lowpass'; a.frequency.value = cutoff; b.frequency.value = cutoff; a.Q.value = q; b.Q.value = 0.7;
+  a.connect(b); b.connect(dest);
+  return { input: a, freqs: [a.frequency, b.frequency] };
+}
+// envelope de filtro: rampa exponencial de “from” a “to” (Hz)
+function vSweep(params, t, from, to, dur) {
+  const lim = v => Math.min(18000, Math.max(20, v));
+  [].concat(params).forEach(p => { p.setValueAtTime(lim(from), t); p.exponentialRampToValueAtTime(lim(to), t + dur); });
 }
 // ---- instrumentos ----
 const INSTRUMENTS = {
@@ -4883,14 +4909,88 @@ const INSTRUMENTS = {
     // o sino continua soando depois de soltar a tecla
     return { release: rt => vRelease(g, srcs, rt, 1.8) };
   } },
+  // ---- analógicos: emulações de sintetizadores dos anos 70/80 ----
+  bass: { name: 'Baixo analógico', group: 'analog', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.004, 0.22);
+    g.gain.exponentialRampToValueAtTime(0.13, t + 0.4);
+    const lp = vLowpass24(c, f * 2.2, 6, g);
+    vSweep(lp.freqs, t, f * 14, f * 2.2, 0.35);  // ataque “pluck”: o filtro fecha logo depois do golpe
+    const srcs = [vOsc(c, 'sawtooth', f, t, lp.input, -4), vOsc(c, 'sawtooth', f, t, lp.input, 4)];
+    const sub = c.createGain(); sub.gain.value = 0.5; sub.connect(lp.input);
+    srcs.push(vOsc(c, 'square', f / 2, t, sub));  // sub-oscilador uma oitava abaixo
+    return { release: rt => vRelease(g, srcs, rt, 0.12) };
+  } },
+  lead: { name: 'Lead analógico', group: 'analog', play(c, f, t, out, opt = {}) {
+    const g = vEnv(c, out, t, 0.01, 0.16);
+    const lp = vLowpass24(c, f * 5, 3, g);
+    vSweep(lp.freqs, t, f * 12, f * 5, 0.25);
+    const srcs = [vOsc(c, 'sawtooth', f, t, lp.input), vOsc(c, 'square', f, t, lp.input, 7)];
+    // glide (portamento): desliza desde a nota anterior, como num sintetizador monofônico
+    if (opt.glideFrom && Math.abs(Math.log2(opt.glideFrom / f)) > 0.001) {
+      srcs.forEach(o => { o.frequency.setValueAtTime(opt.glideFrom, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.07); });
+    }
+    srcs.push(vVibrato(c, t, srcs.slice(), 5.5, 14, 0.4));
+    return { release: rt => vRelease(g, srcs, rt, 0.18) };
+  } },
+  brass: { name: 'Metais sintéticos', group: 'analog', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.06, 0.2), lp = c.createBiquadFilter();
+    lp.type = 'lowpass'; lp.Q.value = 2; lp.connect(g);
+    // o filtro abre num “sopro” e assenta: o “bwaa” dos metais sintéticos
+    vSweep(lp.frequency, t, f * 1.2, f * 8, 0.12);
+    lp.frequency.exponentialRampToValueAtTime(Math.min(18000, f * 4), t + 0.7);
+    const srcs = [-12, 0, 10].map(d => {
+      const o = vOsc(c, 'sawtooth', f, t, lp);
+      o.detune.setValueAtTime(d - 25, t); o.detune.linearRampToValueAtTime(d, t + 0.08);  // a nota entra um pouco abaixo
+      return o;
+    });
+    srcs.push(vVibrato(c, t, srcs.slice(), 5, 6, 0.6));
+    return { release: rt => vRelease(g, srcs, rt, 0.25) };
+  } },
+  ensemble: { name: 'Cordas de ensemble', group: 'analog', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.25, 0.2), hp = c.createBiquadFilter(), lp = c.createBiquadFilter(), mix = c.createGain();
+    hp.type = 'highpass'; hp.frequency.value = 150; lp.type = 'lowpass'; lp.frequency.value = Math.min(9000, 3000 + f * 1.5); lp.Q.value = 0.3;
+    mix.gain.value = 0.5; mix.connect(lp); lp.connect(hp); hp.connect(g);
+    const oct = c.createGain(); oct.gain.value = 0.4; oct.connect(mix);
+    const srcs = [];
+    // “string machine”: três cópias, cada uma desafinada por um LFO lento próprio (o chorus de ensemble)
+    [[0.6, 11], [0.9, 14], [1.3, 9]].forEach(([rate, cents], k) => {
+      const a = vOsc(c, 'sawtooth', f, t, mix, (k - 1) * 4), b = vOsc(c, 'sawtooth', f * 2, t, oct, (1 - k) * 3);
+      const lfo = c.createOscillator(), lg = c.createGain();
+      lfo.frequency.value = rate; lg.gain.value = cents; lfo.connect(lg); lg.connect(a.detune); lg.connect(b.detune); lfo.start(t);
+      srcs.push(a, b, lfo);
+    });
+    return { release: rt => vRelease(g, srcs, rt, 0.8) };
+  } },
+  pwm: { name: 'Pad PWM', group: 'analog', play(c, f, t, out) {
+    const g = vEnv(c, out, t, 0.5, 0.16), lp = c.createBiquadFilter(), hp = c.createBiquadFilter();
+    lp.type = 'lowpass'; lp.Q.value = 1; vSweep(lp.frequency, t, 500, Math.min(8000, 1200 + f * 3), 1.5);
+    hp.type = 'highpass'; hp.frequency.value = 30;  // a diferença de dentes-de-serra tem componente contínua
+    lp.connect(hp); hp.connect(g);
+    // onda de pulso = dente-de-serra − a mesma atrasada; o atraso é a largura do pulso, modulada por um LFO (PWM)
+    const dl = c.createDelay(0.1), inv = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+    dl.delayTime.value = 0.5 / f; inv.gain.value = -1; dl.connect(inv); inv.connect(lp);
+    lfo.frequency.value = 0.8; lg.gain.value = 0.35 / f; lfo.connect(lg); lg.connect(dl.delayTime); lfo.start(t);
+    const pre = c.createGain(); pre.gain.value = 0.5; pre.connect(lp); pre.connect(dl);
+    const srcs = [vOsc(c, 'sawtooth', f, t, pre), vOsc(c, 'sawtooth', f, t, pre, 7), lfo];
+    const sub = c.createGain(); sub.gain.value = 0.35; sub.connect(lp); srcs.push(vOsc(c, 'sine', f / 2, t, sub));
+    return { release: rt => vRelease(g, srcs, rt, 1.2) };
+  } },
 };
+// opções dos seletores de instrumento, em dois grupos
+function instrOptions() {
+  const grp = (label, pred) => `<optgroup label="${label}">${Object.entries(INSTRUMENTS).filter(([, v]) => pred(v)).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('')}</optgroup>`;
+  return grp('Clássicos', v => v.group !== 'analog') + grp('Analógicos', v => v.group === 'analog');
+}
 
 function noteOn(id, midi) {
   if (KEYS.voices.has(id)) return;
   const out = synthBus(), c = A.ctx, t = c.currentTime + 0.005;
   if (KEYS.voices.size >= MAX_VOICES) { const [oldId] = KEYS.voices.keys(); noteOff(oldId); }
   const f = A4_HZ * Math.pow(2, (midi - 69) / 12);
-  const v = INSTRUMENTS[KEYS.instrument].play(c, f, t, out);
+  // glide só entre notas próximas no tempo (tecla ainda presa ou solta há menos de meio segundo)
+  const glideFrom = KEYS.lastFreq && performance.now() - KEYS.lastNote < 500 ? KEYS.lastFreq : 0;
+  const v = INSTRUMENTS[KEYS.instrument].play(c, f, t, out, { glideFrom });
+  KEYS.lastFreq = f;
   v.pc = ((midi % 12) + 12) % 12;
   KEYS.voices.set(id, v); KEYS.lastNote = performance.now();
   markKey(v.pc, true);
@@ -4934,7 +5034,7 @@ function synthKey(e, down) {
   return true;
 }
 
-$('instr-select').innerHTML = Object.entries(INSTRUMENTS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('');
+$('instr-select').innerHTML = instrOptions();
 $('instr-select').addEventListener('change', e => { allNotesOff(); KEYS.instrument = e.target.value; e.target.blur(); });
 $('btn-keys').addEventListener('click', () => setKeysOn(!KEYS.on));
 $('oct-down').addEventListener('click', () => { allNotesOff(); setOctave(KEYS.octave - 1); });
@@ -5151,7 +5251,7 @@ function openBench() {
   $('bench').classList.add('show'); $('bench').setAttribute('aria-hidden', 'false');
 }
 function closeBench() { $('bench').classList.remove('show'); $('bench').setAttribute('aria-hidden', 'true'); if (benchSrc) { try { benchSrc.stop(); } catch (e) { /* já parou */ } } }
-$('bench-instr').innerHTML = Object.entries(INSTRUMENTS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('');
+$('bench-instr').innerHTML = instrOptions();
 $('bench-instr').addEventListener('change', e => { BENCH.instrument = e.target.value; });
 $('bench-run').addEventListener('click', runBench);
 $('bench-close').addEventListener('click', closeBench);

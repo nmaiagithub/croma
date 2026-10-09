@@ -12,7 +12,7 @@ Web app de arquivo único (HTML + Tailwind + Three.js via CDN) que transforma á
 
 ### Teclado musical
 
-**Teclado musical** transforma o teclado do computador num sintetizador: `Q W E R T Y U I O P` = Dó Ré Mi Fá Sol Lá Si Dó Ré Mi, `2 3 5 6 7 9 0` = sustenidos (layout de piano, lido pela posição física da tecla), `Z`/`X` = oitava. Sete instrumentos: piano elétrico, órgão, cordas, pad etéreo, flauta, harpa e sino de cristal. O teclado da tela também toca (clique ou toque). O som entra na análise e pode ser gravado com **Gravar sessão**, que agora grava tudo o que está sendo analisado (microfone, teclado musical ou demonstração).
+**Teclado musical** transforma o teclado do computador num sintetizador: `Q W E R T Y U I O P` = Dó Ré Mi Fá Sol Lá Si Dó Ré Mi, `2 3 5 6 7 9 0` = sustenidos (layout de piano, lido pela posição física da tecla), `Z`/`X` = oitava. Doze instrumentos: sete clássicos (piano elétrico, órgão, cordas, pad etéreo, flauta, harpa e sino de cristal) e cinco **analógicos**, emulações de sintetizadores dos anos 70/80 feitas com Web Audio: **baixo analógico** (dois dentes-de-serra + sub-oscilador, filtro de 24 dB ressonante com ataque “pluck”), **lead analógico** (glide entre notas e vibrato), **metais sintéticos** (filtro que abre num “sopro”), **cordas de ensemble** (string machine com chorus de três LFOs) e **pad PWM** (pulso com largura modulada). O teclado da tela também toca (clique ou toque). O som entra na análise e pode ser gravado com **Gravar sessão**, que agora grava tudo o que está sendo analisado (microfone, teclado musical ou demonstração).
 
 ### Auto-rotação da câmera
 
