@@ -80,6 +80,6 @@ Atalhos: `1` `2` `3` modos (com o teclado musical desligado) · `Espaço` play/p
 
 `assets/` contém as ilustrações de referência do livro exibidas no modal de teoria.
 
-## `index.html` / `pitch16.html`
+## `index.html`
 
-Versão anterior: *Cymatics Visualizer* (A4 = 432 Hz), 17 visualizações acionadas por detecção de altura via microfone.
+Só redireciona para `cromasfera.html`: é a página que o GitHub Pages abre na raiz do site, então quem entra pelo endereço principal cai direto no app (parâmetros e âncora da URL são mantidos).
