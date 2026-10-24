@@ -39,8 +39,17 @@ Nos quatro primeiros estilos, cada pétala acende e cresce com a energia da sua 
   - os tons que soam brilham no lugar deles;
   - os rastros se apagam aos poucos: abrem-se para fora e giram no Ar, fecham-se para o centro na Terra. O acúmulo é feito na GPU em meia precisão, para não deixar resíduo.
 - **Python** (botão Python, que abre um menu, ou teclas `6`, `7` e `8`) — visualizações que imitam o que um programa em Python desenharia, no mesmo fundo escuro das outras:
-  - **Pygame** — `pygame.draw` sem suavização, desenhado pixel a pixel (`line` com espessura, `lines`, `circle` cheio ou vazado, `rect`, `polygon`), com texto na fonte padrão. São cinco variações, cada uma destacando outro aspecto do estudo. A tecla `6` abre a última usada e, apertada de novo, passa para a próxima.
+  - **Pygame** — `pygame.draw` sem suavização, desenhado pixel a pixel (`line` com espessura, `lines`, `circle` cheio ou vazado, `rect`, `polygon`), com texto na fonte padrão. São sete variações, cada uma destacando outro aspecto do estudo. A tecla `6` abre a última usada e, apertada de novo, passa para a próxima.
     - **Anel dos tons:** os 12 tons ligados ao centro (naturais em círculo, ultravioletas em triângulo), o polígono do acorde, Ré no centro, ondas a cada ataque, a forma de onda e um espectro em barras na cor do tom de cada frequência.
+    - **Anel das quintas** (variação do anel):
+      - os mesmos tons na ordem do ciclo de quintas, com Ré no topo, Lá à direita e Sol à esquerda;
+      - as Sete Naturais (Fá Dó Sol Ré Lá Mi Si) viram o arco contínuo em volta de Ré, e a escala da tonalidade detectada, um arco de sete posições;
+      - um perfil em radar mostra a energia de cada tom;
+      - os acordes viram triângulos compactos, e as últimas trocas de nota deixam um caminho.
+    - **Espiral das oitavas** (variação do anel):
+      - o anel aberto em espiral, uma volta por oitava (7 oitavas a partir do Verde 0 da oitava 1);
+      - os picos do espectro ficam na altura exata (ângulo pelo tom, raio pela oitava), com tamanho pela força;
+      - a série harmônica da nota principal (f0, 2f0, 3f0…) fica ligada por uma linha branca, mostrando por que os harmônicos caem na oitava, na quinta e na terça.
     - **Sentirama em partículas** (sistema de partículas):
       - o plano frio ↔ quente × denso ↔ sutil, com a tônica no centro;
       - cada tom que soa solta partículas na sua cor, a partir da sua posição no Sentirama, e elas são puxadas para a posição atual da música;
