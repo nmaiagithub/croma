@@ -7,7 +7,7 @@
 <meta name="description" content="Visualizador áudio-cromático baseado no método Croma-Sônica do livro Cromasfera: The Seed of Interdisciplinary Harmony (Vigmorã / CromaSomos).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600&family=Press+Start+2P&family=Shrikhand&family=Share+Tech+Mono&family=Orbitron:wght@600;900&family=Mr+Dafoe&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600&family=Press+Start+2P&family=Shrikhand&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com/3.4.16"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
@@ -44,10 +44,6 @@
     position: fixed; inset: 0; pointer-events: none;
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
   }
-  /* as janelas "Python" ficam limpas, como num programa de verdade */
-  body[data-style="pygame"] #vignette, body[data-style="pygame"] #grain,
-  body[data-style="turtle"] #vignette, body[data-style="turtle"] #grain,
-  body[data-style="matplotlib"] #vignette, body[data-style="matplotlib"] #grain { display: none; }
   .glass {
     background: var(--panel); border: 1px solid var(--panel-border);
     backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%);
@@ -383,9 +379,8 @@
     <button data-style="fliperama" role="tab" title="Flor Croma-Sônica · Fliperama 8-bit (2)"><span class="lg">Fliperama</span><span class="sm">8-bit</span></button>
     <button data-style="anos70" role="tab" title="Flor Croma-Sônica · Pôster psicodélico anos 70 (3)">Anos 70</button>
     <button data-style="osciloscopio" role="tab" title="Flor Croma-Sônica · Osciloscópio vetorial (4)"><span class="lg">Osciloscópio</span><span class="sm">Oscilo</span></button>
-    <button data-style="synthwave" role="tab" title="Flor Croma-Sônica · Synthwave anos 80 (5)"><span class="lg">Synthwave</span><span class="sm">Synth</span></button>
-    <button data-style="rastros" role="tab" title="Rastros: linhas que viajam entre os tons tocados e se desfazem (6)">Rastros</button>
-    <button data-style="python" id="py-btn" role="tab" aria-haspopup="menu" aria-expanded="false" aria-controls="py-menu" title="Python: como ficaria com pygame, turtle ou matplotlib (7, 8, 9)">Python<span class="py-sub"></span> <span aria-hidden="true">▾</span></button>
+    <button data-style="rastros" role="tab" title="Rastros: linhas que viajam entre os tons tocados e se desfazem (5)">Rastros</button>
+    <button data-style="python" id="py-btn" role="tab" aria-haspopup="menu" aria-expanded="false" aria-controls="py-menu" title="Python: como ficaria com pygame, turtle ou matplotlib (6, 7, 8)">Python<span class="py-sub"></span> <span aria-hidden="true">▾</span></button>
   </div>
   <div class="pointer-events-auto flex items-center gap-2">
     <button class="btn" id="btn-tuner" title="Afinador e contorno melódico" aria-label="Afinador" aria-pressed="false">
@@ -398,9 +393,9 @@
   </div>
 </div>
 <div id="py-menu" class="glass" role="menu" aria-label="Visualizações em Python" hidden>
-  <button data-style="pygame" role="menuitem"><b>Pygame</b> <kbd>7</kbd><span>pygame.draw: linhas, círculos e polígonos serrilhados numa janela preta</span></button>
-  <button data-style="turtle" role="menuitem"><b>Turtle</b> <kbd>8</kbd><span>a tartaruga desenha ao vivo as notas tocadas, até o clear()</span></button>
-  <button data-style="matplotlib" role="menuitem"><b>Matplotlib</b> <kbd>9</kbd><span>Figure 1: a Flor em barras polares e o cromagrama em imshow</span></button>
+  <button data-style="pygame" role="menuitem"><b>Pygame</b> <kbd>6</kbd><span>pygame.draw: linhas, círculos e polígonos serrilhados</span></button>
+  <button data-style="turtle" role="menuitem"><b>Turtle</b> <kbd>7</kbd><span>a tartaruga desenha ao vivo as notas tocadas, até o clear()</span></button>
+  <button data-style="matplotlib" role="menuitem"><b>Matplotlib</b> <kbd>8</kbd><span>a Flor em barras polares e o cromagrama em imshow</span></button>
 </div>
 
 <!-- ============ PAINEL DE CONTROLE ============ -->
@@ -497,7 +492,7 @@
 
     <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-[color:var(--muted)] leading-relaxed">
       <div class="label mb-1">Atalhos</div>
-      <span class="text-white/80">1–9</span> estilos da Flor (com o teclado musical desligado) · <span class="text-white/80">Espaço</span> play/pause · <span class="text-white/80">H</span> ocultar interface · <span class="text-white/80">F</span> tela cheia · na Aquarela, arraste para inclinar a Flor
+      <span class="text-white/80">1–8</span> estilos da Flor (com o teclado musical desligado) · <span class="text-white/80">Espaço</span> play/pause · <span class="text-white/80">H</span> ocultar interface · <span class="text-white/80">F</span> tela cheia · na Aquarela, arraste para inclinar a Flor
     </div>
     </div>
   </div>
@@ -1633,17 +1628,16 @@ print(m.summary())
           <li><strong>Fliperama</strong> — pixel art de 8 bits num tubo de TV: 16 cores com pontilhado, linhas de varredura e vidro curvo. Um anel de colunas de blocos mostra a energia de cada tom, e o placar conta as notas e mostra o BPM.</li>
           <li><strong>Anos 70</strong> — pôster psicodélico impresso: margarida de contorno grosso sobre listras onduladas, uma por tom, com espessura que segue a energia. O papel é creme, com retícula e dobras.</li>
           <li><strong>Osciloscópio</strong> — só traço de fósforo. A Flor é uma curva XY cujos lóbulos crescem com cada tom, e no centro aparece a forma de onda real do som.</li>
-          <li><strong>Synthwave</strong> — neon dos anos 80. A Flor fica sobre um sol listrado, as montanhas seguem o espectro, a grade rola no ritmo, e a imagem tem chiado de fita VHS.</li>
           <li><strong>Rastros</strong> — começa vazia e usa só as posições dos 12 tons da Flor. Quando a nota principal muda, uma linha viaja da nota anterior até a nova, passando da cor de uma para a da outra. Notas que entram junto e acordes geram linhas finas, e a nota atacada de novo solta uma onda. Os rastros se apagam aos poucos: abrem-se para fora quando a música está no Ar e fecham-se para o centro na Terra.</li>
-          <li><strong>Python</strong> — três visualizações que imitam o que um programa em Python desenharia, cada uma numa janela com o título padrão da biblioteca:
+          <li><strong>Python</strong> — três visualizações que imitam o que um programa em Python desenharia, no mesmo fundo escuro das outras:
             <ul class="list-[circle] pl-5 mt-1 space-y-1">
               <li><em>Pygame</em> — linhas, círculos e polígonos serrilhados do <code>pygame.draw</code>: os tons em anel, o acorde, a forma de onda e o espectro em barras na cor de cada tom.</li>
               <li><em>Turtle</em> — a tartaruga vai até cada nota tocada e desenha um círculo (natural) ou um triângulo (ultravioleta), escreve o nome do tom e preenche os acordes. Depois de um silêncio, <code>clear()</code>.</li>
-              <li><em>Matplotlib</em> — a Flor como barras polares, com as ultravioletas hachuradas, e o cromagrama dos últimos 10 s em <code>imshow</code>.</li>
+              <li><em>Matplotlib</em> — no estilo <code>dark_background</code>: a Flor como barras polares, com as ultravioletas hachuradas, e o cromagrama dos últimos 10 s em <code>imshow</code>.</li>
             </ul>
           </li>
         </ul>
-        <p class="mt-2">As teclas <strong>1</strong> a <strong>9</strong> trocam o estilo (7, 8 e 9 são os de Python), e a escolha fica salva no navegador.</p>
+        <p class="mt-2">As teclas <strong>1</strong> a <strong>8</strong> trocam o estilo (6, 7 e 8 são os de Python), e a escolha fica salva no navegador.</p>
         <div class="grid grid-cols-2 gap-2 mt-4">
           <img src="assets/fita-cromatica-12-tons.webp" alt="A fita cromática de 12 tons" class="ref-img w-full h-48 object-contain">
           <img src="assets/berlin-kay-ordem-das-cores.png" alt="A ordem das cores segundo Berlin e Kay" class="ref-img w-full h-48 object-contain">
@@ -4014,161 +4008,6 @@ const STYLE_SCOPE = {
   },
 };
 
-/* ---------- Synthwave anos 80: neon, sol listrado, grade e fita VHS ---------- */
-const SYN_FONT = 'Orbitron', SYN_SCRIPT = 'Mr Dafoe';
-const SYN = { mt: new Float32Array(10) };
-const STYLE_SYNTH = {
-  retro: true, name: 'Synthwave', bloom: [0.7, 0.5, 0.42],
-  res: (w, h) => hiRes(w, h, 1.25),
-  enter() { needFont(`900 40px "${SYN_FONT}"`); needFont(`40px "${SYN_SCRIPT}"`); },
-  mat: postMaterial(`uniform sampler2D uTex; uniform vec2 uRes,uView; uniform float uTime,uPulse; varying vec2 vUv; ${GLSL_HASH}
-    void main(){
-      vec2 uv=vUv;
-      float band=1.0-fract(uTime*0.06), dy=uv.y-band, inB=exp(-dy*dy*1400.0);          // faixa de tracking
-      uv.x+=(h21(vec2(floor(uv.y*uView.y*0.5),floor(uTime*30.0)))-0.5)*0.006*inB;
-      uv.x+=(h21(vec2(floor(uTime*20.0),3.0))-0.5)*0.0007;
-      float ab=0.0013+0.002*uPulse;
-      vec3 c=vec3(texture2D(uTex,uv+vec2(ab,0.0)).r,texture2D(uTex,uv).g,texture2D(uTex,uv-vec2(ab,0.0)).b);
-      vec2 tx=vec2(2.0/uRes.x,0.0);
-      c=c*0.72+0.14*(texture2D(uTex,uv+tx).rgb+texture2D(uTex,uv-tx).rgb);                // cor que escorre na horizontal
-      c+=inB*step(0.982,h21(floor(gl_FragCoord.xy*0.5)+floor(uTime*40.0)))*0.5;
-      c*=0.94+0.06*sin(gl_FragCoord.y*3.14159);
-      vec2 q=vUv-0.5; c*=1.0-dot(q,q)*0.7;
-      gl_FragColor=vec4(c,1.0);
-    }`),
-  draw(g, W, H, dt, t) {
-    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-    const fr = florFrame(W, H), sc = fr.sc, cx = W / 2, hor = fr.top + fr.avail * 0.66;
-    const R = Math.min(W * 0.27, (hor - fr.top - 34 * sc) / 1.5), cy = hor - R * 0.5;
-    // céu
-    const sky = g.createLinearGradient(0, 0, 0, hor);
-    sky.addColorStop(0, '#07021a'); sky.addColorStop(0.5, '#240f4c'); sky.addColorStop(0.86, '#7b1e6b'); sky.addColorStop(1, '#e8456b');
-    g.fillStyle = sky; g.fillRect(0, 0, W, hor);
-    for (let i = 0; i < 120; i++) {
-      const s = SEEDS[i], x = s[0] * W, y = s[1] * hor * 0.8;
-      if (Math.hypot(x - cx, y - cy) < R * 1.05) continue;
-      g.globalAlpha = 0.35 + 0.65 * Math.abs(Math.sin(t * (0.5 + s[2] * 2) + s[3] * 9));
-      g.fillStyle = '#ffffff'; g.fillRect(x, y, (s[2] > 0.85 ? 2 : 1) * sc, (s[2] > 0.85 ? 2 : 1) * sc);
-    }
-    g.globalAlpha = 1;
-    // montanhas em arame: a altura dos picos segue o espectro
-    const nb = SYN.mt.length;
-    for (let i = 0; i < nb; i++) {
-      let v = 0;
-      if (freqDb && A.ctx && AN.active) {
-        const f0 = 60 * Math.pow(120, i / nb), f1 = 60 * Math.pow(120, (i + 1) / nb), bw = A.ctx.sampleRate / FFT_SIZE;
-        let mx = -140; for (let b = Math.floor(f0 / bw); b <= Math.ceil(f1 / bw) && b < freqDb.length; b++) mx = Math.max(mx, freqDb[b]);
-        v = Math.max(0, Math.min(1, (mx + 95) / 65));
-      }
-      SYN.mt[i] += (v - SYN.mt[i]) * smoothK(dt, v > SYN.mt[i] ? 12 : 3);
-    }
-    const mtn = side => {
-      const pts = [[0, hor]], np = nb, span = W * 0.42, hm = fr.avail * 0.12;
-      for (let i = 0; i < np; i++) {
-        const s = SEEDS[150 + i], x = (i + 0.3 + 0.4 * s[2]) / np * span;
-        const peak = (0.15 + 0.85 * s[0] * s[0]) * (1 - i / np * 0.55) + 0.55 * SYN.mt[np - 1 - i];
-        pts.push([x, hor - peak * hm]);
-        pts.push([x + span / np * (0.3 + 0.2 * s[3]), hor - peak * hm * (0.35 + 0.35 * s[1])]);
-      }
-      pts.push([W * 0.44, hor]);
-      const P = pts.map(([x, y]) => [side < 0 ? x : W - x, y]);
-      g.beginPath(); P.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
-      g.fillStyle = '#16062c'; g.fill();
-      g.lineJoin = 'round'; g.lineWidth = 1.6 * sc; g.strokeStyle = '#ff3fd8'; g.stroke();
-      g.lineWidth = sc; g.strokeStyle = 'rgba(90,220,255,0.45)';
-      g.beginPath();
-      for (let i = 1; i < P.length - 2; i += 2) { g.moveTo(P[i][0], P[i][1]); g.lineTo(P[i][0], hor); g.moveTo(P[i][0], P[i][1]); g.lineTo(P[i + 1][0], hor); }
-      g.stroke();
-    };
-    mtn(-1); mtn(1);
-    // chão com grade em perspectiva, na cor do som; uma linha passa a cada batida
-    const ground = g.createLinearGradient(0, hor, 0, H);
-    ground.addColorStop(0, '#1d0633'); ground.addColorStop(1, '#05010d');
-    g.fillStyle = ground; g.fillRect(0, hor, W, H - hor);
-    const c = AN.color, mixT = Math.min(1, F.lvl * 2.2);
-    const gc = rgbHex([255 * (1 - mixT) + Math.min(255, c.r * 300) * mixT, 63 * (1 - mixT) + Math.min(255, c.g * 300) * mixT, 216 * (1 - mixT) + Math.min(255, c.b * 300) * mixT]);
-    const f = H - hor, fb = F.beat % 1;
-    g.strokeStyle = gc;
-    for (let i = 0; i < 26; i++) {
-      const z = 1 + (i + 1 - fb) * 0.9, y = hor + f / z;
-      g.globalAlpha = Math.min(1, 1.6 / z); g.lineWidth = Math.max(1, 2.2 * sc / Math.sqrt(z));
-      g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
-    }
-    g.globalAlpha = 0.85; g.lineWidth = 1.5 * sc;
-    g.beginPath();
-    for (let j = -24; j <= 24; j++) { g.moveTo(cx + f * j * 0.9, hor + f); g.lineTo(cx, hor); }
-    g.stroke();
-    g.globalAlpha = 1;
-    const fog = g.createLinearGradient(0, hor, 0, hor + f * 0.2);
-    fog.addColorStop(0, 'rgba(29,6,51,1)'); fog.addColorStop(1, 'rgba(29,6,51,0)');
-    g.fillStyle = fog; g.fillRect(0, hor, W, f * 0.2);
-    g.fillStyle = '#ff5fa8'; g.fillRect(0, hor - sc, W, 2 * sc);
-    // o sol listrado é o miolo da Flor (as faixas descem no ritmo)
-    const sunR = R * 0.4;
-    const halo = g.createRadialGradient(cx, cy, sunR * 0.5, cx, cy, sunR * 2.8);
-    halo.addColorStop(0, 'rgba(255,70,150,0.5)'); halo.addColorStop(1, 'rgba(255,70,150,0)');
-    g.fillStyle = halo; g.fillRect(cx - sunR * 3, cy - sunR * 3, sunR * 6, sunR * 6);
-    g.save();
-    g.beginPath(); g.rect(cx - sunR, cy - sunR, sunR * 2, sunR * 2);
-    const ph = (F.beat * 0.5) % 1;
-    for (let i = 0; i < 7; i++) {
-      const y0 = cy + sunR * ((i + ph) * 0.15), gap = sunR * (0.012 + 0.022 * (i + ph));
-      if (y0 < cy + sunR) g.rect(cx - sunR, y0, sunR * 2, Math.min(gap, cy + sunR - y0));
-    }
-    g.clip('evenodd');
-    const sun = g.createLinearGradient(0, cy - sunR, 0, cy + sunR);
-    sun.addColorStop(0, '#ffd84a'); sun.addColorStop(0.45, '#ff8a2f'); sun.addColorStop(0.78, '#ff2f7e'); sun.addColorStop(1, '#9b2bd8');
-    g.fillStyle = sun; g.beginPath(); g.arc(cx, cy, sunR, 0, TAU); g.fill();
-    g.restore();
-    // pétalas em neon
-    const u = R / 4.05;
-    for (const uvPass of [true, false]) for (let k = 0; k < 12; k++) {
-      const o = TONES[k]; if (o.uv !== uvPass) continue;
-      const I = F.I[k];
-      g.save(); g.translate(cx, cy); g.rotate(k * Math.PI / 6); g.translate(0, -I * R * 0.05); g.scale(u, u);
-      g.beginPath(); florPetal(g, o.uv);
-      g.globalAlpha = 0.06 + 0.3 * I; g.fillStyle = o.hex; g.fill();
-      g.globalAlpha = 0.45 + 0.55 * Math.min(1, I * 1.6);
-      g.lineWidth = (1.3 + 2 * I) * sc / u; g.strokeStyle = o.hex; g.stroke();
-      g.restore();
-    }
-    g.globalAlpha = 1;
-    const at = (k, r) => [cx + Math.cos(ang2d(k)) * r, cy + Math.sin(ang2d(k)) * r];
-    if (F.chordS > 0.03) {
-      g.lineWidth = sc; g.strokeStyle = `rgba(120,240,255,${0.05 + 0.3 * F.chordS})`;
-      g.beginPath(); for (let i = 0; i < 7; i++) { g.moveTo(...at(NATURALS[i], R * 0.62)); g.lineTo(...at(NATURALS[(i + 3) % 7], R * 0.62)); } g.stroke();
-    }
-    const ch = AN.lastChord;
-    if (ch && F.chordS > 0.05) {
-      g.lineWidth = 2 * sc; g.strokeStyle = '#e9fbff'; g.globalAlpha = 0.9 * F.chordS;
-      g.beginPath(); ch.tones.forEach((k, i) => (i ? g.lineTo : g.moveTo).call(g, ...at(k, R * 0.62))); g.closePath(); g.stroke();
-      g.globalAlpha = 1;
-    }
-    const g0 = Math.max(F.I[0], F.stab);
-    g.lineWidth = (1.5 + 3 * g0) * sc; g.strokeStyle = TONES[0].hex; g.beginPath(); g.arc(cx, cy, sunR * 1.06, 0, TAU); g.stroke();
-    // letreiro cromado + assinatura em neon; a leitura do som logo acima da Flor
-    const T = florText();
-    const floor = fr.bottom - hor, fs = Math.round(Math.max(18 * sc, Math.min(W * 0.1, floor * 0.5))), ly = hor + floor * 0.52;
-    g.font = `900 ${fs}px "${SYN_FONT}", Impact, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.save(); g.translate(cx, ly); g.transform(1, 0, -0.18, 1, 0, 0);
-    const chrome = g.createLinearGradient(0, -fs * 0.42, 0, fs * 0.42);
-    chrome.addColorStop(0, '#a9dcff'); chrome.addColorStop(0.44, '#2f6fd0'); chrome.addColorStop(0.5, '#10051f'); chrome.addColorStop(0.56, '#c2508f'); chrome.addColorStop(1, '#ff9a3d');
-    g.lineJoin = 'round'; g.lineWidth = fs * 0.12; g.strokeStyle = '#b01c9a'; g.strokeText('CROMA', 0, 0);
-    g.fillStyle = chrome; g.fillText('CROMA', 0, 0);
-    g.lineWidth = Math.max(1, fs * 0.018); g.strokeStyle = 'rgba(255,255,255,0.75)'; g.strokeText('CROMA', 0, 0);
-    g.restore();
-    g.save(); g.translate(cx + fs * 1.2, ly + fs * 0.42); g.rotate(-0.12);
-    g.font = `${Math.round(fs * 0.8)}px "${SYN_SCRIPT}", cursive`;
-    g.lineWidth = fs * 0.08; g.strokeStyle = '#ff3fd8'; g.strokeText('Sônica', 0, 0);
-    g.fillStyle = '#ffd6f4'; g.fillText('Sônica', 0, 0);
-    g.restore();
-    g.font = `600 ${Math.round(Math.max(11 * sc, R * 0.07))}px "${SYN_FONT}", sans-serif`;
-    g.fillStyle = '#7ff3ff';
-    const info = F.idle ? 'INSIRA A FITA  ▶  PLAY' : T.o ? `${plain(T.note)} · ${plain(T.color)}${T.chord ? '   ·   ' + plain(T.chordLong) : ''}${T.bpm ? '   ·   ' + T.bpm + ' BPM' : ''}` : '· · ·';
-    g.fillText(info, cx, cy - R - Math.max(12 * sc, R * 0.08));
-  },
-};
-
 /* ---------- Rastros: linhas que viajam entre os tons e se desfazem aos poucos ----------
    Começa vazia. Quando a nota principal muda, uma linha sai da nota anterior e viaja até a nova
    (na cor de uma passando para a da outra); notas que entram junto e acordes geram linhas finas.
@@ -4336,46 +4175,23 @@ const STYLE_TRAILS = {
 };
 
 /* ---------- Python: o que daria para desenhar com pygame, turtle e matplotlib ----------
-   Cada um roda numa "janela" com o título padrão da biblioteca e imita o que ela desenha:
-   pygame.draw sem suavização, a tartaruga traçando ao vivo, e uma figura do matplotlib. */
+   Cada um imita o que a biblioteca desenha (pygame.draw sem suavização, a tartaruga traçando
+   ao vivo, uma figura do matplotlib), direto no fundo escuro das outras visualizações. */
 const PY_IDS = ['pygame', 'turtle', 'matplotlib'];
-const PY_UI = '"Segoe UI", system-ui, -apple-system, Roboto, sans-serif';
+const PY_BG = '#07060d';   // a mesma cor de fundo do renderer e dos Rastros
 const PY_PASS = postMaterial('uniform sampler2D uTex; varying vec2 vUv; void main(){ gl_FragColor=vec4(texture2D(uTex,vUv).rgb,1.0); }');
 // resolução: px CSS × escala inteira (1 ou 2), para os pixels e o texto ficarem nítidos
 function pyRes(w, h) { let k = DPR >= 1.5 ? 2 : 1; if (w * h * k * k > 4.2e6) k = 1; return [Math.round(w * k), Math.round(h * k)]; }
 const toneRgb = k => hexRgb(TONES[k].hex);
-// o "programa" roda numa janela do sistema: sombra, borda e barra de título com − □ ×.
-// iw × ih é o tamanho interno pedido (px lógicos); devolve o retângulo interno em px do canvas e a escala.
-function pyWindow(g, W, H, title, iw, ih, icon) {
-  const fr = florFrame(W, H), k = fr.sc, bar = Math.round(30 * k);
-  const aw = (fr.right - fr.left) / k - 8, ah = fr.avail / k - 38;
-  const s = Math.max(0.25, Math.min(1.35, aw / iw, ah / ih));
+// pinta o fundo e devolve a área do desenho (proporção iw × ih), centrada na faixa livre entre barras e painéis
+function pyArea(g, W, H, iw, ih) {
+  const fr = florFrame(W, H), k = fr.sc;
+  const s = Math.max(0.25, Math.min(1.35, (fr.right - fr.left) / k / iw, fr.avail / k / ih));
   const w = Math.round(iw * s * k), h = Math.round(ih * s * k);
-  const x = Math.round((fr.left + fr.right) / 2 - w / 2), y = Math.round(fr.cy - (h + bar) / 2 + bar);
-  const bg = g.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.hypot(W, H) / 2);
-  bg.addColorStop(0, '#1a1626'); bg.addColorStop(1, '#08070d');
-  g.fillStyle = bg; g.fillRect(0, 0, W, H);
-  g.save(); g.shadowColor = 'rgba(0,0,0,0.6)'; g.shadowBlur = 30 * k; g.shadowOffsetY = 10 * k;
-  g.fillStyle = '#8a8d93'; g.fillRect(x - k, y - bar - k, w + 2 * k, h + bar + 2 * k); g.restore();
-  g.fillStyle = '#f3f3f3'; g.fillRect(x, y - bar, w, bar);
-  g.fillStyle = '#dcdcdc'; g.fillRect(x, y - k, w, k);
-  if (icon) icon(g, x + 16 * k, y - bar / 2, k);
-  g.fillStyle = '#1b1b1b'; g.font = `${12 * k}px ${PY_UI}`; g.textAlign = 'left'; g.textBaseline = 'middle';
-  g.fillText(title, x + 31 * k, y - bar / 2 + 0.5 * k);
-  const bw = 46 * k, by = y - bar / 2, bx = i => x + w - bw * (3 - i) + bw / 2;
-  if (w > bw * 3 + 160 * k) {
-    g.strokeStyle = '#1b1b1b'; g.lineWidth = k; g.beginPath();
-    g.moveTo(bx(0) - 5 * k, by); g.lineTo(bx(0) + 5 * k, by);
-    g.rect(bx(1) - 4.5 * k, by - 4.5 * k, 9 * k, 9 * k);
-    g.moveTo(bx(2) - 5 * k, by - 5 * k); g.lineTo(bx(2) + 5 * k, by + 5 * k); g.moveTo(bx(2) + 5 * k, by - 5 * k); g.lineTo(bx(2) - 5 * k, by + 5 * k);
-    g.stroke();
-  }
+  const x = Math.round((fr.left + fr.right) / 2 - w / 2), y = Math.round(fr.cy - h / 2);
+  g.fillStyle = PY_BG; g.fillRect(0, 0, W, H);
   return { x, y, w, h, s: s * k, k };
 }
-// ícones genéricos da barra de título
-function pyIconPygame(g, x, y, k) { g.fillStyle = '#20232a'; g.fillRect(x - 7 * k, y - 7 * k, 14 * k, 14 * k); g.fillStyle = '#43c24a'; g.beginPath(); g.arc(x, y, 3.5 * k, 0, TAU); g.fill(); }
-function pyIconTurtle(g, x, y, k) { g.fillStyle = '#2e8b57'; g.beginPath(); TT_SHAPE.forEach(([a, b], i) => (i ? g.lineTo : g.moveTo).call(g, x + a * 0.45 * k, y - b * 0.45 * k)); g.closePath(); g.fill(); }
-function pyIconMpl(g, x, y, k) { g.fillStyle = '#1f77b4'; [[-6, 4], [-2, 8], [2, 5], [6, 10]].forEach(([a, hh]) => g.fillRect(x + (a - 1.5) * k, y + (6 - hh) * k, 3 * k, hh * k)); }
 
 /* ----- pygame: rasterizador sem suavização num ImageData (como pygame.draw) ----- */
 const PG = { cv: null, cx: null, img: null, buf: null, w: 0, h: 0, fps: 60, hits: 0, rip: [], sp: new Float32Array(64) };
@@ -4451,11 +4267,11 @@ const STYLE_PYGAME = {
   enter() { PG.rip.length = 0; PG.hits = F.hits; PG.sp.fill(0); },
   draw(g, W, H, dt, t) {
     g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.imageSmoothingEnabled = true;
-    const win = pyWindow(g, W, H, 'pygame window', 800, 600, pyIconPygame);
+    const win = pyArea(g, W, H, 800, 600);
     const pix = Math.max(1, Math.round(win.s)), sw = Math.max(40, Math.floor(win.w / pix)), sh = Math.max(30, Math.floor(win.h / pix));
     pgSurface(sw, sh);
     const WHITE = pgC([255, 255, 255]), GRAY = pgC([48, 48, 56]);
-    PG.buf.fill(pgC([0, 0, 0]));   // screen.fill((0, 0, 0))
+    PG.buf.fill(pgC(hexRgb(PY_BG)));   // screen.fill(...) com a cor de fundo do app
     const u = sh / 600, cx = sw / 2, cy = sh * 0.43, Rr = Math.min(sw * 0.3, sh * 0.29), lw = n => Math.max(1, Math.round(n * u));
     PG.fps += (1 / Math.max(dt, 1e-3) - PG.fps) * 0.1;
     // ondas a cada ataque (pygame.draw.circle vazado)
@@ -4520,7 +4336,7 @@ const STYLE_PYGAME = {
 
 /* ----- turtle: a tartaruga traça ao vivo; o desenho fica até o clear() ----- */
 const TT_SHAPE = [[0, 16], [-2, 14], [-1, 10], [-4, 7], [-7, 9], [-9, 8], [-6, 5], [-7, 1], [-5, -3], [-8, -6], [-6, -8], [-4, -5], [0, -7], [4, -5], [6, -8], [8, -6], [5, -3], [7, 1], [6, 5], [9, 8], [7, 9], [4, 7], [1, 10], [2, 14]];
-const TT = { layer: null, lx: null, s: 1, x: 0, y: 0, hd: 0, pen: '#000000', ps: 2, down: true, q: [], cur: null, fill: null, shapes: 0, prev: -1, lastSeen: 0, chordKey: '', chordAt: 0, hits: 0, clean: true };
+const TT = { layer: null, lx: null, s: 1, x: 0, y: 0, hd: 0, pen: '#e8e6f0', ps: 2, down: true, q: [], cur: null, fill: null, shapes: 0, prev: -1, lastSeen: 0, chordKey: '', chordAt: 0, hits: 0, clean: true };
 const TT_W = 760, TT_H = 560, TT_RR = 0.36 * Math.min(TT_W, TT_H);
 const ttRing = k => [Math.sin(k * Math.PI / 6) * TT_RR, Math.cos(k * Math.PI / 6) * TT_RR];   // tom 0 no topo, sentido horário
 const ttPx = (x, y) => [TT.layer.width / 2 + x * TT.s, TT.layer.height / 2 - y * TT.s];
@@ -4528,7 +4344,7 @@ const ttDelta = a => ((a % 360) + 540) % 360 - 180;
 function ttGoto(x, y) { TT.q.push({ op: 'towards', x, y }, { op: 'goto', x, y }); }
 function ttReset() {
   if (TT.lx) TT.lx.clearRect(0, 0, TT.layer.width, TT.layer.height);
-  Object.assign(TT, { x: 0, y: 0, hd: 0, pen: '#000000', ps: 2, down: true, q: [], cur: null, fill: null, shapes: 0, prev: -1, chordKey: '', clean: true });
+  Object.assign(TT, { x: 0, y: 0, hd: 0, pen: '#e8e6f0', ps: 2, down: true, q: [], cur: null, fill: null, shapes: 0, prev: -1, chordKey: '', clean: true });
 }
 function ttMove(d) {
   const a = TT.hd * Math.PI / 180, nx = TT.x + Math.cos(a) * d, ny = TT.y + Math.sin(a) * d;
@@ -4586,7 +4402,7 @@ const STYLE_TURTLE = {
   enter() { ttReset(); TT.hits = F.hits; },
   draw(g, W, H, dt, t) {
     g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-    const win = pyWindow(g, W, H, 'Python Turtle Graphics', TT_W, TT_H, pyIconTurtle);
+    const win = pyArea(g, W, H, TT_W, TT_H);
     // camada permanente dos traços (como o canvas do Tk); se a janela muda de tamanho, o desenho acompanha
     if (!TT.layer || TT.layer.width !== win.w || TT.layer.height !== win.h) {
       const old = TT.layer, c = document.createElement('canvas'); c.width = win.w; c.height = win.h;
@@ -4620,7 +4436,7 @@ const STYLE_TURTLE = {
       TT.q.push({ op: 'pu' }); ttGoto(...pts[0]);
       TT.q.push({ op: 'pd' }, { op: 'color', c: TONES[ch.root].hex }, { op: 'size', w: 1 }, { op: 'bfill' });
       ttGoto(...pts[1]); ttGoto(...pts[2]); ttGoto(...pts[0]);
-      TT.q.push({ op: 'efill', c: mixHex(TONES[ch.root].hex, '#ffffff', 0.72) }, { op: 'size', w: 2 });
+      TT.q.push({ op: 'efill', c: `rgba(${toneRgb(ch.root).join(',')},0.28)` }, { op: 'size', w: 2 });
       TT.chordKey = ck; TT.chordAt = nowS;
     }
     if (!TT.clean && ((dom < 0 && nowS - TT.lastSeen > 10) || TT.shapes > 60) && !TT.q.some(c => c.op === 'clear')) {   // clear() e home()
@@ -4628,17 +4444,16 @@ const STYLE_TURTLE = {
       TT.prev = -1;
     }
     ttStep(dt);
-    // a tela: fundo branco, os traços e a tartaruga por cima
-    g.fillStyle = '#ffffff'; g.fillRect(win.x, win.y, win.w, win.h);
+    // os traços e a tartaruga por cima
     g.drawImage(TT.layer, win.x, win.y);
     const th = (TT.hd - 90) * Math.PI / 180, cs = Math.cos(th), sn = Math.sin(th);
     g.beginPath();
     TT_SHAPE.forEach(([a, b], i) => { const [px, py] = ttPx(TT.x + a * cs - b * sn, TT.y + a * sn + b * cs); (i ? g.lineTo : g.moveTo).call(g, win.x + px, win.y + py); });
-    g.closePath(); g.fillStyle = TT.pen; g.fill(); g.lineWidth = Math.max(1, win.s); g.strokeStyle = mixHex(TT.pen, '#000000', 0.45); g.stroke();
+    g.closePath(); g.fillStyle = TT.pen; g.fill(); g.lineWidth = Math.max(1, win.s); g.strokeStyle = mixHex(TT.pen, '#ffffff', 0.55); g.stroke();
   },
 };
 
-/* ----- matplotlib: "Figure 1" com a Flor em barras polares e o cromagrama em imshow ----- */
+/* ----- matplotlib (dark_background): a Flor em barras polares e o cromagrama em imshow ----- */
 const MAGMA = (() => {
   const st = [[0, '#000004'], [0.13, '#1c1044'], [0.25, '#4f127b'], [0.38, '#812581'], [0.5, '#b5367a'], [0.63, '#e55964'], [0.75, '#fb8761'], [0.88, '#fec287'], [1, '#fcfdbf']].map(([p, h]) => [p, hexRgb(h)]);
   const lut = new Uint8Array(256 * 3);
@@ -4651,9 +4466,8 @@ const MAGMA = (() => {
   return lut;
 })();
 const MP_COLS = 200;   // 10 s a ~20 quadros/s
-const MP = { hist: new Float32Array(12 * MP_COLS), acc: 1, tacc: 0, icv: null, ix: null, img: null, mouse: null };
+const MP = { hist: new Float32Array(12 * MP_COLS), acc: 1, tacc: 0, icv: null, ix: null, img: null };
 const MP_FONT = '"DejaVu Sans", "Bitstream Vera Sans", Verdana, Geneva, sans-serif';
-window.addEventListener('pointermove', e => { MP.mouse = [e.clientX, e.clientY]; }, { passive: true });
 const STYLE_MPL = {
   retro: true, name: 'Matplotlib', bloom: [0, 0, 1], res: pyRes, mat: PY_PASS,
   enter() { MP.hist.fill(0); MP.acc = 1; MP.tacc = 0; },
@@ -4665,44 +4479,43 @@ const STYLE_MPL = {
     if (MP.acc < 0.05) return false;   // como um FuncAnimation(interval=50): ~20 quadros por segundo
     MP.acc = 0;
     g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-    const win = pyWindow(g, W, H, 'Figure 1', 1000, 514, pyIconMpl), s = win.s;
+    const win = pyArea(g, W, H, 1000, 470), s = win.s;   // plt.style.use('dark_background'): texto e eixos brancos
     const X = v => win.x + v * s, Y = v => win.y + v * s, f10 = 13.9 * s, f12 = 16.7 * s;
-    const txt = (str, x, y, size, align = 'center', base = 'middle', color = '#000000', rot = 0) => {
+    const txt = (str, x, y, size, align = 'center', base = 'middle', color = '#ffffff', rot = 0) => {
       g.save(); g.translate(X(x), Y(y)); if (rot) g.rotate(rot);
       g.font = `${size}px ${MP_FONT}`; g.fillStyle = color; g.textAlign = align; g.textBaseline = base; g.fillText(str, 0, 0); g.restore();
     };
-    g.fillStyle = '#ffffff'; g.fillRect(win.x, win.y, win.w, Math.round(470 * s));
     // fig.suptitle
     const T = florText();
     txt(F.idle ? 'Croma-Sônica · aguardando áudio' : `Croma-Sônica · ${T.o ? T.note + ' · ' + T.color : '—'}${T.chord ? ' · ' + T.chordLong : ''}${T.bpm ? ' · ' + T.bpm + ' BPM' : ''}`, 500, 22, 20 * s);
     // ----- ax1 = subplot(121, projection='polar'); theta_zero_location('N'); theta_direction(-1)
     const pcx = 250, pcy = 268, PR = 156;
     const wedge = (a0, a1, r) => { g.beginPath(); g.moveTo(X(pcx), Y(pcy)); g.arc(X(pcx), Y(pcy), r * s, a0, a1); g.closePath(); };
-    for (let k = 0; k < 12; k++) {   // ax.bar(theta, energia, width=0.85*2π/12, color=..., edgecolor='black', hatch='//' nas UV)
+    for (let k = 0; k < 12; k++) {   // ax.bar(theta, energia, width=0.85*2π/12, color=..., hatch='//' nas UV); contorno branco no dark_background
       const a = ang2d(k), hw = Math.PI / 12 * 0.85, r = Math.max(0, Math.min(1, F.I[k])) * PR;
       if (r < 0.5) continue;
       wedge(a - hw, a + hw, r);
       g.globalAlpha = 0.85; g.fillStyle = TONES[k].hex; g.fill(); g.globalAlpha = 1;
       if (TONES[k].uv) {
-        g.save(); g.clip(); g.strokeStyle = '#000000'; g.lineWidth = s; g.beginPath();
+        g.save(); g.clip(); g.strokeStyle = '#ffffff'; g.lineWidth = s; g.beginPath();
         for (let d = -PR * 2; d < PR * 2; d += 7) { g.moveTo(X(pcx + d - PR), Y(pcy + PR)); g.lineTo(X(pcx + d + PR), Y(pcy - PR)); }
         g.stroke(); g.restore(); wedge(a - hw, a + hw, r);
       }
-      g.lineWidth = 0.8 * s; g.strokeStyle = '#000000'; g.stroke();
+      g.lineWidth = 0.8 * s; g.strokeStyle = '#ffffff'; g.stroke();
     }
-    g.lineWidth = 0.8 * s; g.strokeStyle = '#b0b0b0'; g.beginPath();   // grade polar (por cima das barras, como no padrão)
+    g.lineWidth = 0.8 * s; g.strokeStyle = 'rgba(255,255,255,0.3)'; g.beginPath();   // grade polar (por cima das barras, como no padrão)
     for (const fr of [0.2, 0.4, 0.6, 0.8]) { g.moveTo(X(pcx) + fr * PR * s, Y(pcy)); g.arc(X(pcx), Y(pcy), fr * PR * s, 0, TAU); }
     for (let k = 0; k < 12; k++) { g.moveTo(X(pcx), Y(pcy)); g.lineTo(X(pcx + Math.cos(ang2d(k)) * PR), Y(pcy + Math.sin(ang2d(k)) * PR)); }
     g.stroke();
-    g.strokeStyle = '#000000'; g.beginPath(); g.arc(X(pcx), Y(pcy), PR * s, 0, TAU); g.stroke();
+    g.strokeStyle = '#ffffff'; g.beginPath(); g.arc(X(pcx), Y(pcy), PR * s, 0, TAU); g.stroke();
     const ra = -Math.PI / 2 + 15 * Math.PI / 180;   // ax.set_rlabel_position(15): entre Ré e Ré#
     [0.2, 0.4, 0.6, 0.8, 1.0].forEach(v => txt(v.toFixed(1), pcx + Math.cos(ra) * v * PR + 3, pcy + Math.sin(ra) * v * PR, f10, 'left'));
     for (let k = 0; k < 12; k++) txt(TONES[k].pt, pcx + Math.cos(ang2d(k)) * (PR + 17), pcy + Math.sin(ang2d(k)) * (PR + 17), f10);
     txt('Flor (cromagrama ao vivo)', pcx, pcy - PR - 40, f12);
     // legenda
-    g.save(); g.globalAlpha = 0.8; g.fillStyle = '#ffffff'; g.strokeStyle = '#cccccc'; g.lineWidth = s;
+    g.save(); g.globalAlpha = 0.8; g.fillStyle = '#000000'; g.strokeStyle = '#cccccc'; g.lineWidth = s;
     g.beginPath(); if (g.roundRect) g.roundRect(X(382), Y(52), 112 * s, 52 * s, 4 * s); else g.rect(X(382), Y(52), 112 * s, 52 * s); g.fill(); g.stroke(); g.restore();
-    g.fillStyle = '#9a9a9a'; g.fillRect(X(390), Y(62), 26 * s, 9 * s); g.strokeStyle = '#000000'; g.lineWidth = 0.8 * s; g.strokeRect(X(390), Y(62), 26 * s, 9 * s);
+    g.fillStyle = '#9a9a9a'; g.fillRect(X(390), Y(62), 26 * s, 9 * s); g.strokeStyle = '#ffffff'; g.lineWidth = 0.8 * s; g.strokeRect(X(390), Y(62), 26 * s, 9 * s);
     g.fillRect(X(390), Y(84), 26 * s, 9 * s);
     g.save(); g.beginPath(); g.rect(X(390), Y(84), 26 * s, 9 * s); g.clip(); g.beginPath();
     for (let d = -12; d < 40; d += 5) { g.moveTo(X(390 + d), Y(93)); g.lineTo(X(399 + d), Y(84)); } g.stroke(); g.restore();
@@ -4718,7 +4531,7 @@ const STYLE_MPL = {
     }
     MP.ix.putImageData(MP.img, 0, 0);
     g.imageSmoothingEnabled = false; g.drawImage(MP.icv, X(ax0), Y(ay0), (ax1 - ax0) * s, (ay1 - ay0) * s); g.imageSmoothingEnabled = true;
-    g.strokeStyle = '#000000'; g.lineWidth = 0.8 * s; g.strokeRect(X(ax0), Y(ay0), (ax1 - ax0) * s, (ay1 - ay0) * s);
+    g.strokeStyle = '#ffffff'; g.lineWidth = 0.8 * s; g.strokeRect(X(ax0), Y(ay0), (ax1 - ax0) * s, (ay1 - ay0) * s);
     g.beginPath();
     for (let k = 0; k < 12; k++) { const y = ay1 - (k + 0.5) * (ay1 - ay0) / 12; g.moveTo(X(ax0), Y(y)); g.lineTo(X(ax0 - 3.5), Y(y)); }
     for (let v = -10; v <= 0; v += 2) { const x = ax0 + (v + 10) / 10 * (ax1 - ax0); g.moveTo(X(x), Y(ay1)); g.lineTo(X(x), Y(ay1 + 3.5)); }
@@ -4726,7 +4539,7 @@ const STYLE_MPL = {
     for (let k = 0; k < 12; k++) txt(TONES[k].pt, ax0 - 7, ay1 - (k + 0.5) * (ay1 - ay0) / 12, f10 * 0.86, 'right');
     for (let v = -10; v <= 0; v += 2) txt(v < 0 ? '−' + Math.abs(v) : '0', ax0 + (v + 10) / 10 * (ax1 - ax0), ay1 + 14, f10);
     txt('tempo (s)', (ax0 + ax1) / 2, ay1 + 36, f10);
-    txt('tom', ax0 - 48, (ay0 + ay1) / 2, f10, 'center', 'middle', '#000000', -Math.PI / 2);
+    txt('tom', ax0 - 48, (ay0 + ay1) / 2, f10, 'center', 'middle', '#ffffff', -Math.PI / 2);
     txt('Cromagrama (últimos 10 s)', (ax0 + ax1) / 2, ay0 - 16, f12);
     const cb0 = 888, cb1 = 902;
     for (let i = 0; i < 64; i++) { const v = Math.round(i / 63 * 255); g.fillStyle = `rgb(${MAGMA[v * 3]},${MAGMA[v * 3 + 1]},${MAGMA[v * 3 + 2]})`; const y0 = ay1 - (i + 1) / 64 * (ay1 - ay0); g.fillRect(X(cb0), Y(y0), (cb1 - cb0) * s, (ay1 - ay0) / 64 * s + 1); }
@@ -4735,45 +4548,16 @@ const STYLE_MPL = {
     for (let v = 0; v <= 1.0001; v += 0.2) { const y = ay1 - v * (ay1 - ay0); g.moveTo(X(cb1), Y(y)); g.lineTo(X(cb1 + 3.5), Y(y)); }
     g.stroke();
     for (let v = 0; v <= 1.0001; v += 0.2) txt(v.toFixed(1), cb1 + 7, ay1 - v * (ay1 - ay0), f10 * 0.86, 'left');
-    // ----- barra de ferramentas (embaixo) e coordenadas do mouse à direita
-    const tb = 470;
-    g.fillStyle = '#f0f0f0'; g.fillRect(win.x, Y(tb), win.w, win.h - Math.round(tb * s)); g.fillStyle = '#d9d9d9'; g.fillRect(win.x, Y(tb), win.w, s);
-    g.strokeStyle = '#3c3c3c'; g.lineJoin = 'round'; g.lineCap = 'round';
-    const icons = [
-      () => { g.moveTo(-7, 1); g.lineTo(0, -6); g.lineTo(7, 1); g.moveTo(-5, -1); g.lineTo(-5, 7); g.lineTo(5, 7); g.lineTo(5, -1); },
-      () => { g.moveTo(7, 0); g.lineTo(-7, 0); g.moveTo(-2, -5); g.lineTo(-7, 0); g.lineTo(-2, 5); },
-      () => { g.moveTo(-7, 0); g.lineTo(7, 0); g.moveTo(2, -5); g.lineTo(7, 0); g.lineTo(2, 5); },
-      () => { g.moveTo(-8, 0); g.lineTo(8, 0); g.moveTo(0, -8); g.lineTo(0, 8); [[-8, 0, 1, 0], [8, 0, -1, 0], [0, -8, 0, 1], [0, 8, 0, -1]].forEach(([a, b, dx, dy]) => { g.moveTo(a + dx * 3 + dy * 3, b + dy * 3 + dx * 3); g.lineTo(a, b); g.lineTo(a + dx * 3 - dy * 3, b + dy * 3 - dx * 3); }); },
-      () => { g.moveTo(2.5, -2); g.arc(-2, -2, 4.5, 0, TAU); g.moveTo(1.5, 1.5); g.lineTo(7, 7); },
-      () => { [-4, 0, 4].forEach((d, i) => { g.moveTo(-7, d); g.lineTo(7, d); g.moveTo(-3 + i * 3 + 1.5, d); g.arc(-3 + i * 3, d, 1.5, 0, TAU); }); },
-      () => { g.moveTo(-7, -7); g.lineTo(4, -7); g.lineTo(7, -4); g.lineTo(7, 7); g.lineTo(-7, 7); g.closePath(); g.moveTo(-4, -7); g.lineTo(-4, -2); g.lineTo(3, -2); g.lineTo(3, -7); },
-    ];
-    icons.forEach((ic, i) => {
-      const ix = 22 + i * 36 + (i > 2 ? 10 : 0) + (i > 4 ? 10 : 0);
-      g.save(); g.translate(X(ix), Y(tb + 22)); g.scale(s, s); g.lineWidth = 1.4; g.beginPath(); ic(); g.stroke(); g.restore();
-    });
-    // coordenadas como na barra de status: θ e r na polar; x, y e o valor no imshow
-    let status = '';
-    if (MP.mouse) {
-      const k = W / window.innerWidth, fx = (MP.mouse[0] * k - win.x) / s, fy = (MP.mouse[1] * k - win.y) / s;
-      const rr = Math.hypot(fx - pcx, fy - pcy) / PR;
-      if (rr <= 1) { const th = ((Math.atan2(fy - pcy, fx - pcx) + Math.PI / 2) * 180 / Math.PI + 360) % 360; status = `θ=${th.toFixed(1)}°, r=${rr.toFixed(3)}`; }
-      else if (fx >= ax0 && fx <= ax1 && fy >= ay0 && fy <= ay1) {
-        const tv = (fx - ax0) / (ax1 - ax0) * 10 - 10, kk = Math.min(11, Math.floor((ay1 - fy) / (ay1 - ay0) * 12)), col = Math.min(MP_COLS - 1, Math.floor((fx - ax0) / (ax1 - ax0) * MP_COLS));
-        status = `x=${tv.toFixed(2).replace('-', '−')} y=${TONES[kk].pt} [${MP.hist[col * 12 + kk].toFixed(2)}]`;
-      }
-    }
-    if (status) txt(status, 990, tb + 22, f10 * 0.92, 'right', 'middle', '#1b1b1b');
     return true;
   },
 };
 
 const FLOR_STYLES = {
   aquarela: { name: 'Aquarela', bloom: [0.3, 0.5, 0.62] },
-  fliperama: STYLE_ARCADE, anos70: STYLE_70, osciloscopio: STYLE_SCOPE, synthwave: STYLE_SYNTH, rastros: STYLE_TRAILS,
+  fliperama: STYLE_ARCADE, anos70: STYLE_70, osciloscopio: STYLE_SCOPE, rastros: STYLE_TRAILS,
   pygame: STYLE_PYGAME, turtle: STYLE_TURTLE, matplotlib: STYLE_MPL,
 };
-const STYLE_ORDER = ['aquarela', 'fliperama', 'anos70', 'osciloscopio', 'synthwave', 'rastros', 'pygame', 'turtle', 'matplotlib'];
+const STYLE_ORDER = ['aquarela', 'fliperama', 'anos70', 'osciloscopio', 'rastros', 'pygame', 'turtle', 'matplotlib'];
 let STYLE = 'aquarela';
 try { const s = localStorage.getItem('croma.style'); if (FLOR_STYLES[s]) STYLE = s; } catch (e) { /* sem armazenamento */ }
 
@@ -4801,7 +4585,7 @@ function setStyle(id, save = true) {
   const sub = document.querySelector('#py-btn .py-sub');
   if (sub) sub.textContent = PY_IDS.includes(id) ? ' · ' + st.name.toLowerCase() : '';
   controls.enabled = !st.retro;
-  stage.dataset.style = id; document.body.dataset.style = id;
+  stage.dataset.style = id;
   if (st.retro) {
     rTex.minFilter = rTex.magFilter = st.pixel ? THREE.NearestFilter : THREE.LinearFilter;
     rTex.dispose();
@@ -5103,7 +4887,7 @@ window.addEventListener('keydown', e => {
     if (!FLOR_STYLES[STYLE].retro) camTween = { from: camera.position.clone(), to: camFor(), t: 0 };
   }
   else if (k === 'f') toggleFull();
-  else if (k >= '1' && k <= '9' && k.length === 1) { closePyMenu(); setStyle(STYLE_ORDER[+k - 1]); }
+  else if (k >= '1' && k <= '8' && k.length === 1) { closePyMenu(); setStyle(STYLE_ORDER[+k - 1]); }
   else if (k === ' ') { if (A.source === 'file') { e.preventDefault(); togglePlay(); } }
   else if (k === '?') openModal();
 });
