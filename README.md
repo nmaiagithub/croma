@@ -8,7 +8,7 @@ Web app de arquivo único (HTML + Tailwind + Three.js via CDN) que transforma á
 - **DSP:** `AnalyserNode` com `fftSize = 4096`; cromagrama por picos espectrais (A4 = 440 Hz), nota dominante e secundárias, centroide espectral, RMS, BPM (autocorrelação do fluxo espectral), tonalidade (Krumhansl-Schmuckler), acordes.
 - **Mapa:** Ré (D) = Verde 0 → … → Dó# = Azul-UV 11; naturais = círculos, ultravioletas = triângulos.
 - **Mapa:** as ultravioletas têm a mesma cor das naturais (Yellow[1] = Yeluv[1], Violet[4] = Viluv[4], Green[6] = Gruv[6], Orange[8] = Oruv[8], Blue[11] = Bluv[11]).
-- **Visualização:** a **Flor Croma-Sônica**, mandala de 12 pétalas (Ré = Verde 0 no topo, tons em sentido horário), em nove estilos: Aquarela, Fliperama, Anos 70, Osciloscópio, Synthwave, Rastros e três "feitos em Python" (Pygame, Turtle e Matplotlib).
+- **Visualização:** a **Flor Croma-Sônica**, mandala de 12 pétalas (Ré = Verde 0 no topo, tons em sentido horário), em oito estilos: Aquarela, Fliperama, Anos 70, Osciloscópio, Rastros e três "feitos em Python" (Pygame, Turtle e Matplotlib).
 
 ### Teclado musical
 
@@ -16,7 +16,7 @@ Web app de arquivo único (HTML + Tailwind + Three.js via CDN) que transforma á
 
 ### Estilos da Flor
 
-Nos cinco primeiros estilos, cada pétala acende e cresce com a energia da sua nota. As naturais têm pétala arredondada e as ultravioletas, losango. Ré (Verde 0) pulsa no centro quando a música repousa na tônica, e os acordes consonantes acendem as Sete Naturais e o triângulo do acorde. O sexto, Rastros, usa só as posições dos tons, e os três de Python imitam o que esses programas desenhariam. O estilo é escolhido na barra superior ou nas teclas `1`–`9` e fica salvo no navegador. Só a visualização muda; painéis, laudo e ferramentas continuam iguais.
+Nos quatro primeiros estilos, cada pétala acende e cresce com a energia da sua nota. As naturais têm pétala arredondada e as ultravioletas, losango. Ré (Verde 0) pulsa no centro quando a música repousa na tônica, e os acordes consonantes acendem as Sete Naturais e o triângulo do acorde. O quinto, Rastros, usa só as posições dos tons, e os três de Python imitam o que esses programas desenhariam. O estilo é escolhido na barra superior ou nas teclas `1`–`8` e fica salvo no navegador. Só a visualização muda; painéis, laudo e ferramentas continuam iguais.
 
 - **Aquarela** — a Flor do livro em 3D, com papel de aquarela, anel de escamas, a roda do Sentirama no centro e partículas de matéria e antimatéria. Arraste para inclinar.
 - **Fliperama** — pixel art de 8 bits num tubo de TV:
@@ -32,36 +32,30 @@ Nos cinco primeiros estilos, cada pétala acende e cresce com a energia da sua n
   - a Flor é uma curva XY cujos lóbulos crescem com cada tom;
   - no centro, a forma de onda real do som;
   - em volta, retícula e leituras de nível, BPM e nota.
-- **Synthwave** — neon dos anos 80:
-  - a Flor sobre um sol listrado;
-  - montanhas cuja altura segue o espectro;
-  - grade que rola no ritmo, na cor do som;
-  - letreiro cromado e efeito de fita VHS.
 - **Rastros** — começa vazia, com só as posições dos 12 tons:
   - quando a nota principal muda, uma linha viaja da nota anterior até a nova, passando da cor de uma para a da outra;
   - notas que entram junto e acordes geram linhas finas, e a nota atacada de novo solta uma onda;
   - o nome do tom aparece ao lado quando ele começa a soar;
   - os tons que soam brilham no lugar deles;
   - os rastros se apagam aos poucos: abrem-se para fora e giram no Ar, fecham-se para o centro na Terra. O acúmulo é feito na GPU em meia precisão, para não deixar resíduo.
-- **Python** (botão Python, que abre um menu, ou teclas `7`, `8` e `9`) — três visualizações que imitam o que um programa em Python desenharia, cada uma numa janela com o título padrão da biblioteca:
-  - **Pygame** ("pygame window"):
+- **Python** (botão Python, que abre um menu, ou teclas `6`, `7` e `8`) — três visualizações que imitam o que um programa em Python desenharia, no mesmo fundo escuro das outras:
+  - **Pygame**:
     - `pygame.draw` sem suavização, desenhado pixel a pixel: `line` com espessura, `lines`, `circle` cheio ou vazado, `rect` e `polygon`;
     - um anel com os 12 tons ligados ao centro: naturais em círculo, ultravioletas em triângulo, maiores com a energia;
     - o polígono do acorde, Ré no centro e ondas a cada ataque;
     - a forma de onda e um espectro em barras, cada barra na cor do tom da sua frequência;
     - texto na fonte padrão, com o contador de FPS.
-  - **Turtle** ("Python Turtle Graphics"):
-    - a tartaruga desenha ao vivo, num fundo branco, indo até cada nota tocada;
+  - **Turtle**:
+    - a tartaruga desenha ao vivo, indo até cada nota tocada;
     - lá ela traça um `circle()` (natural) ou um triângulo com `forward`/`left(120)` (ultravioleta) e escreve o nome do tom com `write()`;
-    - acordes viram polígonos preenchidos em tom pastel, e um ataque repetido vira uma roseta;
+    - acordes viram polígonos preenchidos na cor do tom, translúcidos, e um ataque repetido vira uma roseta;
     - depois de 10 s de silêncio, ou com o desenho cheio, vem `clear()` e tudo recomeça.
-  - **Matplotlib** ("Figure 1"):
+  - **Matplotlib** (estilo `dark_background`):
     - a Flor como `ax.bar` em projeção polar, com as ultravioletas hachuradas (`hatch='//'`) e legenda;
     - ao lado, o cromagrama dos últimos 10 s em `imshow` com o mapa `magma` e `colorbar`;
-    - a barra de ferramentas embaixo mostra as coordenadas do mouse;
     - atualiza a ~20 quadros/s, como um `FuncAnimation`.
 
-Os estilos retrô desenham em Canvas 2D e passam por um shader de acabamento (Three.js). As fontes (Press Start 2P, Shrikhand, Share Tech Mono, Orbitron e Mr Dafoe) vêm do Google Fonts.
+Os estilos retrô desenham em Canvas 2D e passam por um shader de acabamento (Three.js). As fontes (Press Start 2P, Shrikhand e Share Tech Mono) vêm do Google Fonts.
 
 ### Calibração
 
@@ -121,7 +115,7 @@ python3 -m http.server 8000
 # abra http://localhost:8000/cromasfera.html
 ```
 
-Atalhos: `1`–`9` estilos da Flor (com o teclado musical desligado) · `Espaço` play/pause · `H` oculta a interface · `F` tela cheia · `?` teoria.
+Atalhos: `1`–`8` estilos da Flor (com o teclado musical desligado) · `Espaço` play/pause · `H` oculta a interface · `F` tela cheia · `?` teoria.
 
 `assets/` contém as ilustrações de referência do livro exibidas no modal de teoria.
 
