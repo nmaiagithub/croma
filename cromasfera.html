@@ -135,6 +135,10 @@
   #py-menu button.on { background: rgba(255,255,255,.13); }
   #py-menu kbd { float: right; font: inherit; font-size: .68rem; color: var(--muted); border: 1px solid rgba(255,255,255,.18); border-radius: 5px; padding: 0 .35rem; }
   #py-menu span { display: block; font-size: .7rem; color: var(--muted); margin-top: 2px; }
+  #py-menu { max-height: calc(100vh - 90px); overflow-y: auto; width: 292px; }
+  #py-menu .py-group { padding: .45rem .65rem .2rem; font-size: .8rem; font-weight: 700; color: var(--text); }
+  #py-menu .py-sub-item { padding-left: 1.4rem; }
+  #py-menu .py-sep { height: 1px; margin: 5px .4rem; background: rgba(255,255,255,.1); }
   @media (max-width: 767px) {
     #topbar { flex-wrap: wrap; row-gap: 10px; top: 12px; left: 12px; right: 12px; }
     #mode-seg { order: 3; width: 100%; }
@@ -380,7 +384,7 @@
     <button data-style="anos70" role="tab" title="Flor Croma-Sônica · Pôster psicodélico anos 70 (3)">Anos 70</button>
     <button data-style="osciloscopio" role="tab" title="Flor Croma-Sônica · Osciloscópio vetorial (4)"><span class="lg">Osciloscópio</span><span class="sm">Oscilo</span></button>
     <button data-style="rastros" role="tab" title="Rastros: linhas que viajam entre os tons tocados e se desfazem (5)">Rastros</button>
-    <button data-style="python" id="py-btn" role="tab" aria-haspopup="menu" aria-expanded="false" aria-controls="py-menu" title="Python: como ficaria com pygame, turtle ou matplotlib (6, 7, 8)">Python<span class="py-sub"></span> <span aria-hidden="true">▾</span></button>
+    <button data-style="python" id="py-btn" role="tab" aria-haspopup="menu" aria-expanded="false" aria-controls="py-menu" title="Python: como ficaria com pygame (5 variações), turtle ou matplotlib (6, 7, 8)">Python<span class="py-sub"></span> <span aria-hidden="true">▾</span></button>
   </div>
   <div class="pointer-events-auto flex items-center gap-2">
     <button class="btn" id="btn-tuner" title="Afinador e contorno melódico" aria-label="Afinador" aria-pressed="false">
@@ -393,7 +397,13 @@
   </div>
 </div>
 <div id="py-menu" class="glass" role="menu" aria-label="Visualizações em Python" hidden>
-  <button data-style="pygame" role="menuitem"><b>Pygame</b> <kbd>6</kbd><span>pygame.draw: linhas, círculos e polígonos serrilhados</span></button>
+  <div class="py-group" role="presentation">Pygame <kbd title="6 abre o pygame; 6 de novo troca a variação">6</kbd></div>
+  <button data-style="pygame" role="menuitem" class="py-sub-item"><b>Anel dos tons</b><span>os 12 tons em anel, o acorde, a forma de onda e o espectro</span></button>
+  <button data-style="pg-sentirama" role="menuitem" class="py-sub-item"><b>Sentirama em partículas</b><span>frio ↔ quente × denso ↔ sutil; Ar sobe, Terra cai</span></button>
+  <button data-style="pg-ritmo" role="menuitem" class="py-sub-item"><b>Ritmo</b><span>notas em queda pelas 12 pistas, no BPM</span></button>
+  <button data-style="pg-gramatica" role="menuitem" class="py-sub-item"><b>Gramática das cores</b><span>de qual cor para qual cor a música vai</span></button>
+  <button data-style="pg-fisica" role="menuitem" class="py-sub-item"><b>Tensão e equilíbrio</b><span>molas até Ré, tensão Fá ↔ Si, gravidade Ar/Terra</span></button>
+  <div class="py-sep" role="separator"></div>
   <button data-style="turtle" role="menuitem"><b>Turtle</b> <kbd>7</kbd><span>a tartaruga desenha ao vivo as notas tocadas, até o clear()</span></button>
   <button data-style="matplotlib" role="menuitem"><b>Matplotlib</b> <kbd>8</kbd><span>a Flor em barras polares e o cromagrama em imshow</span></button>
 </div>
@@ -1631,7 +1641,15 @@ print(m.summary())
           <li><strong>Rastros</strong> — começa vazia e usa só as posições dos 12 tons da Flor. Quando a nota principal muda, uma linha viaja da nota anterior até a nova, passando da cor de uma para a da outra. Notas que entram junto e acordes geram linhas finas, e a nota atacada de novo solta uma onda. Os rastros se apagam aos poucos: abrem-se para fora quando a música está no Ar e fecham-se para o centro na Terra.</li>
           <li><strong>Python</strong> — três visualizações que imitam o que um programa em Python desenharia, no mesmo fundo escuro das outras:
             <ul class="list-[circle] pl-5 mt-1 space-y-1">
-              <li><em>Pygame</em> — linhas, círculos e polígonos serrilhados do <code>pygame.draw</code>: os tons em anel, o acorde, a forma de onda e o espectro em barras na cor de cada tom.</li>
+              <li><em>Pygame</em> — linhas, círculos e polígonos serrilhados do <code>pygame.draw</code>, em cinco variações (a tecla 6 passa de uma para outra):
+                <ul class="list-[square] pl-5 mt-1 space-y-0.5">
+                  <li><strong>Anel dos tons</strong>: os tons em anel, o acorde, a forma de onda e o espectro em barras na cor de cada tom.</li>
+                  <li><strong>Sentirama em partículas</strong>: partículas na cor de cada tom correm para a posição da música no plano frio ↔ quente × denso ↔ sutil. No Ar sobem e se espalham; na Terra caem e se juntam.</li>
+                  <li><strong>Ritmo</strong>: as notas caem pelas 12 pistas como num jogo de ritmo, no BPM, e acendem a linha de acerto.</li>
+                  <li><strong>Gramática das cores</strong>: uma grade 12 × 12 de transições entre as cores, que esfria e se espalha como um autômato celular.</li>
+                  <li><strong>Tensão e equilíbrio</strong>: os tons são bolas presas por molas a Ré. A tensão Fá ↔ Si torce o conjunto, a estabilidade em Ré o assenta, e o Ar/Terra é a gravidade.</li>
+                </ul>
+              </li>
               <li><em>Turtle</em> — a tartaruga vai até cada nota tocada e desenha um círculo (natural) ou um triângulo (ultravioleta), escreve o nome do tom e preenche os acordes. Depois de um silêncio, <code>clear()</code>.</li>
               <li><em>Matplotlib</em> — no estilo <code>dark_background</code>: a Flor como barras polares, com as ultravioletas hachuradas, e o cromagrama dos últimos 10 s em <code>imshow</code>.</li>
             </ul>
@@ -4177,7 +4195,7 @@ const STYLE_TRAILS = {
 /* ---------- Python: o que daria para desenhar com pygame, turtle e matplotlib ----------
    Cada um imita o que a biblioteca desenha (pygame.draw sem suavização, a tartaruga traçando
    ao vivo, uma figura do matplotlib), direto no fundo escuro das outras visualizações. */
-const PY_IDS = ['pygame', 'turtle', 'matplotlib'];
+const PY_IDS = ['pygame', 'pg-sentirama', 'pg-ritmo', 'pg-gramatica', 'pg-fisica', 'turtle', 'matplotlib'];
 const PY_BG = '#07060d';   // a mesma cor de fundo do renderer e dos Rastros
 const PY_PASS = postMaterial('uniform sampler2D uTex; varying vec2 vUv; void main(){ gl_FragColor=vec4(texture2D(uTex,vUv).rgb,1.0); }');
 // resolução: px CSS × escala inteira (1 ou 2), para os pixels e o texto ficarem nítidos
@@ -4331,6 +4349,365 @@ const STYLE_PYGAME = {
     g.imageSmoothingEnabled = false;
     g.drawImage(PG.cv, win.x, win.y, sw * pix, sh * pix);
     g.imageSmoothingEnabled = true;
+  },
+};
+
+/* ----- mais quatro programas em pygame: cada um destaca outro aspecto do estudo ----- */
+const PG_IDS = ['pygame', 'pg-sentirama', 'pg-ritmo', 'pg-gramatica', 'pg-fisica'];
+let PG_LAST = 'pygame';
+try { const v = localStorage.getItem('croma.pygame'); if (PG_IDS.includes(v)) PG_LAST = v; } catch (e) { /* sem armazenamento */ }
+const PY_BG_RGB = hexRgb(PY_BG), PG_BGC = pgC(PY_BG_RGB);
+// início de um quadro: a área do desenho, a superfície e a escala u (1 px de uma tela de iw × ih)
+function pgBegin(g, W, H, iw = 800, ih = 600) {
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.imageSmoothingEnabled = true;
+  const win = pyArea(g, W, H, iw, ih);
+  const pix = Math.max(1, Math.round(win.s)), sw = Math.max(40, Math.floor(win.w / pix)), sh = Math.max(30, Math.floor(win.h / pix));
+  const fresh = !PG.cv || PG.w !== sw || PG.h !== sh;
+  pgSurface(sw, sh);
+  if (fresh) PG.buf.fill(PG_BGC);
+  return { win, pix, sw, sh, u: sh / ih, fresh };
+}
+// screen.blit + display.flip: a superfície vai para a tela sem suavização
+function pgBlit(g, b) { g.imageSmoothingEnabled = false; g.drawImage(PG.cv, b.win.x, b.win.y, b.sw * b.pix, b.sh * b.pix); g.imageSmoothingEnabled = true; }
+// pygame.font.Font(None, size).render(texto, True, cor): depois do putImageData, direto no canvas da superfície
+function pgText(str, x, y, size, color = '#ffffff', align = 'left', base = 'top', bold = true) {
+  const X = PG.cx; X.font = `${bold ? 'bold ' : ''}${Math.round(size)}px FreeSans, "Liberation Sans", Arial, sans-serif`;
+  X.fillStyle = color; X.textAlign = align; X.textBaseline = base; X.fillText(str, x, y);
+}
+// uma superfície escura translúcida por cima (o rastro do pygame): cada pixel se aproxima do fundo
+function pgFade(f) {
+  const d = PG.img.data, fi = Math.max(0, Math.min(256, Math.round(f * 256))), [br, bgg, bb] = PY_BG_RGB;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i] = br + (((d[i] - br) * fi) >> 8); d[i + 1] = bgg + (((d[i + 1] - bgg) * fi) >> 8); d[i + 2] = bb + (((d[i + 2] - bb) * fi) >> 8);
+  }
+}
+const pgDim = (rgb, f) => pgC(rgb.map((v, i) => PY_BG_RGB[i] + (v - PY_BG_RGB[i]) * f));
+const pgTri = (x, y, r, a) => {   // triângulo apontando na direção a (as ultravioletas)
+  const dx = Math.cos(a), dy = Math.sin(a);
+  return [[x + dx * r * 1.3, y + dy * r * 1.3], [x - dx * r * 0.75 - dy * r * 1.1, y - dy * r * 0.75 + dx * r * 1.1], [x - dx * r * 0.75 + dy * r * 1.1, y - dy * r * 0.75 - dx * r * 1.1]];
+};
+const POLE = { rosa: '#f27bb8', vermelho: '#e8402c', amarelo: '#f7dc2f', azul: '#2f9fe6' };
+
+/* Sentirama em partículas: frio ↔ quente × denso ↔ sutil, com o Ar/Terra como vento */
+const PGS = { parts: [], acc: new Float32Array(12) };
+const STYLE_PG_SENT = {
+  retro: true, pixel: true, name: 'Pygame · Sentirama', bloom: [0, 0, 1], res: pyRes, mat: PY_PASS,
+  enter() { PGS.parts.length = 0; PGS.acc.fill(0); if (PG.buf) PG.buf.fill(PG_BGC); },
+  draw(g, W, H, dt, t) {
+    const b = pgBegin(g, W, H), { sw, sh, u } = b;
+    pgFade(Math.exp(-dt * 3.2));   // rastro: a tela não é limpa, só escurece
+    const cx = sw / 2, cy = sh * 0.45, Rs = Math.min(sw * 0.34, sh * 0.34);
+    const S = (x, y) => [cx + x * Rs, cy - y * Rs];   // y para cima = sutil (Rosa)
+    const air = Math.max(-1, Math.min(1, F.air)), wd = n => Math.max(1, Math.round(n * u));
+    // o plano: eixos nas cores dos pólos, anel e a tônica no centro
+    pgCircle(cx, cy, Rs, pgDim([255, 255, 255], 0.16), 1);
+    pgLine(cx - Rs, cy, cx, cy, pgDim(hexRgb(POLE.azul), 0.5), 1); pgLine(cx, cy, cx + Rs, cy, pgDim(hexRgb(POLE.amarelo), 0.5), 1);
+    pgLine(cx, cy - Rs, cx, cy, pgDim(hexRgb(POLE.rosa), 0.5), 1); pgLine(cx, cy, cx, cy + Rs, pgDim(hexRgb(POLE.vermelho), 0.5), 1);
+    [[POLE.azul, -1, 0], [POLE.amarelo, 1, 0], [POLE.rosa, 0, 1], [POLE.vermelho, 0, -1]].forEach(([c, x, y]) => { const [px, py] = S(x, y); pgCircle(px, py, 7 * u, pgC(hexRgb(c))); });
+    const g0 = Math.max(F.I[0], F.stab);
+    pgCircle(cx, cy, (6 + 6 * g0) * u, pgC(toneRgb(0))); pgCircle(cx, cy, (10 + 6 * g0) * u, pgDim([255, 255, 255], 0.5 + 0.5 * F.stab), 1);
+    // os 12 tons nas suas posições; os que soam soltam partículas na sua cor
+    for (let k = 0; k < 12; k++) {
+      const [x, y] = S(CORE.SENT_XYZ[k][0], CORE.SENT_XYZ[k][1]), I = F.I[k];
+      if (k) pgCircle(x, y, (2 + 3 * I) * u, pgDim(toneRgb(k), 0.35 + 0.65 * Math.min(1, I * 1.5)));
+      if (I < 0.05) continue;
+      PGS.acc[k] += dt * 260 * Math.pow(I, 1.5);
+      while (PGS.acc[k] >= 1 && PGS.parts.length < 1800) {
+        PGS.acc[k] -= 1;
+        const a = Math.random() * TAU, sp = (20 + 50 * Math.random()) * u;
+        PGS.parts.push({ x: x + (Math.random() - 0.5) * 6 * u, y: y + (Math.random() - 0.5) * 6 * u, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0, max: 1.2 + Math.random(), k });
+      }
+      PGS.acc[k] = Math.min(PGS.acc[k], 1);
+    }
+    // a posição da música no plano atrai as partículas; o Ar as leva para cima e espalha, a Terra as derruba e junta
+    const [mx, my] = S(Math.max(-1, Math.min(1, AN.polarity)), Math.max(-1, Math.min(1, AN.vertical)));
+    const kA = 2.4 + 2.6 * Math.max(-air, 0), grav = -air * 90 * u, turb = (10 + 120 * Math.max(air, 0)) * u, damp = Math.exp(-dt * (1.1 + 1.6 * Math.max(-air, 0)));
+    PGS.parts = PGS.parts.filter(p => {
+      p.life += dt; if (p.life >= p.max) return false;
+      p.vx += ((mx - p.x) * kA + (Math.random() - 0.5) * turb) * dt;
+      p.vy += ((my - p.y) * kA + grav + (Math.random() - 0.5) * turb) * dt;
+      p.vx *= damp; p.vy *= damp; p.x += p.vx * dt; p.y += p.vy * dt;
+      const f = 1 - p.life / p.max;
+      pgCircle(p.x, p.y, Math.max(1, (0.6 + 2.2 * f) * u), pgDim(toneRgb(p.k), 0.25 + 0.75 * f));
+      return true;
+    });
+    pgCircle(mx, my, (11 + 6 * F.pulse) * u, pgC([AN.color.r, AN.color.g, AN.color.b].map(v => Math.min(255, v * 300))), wd(2));
+    // Terra ↔ Ar embaixo
+    const gy = sh - 46 * u, gx0 = cx - Rs, gx1 = cx + Rs, gh = Math.max(3, Math.round(8 * u)), segs = 40;
+    pgRect(Math.round(gx0 - 10 * u), Math.round(gy - 14 * u), Math.round(gx1 - gx0 + 20 * u), Math.round(gh + 16 * u), PG_BGC);   // a barra não deixa rastro
+    for (let i = 0; i < segs; i++) {
+      const v = i / (segs - 1) * 2 - 1, c = v < 0 ? mixHex(TONES[0].hex, POLE.vermelho, -v) : mixHex(TONES[0].hex, POLE.rosa, v);
+      pgRect(Math.round(gx0 + i * (gx1 - gx0) / segs), Math.round(gy), Math.ceil((gx1 - gx0) / segs), gh, pgDim(hexRgb(c), 0.75));
+    }
+    const ax = gx0 + (air + 1) / 2 * (gx1 - gx0);
+    pgPolygon([[ax, gy - 2 * u], [ax - 6 * u, gy - 11 * u], [ax + 6 * u, gy - 11 * u]], pgC([255, 255, 255]));
+    PG.cx.putImageData(PG.img, 0, 0);
+    // textos
+    const fs = 15 * u, lab = (txt, c, x, y, al = 'center', base = 'middle') => pgText(txt, x, y, fs, c, al, base);
+    lab('ROSA · sutil', POLE.rosa, cx, cy - Rs - 16 * u); lab('VERMELHO · denso', POLE.vermelho, cx, cy + Rs + 16 * u);
+    lab('AZUL · frio', POLE.azul, cx - Rs - 12 * u, cy, 'right'); lab('AMARELO · quente', POLE.amarelo, cx + Rs + 12 * u, cy, 'left');
+    pgText('Terra', gx0 - 10 * u, gy + gh / 2, fs, POLE.vermelho, 'right', 'middle'); pgText('Ar', gx1 + 10 * u, gy + gh / 2, fs, POLE.rosa, 'left', 'middle');
+    const q = Math.abs(AN.polarity) < 0.08 && Math.abs(AN.vertical) < 0.08 ? 'centro' : (AN.vertical >= 0 ? 'rosa' : 'vermelho') + '-' + (AN.polarity >= 0 ? 'amarelo' : 'azul');
+    pgText(F.idle ? 'aguardando áudio...' : `${QUAD_LABEL[q]}   ·   ${air >= 0 ? 'Ar' : 'Terra'} ${sgn(air)}`, cx, gy + gh + 18 * u, fs, F.idle ? '#8c8c8c' : '#ffffff', 'center', 'middle');
+    pgText('Sentirama', 10 * u, 10 * u, 17 * u); pgText(`partículas: ${PGS.parts.length}`, sw - 10 * u, 10 * u, 17 * u, '#ffffff', 'right');
+    pgBlit(g, b);
+  },
+};
+
+/* Ritmo: as notas caem pelas 12 pistas como num jogo de ritmo */
+const PGR = { blocks: [], cur: new Array(12).fill(null), on: new Uint8Array(12), hits: 0, flash: new Float32Array(12), bursts: [], notes: 0, lastBeat: 0, blink: 0 };
+const STYLE_PG_RITMO = {
+  retro: true, pixel: true, name: 'Pygame · Ritmo', bloom: [0, 0, 1], res: pyRes, mat: PY_PASS,
+  enter() { PGR.blocks.length = 0; PGR.cur.fill(null); PGR.on.fill(0); PGR.hits = F.hits; PGR.flash.fill(0); PGR.bursts.length = 0; PGR.notes = 0; PGR.lastBeat = Math.floor(F.beat); },
+  draw(g, W, H, dt, t) {
+    const b = pgBegin(g, W, H), { sw, sh, u } = b;
+    PG.buf.fill(PG_BGC);
+    const L = 60 * u, Rr = sw - 60 * u, lw = (Rr - L) / 12, y0 = 54 * u, yH = sh - 92 * u, D = yH - y0;
+    const bpm = AN.bpm || 96, Tf = Math.max(1.2, Math.min(2.4, 2 * 60 / bpm)), v = D / Tf, beatPx = v * 60 / bpm;
+    const lx = k => L + k * lw;
+    // pistas
+    for (let k = 0; k < 12; k++) {
+      pgRect(Math.round(lx(k)), Math.round(y0), Math.ceil(lw), Math.round(D), k % 2 ? pgC([13, 12, 22]) : pgC([10, 9, 17]));
+      pgLine(lx(k), y0, lx(k), yH, pgC([30, 28, 42]), 1);
+    }
+    pgLine(Rr, y0, Rr, yH, pgC([30, 28, 42]), 1);
+    // linhas de tempo e de compasso descendo no ritmo
+    const fr = F.beat % 1, nb = Math.floor(F.beat);
+    for (let n = 0; ; n++) {
+      const y = y0 + (fr + n) * beatPx; if (y > yH) break;
+      const bar = ((nb - n) % 4 + 4) % 4 === 0;
+      pgLine(L, y, Rr, y, bar ? pgC([70, 66, 92]) : pgC([34, 32, 48]), bar ? Math.max(1, Math.round(2 * u)) : 1);
+    }
+    if (nb !== PGR.lastBeat) { PGR.lastBeat = nb; PGR.blink = 1; }
+    PGR.blink = Math.max(0, PGR.blink - dt * 5);
+    // notas: nasce um bloco quando o tom começa a soar (ou é atacado de novo) e cresce enquanto soa
+    const newHit = F.hits !== PGR.hits; PGR.hits = F.hits;
+    for (let k = 0; k < 12; k++) {
+      const on = PGR.on[k] ? F.I[k] > 0.28 : F.I[k] > 0.42;
+      const reattack = on && PGR.on[k] && newHit && AN.dominant === k;
+      if (PGR.cur[k] && (!on || reattack)) PGR.cur[k] = null;
+      if (on && !PGR.cur[k]) { const bl = { k, top: y0, bot: y0, hit: false }; PGR.blocks.push(bl); PGR.cur[k] = bl; PGR.notes++; }
+      PGR.on[k] = on ? 1 : 0;
+    }
+    for (const bl of PGR.blocks) {
+      if (PGR.cur[bl.k] === bl) bl.bot += v * dt; else { bl.top += v * dt; bl.bot += v * dt; }
+      if (!bl.hit && bl.bot >= yH) {
+        bl.hit = true; PGR.flash[bl.k] = 1;
+        for (let i = 0; i < 10; i++) PGR.bursts.push({ x: lx(bl.k) + lw / 2, y: yH, vx: (Math.random() - 0.5) * 220 * u, vy: -(80 + Math.random() * 180) * u, life: 0, k: bl.k });
+      }
+    }
+    PGR.blocks = PGR.blocks.filter(bl => bl.top < yH);
+    for (const bl of PGR.blocks) {   // pygame.draw.rect com a borda de cima mais clara
+      const x = Math.round(lx(bl.k) + 3 * u), w = Math.round(lw - 6 * u), top = Math.round(bl.top), bot = Math.round(Math.min(bl.bot, yH));
+      if (bot - top < 1) continue;
+      const c = toneRgb(bl.k);
+      pgRect(x, top, w, bot - top, pgC(c));
+      pgRect(x, bot - Math.max(1, Math.round(3 * u)), w, Math.max(1, Math.round(3 * u)), pgC(c.map(v => v + (255 - v) * 0.55)));
+      if (TONES[bl.k].uv && bot - top > 10 * u) pgPolygon(pgTri(x + w / 2, bot - 9 * u, 4.5 * u, Math.PI / 2 * 3), pgC([255, 255, 255]));
+    }
+    // linha de acerto, alvos e explosões
+    pgLine(L, yH, Rr, yH, pgC([200, 196, 215]), Math.max(1, Math.round(2 * u)));
+    for (let k = 0; k < 12; k++) {
+      PGR.flash[k] = Math.max(0, PGR.flash[k] - dt * 3);
+      const x = lx(k) + lw / 2, r = Math.min(lw * 0.32, 16 * u), f = PGR.flash[k];
+      if (f > 0.15) pgCircle(x, yH, r * (1 + 0.5 * f), pgDim(toneRgb(k), f));
+      pgCircle(x, yH, r, pgDim(toneRgb(k), 0.45 + 0.55 * f), Math.max(1, Math.round(2 * u)));
+    }
+    PGR.bursts = PGR.bursts.filter(p => {
+      p.life += dt; if (p.life > 0.6) return false;
+      p.vy += 500 * u * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      const s = Math.max(1, Math.round(3 * u * (1 - p.life / 0.6)));
+      pgRect(Math.round(p.x), Math.round(p.y), s, s, pgDim(toneRgb(p.k), 1 - p.life / 0.6));
+      return true;
+    });
+    // metrônomo: quatro casas que acendem a cada tempo
+    const mx = L, my = sh - 40 * u, cs = Math.round(12 * u);
+    for (let i = 0; i < 4; i++) {
+      const on = ((nb % 4) + 4) % 4 === i;
+      pgRect(Math.round(mx + i * (cs + 6 * u)), Math.round(my), cs, cs, on ? (i === 0 ? pgC([247, 220, 47]) : pgC([230, 230, 240])) : pgC([40, 38, 54]));
+    }
+    PG.cx.putImageData(PG.img, 0, 0);
+    // textos
+    for (let k = 0; k < 12; k++) pgText(TONES[k].pt, lx(k) + lw / 2, y0 - 14 * u, Math.min(15 * u, lw * 0.42), TONES[k].hex, 'center', 'middle');
+    const T = florText();
+    pgText(`NOTAS: ${PGR.notes}`, 10 * u, 10 * u, 17 * u);
+    pgText(`BPM: ${T.bpm || '--'}`, sw - 10 * u, 10 * u, 17 * u, '#ffffff', 'right');
+    pgText(`♩ = ${T.bpm || '--'}`, mx + 4 * (cs + 6 * u) + 8 * u, my + cs / 2, 15 * u, PGR.blink > 0 ? '#f7dc2f' : '#c8c4d7', 'left', 'middle');
+    if (F.idle) pgText('aguardando áudio...', Rr, my + cs / 2, 15 * u, '#8c8c8c', 'right', 'middle');
+    else if (T.o) pgText(`${T.note} · ${T.color}${T.chord ? '   |   ' + T.chordLong : ''}`, Rr, my + cs / 2, 15 * u, T.o.hex, 'right', 'middle');
+    pgBlit(g, b);
+  },
+};
+
+/* Gramática das cores: grade 12 × 12 de transições (de qual cor para qual cor), que esfria e se espalha */
+const PGG = { heat: new Float32Array(144), tmp: new Float32Array(144), count: new Uint32Array(144), total: 0, prev: -1, lastSeen: 0, last: -1, lastAt: -9, hits: 0 };
+const STYLE_PG_GRAM = {
+  retro: true, pixel: true, name: 'Pygame · Gramática', bloom: [0, 0, 1], res: pyRes, mat: PY_PASS,
+  enter() { PGG.heat.fill(0); PGG.count.fill(0); PGG.total = 0; PGG.prev = -1; PGG.last = -1; PGG.hits = F.hits; },
+  draw(g, W, H, dt, t) {
+    const b = pgBegin(g, W, H), { sw, sh, u } = b;
+    PG.buf.fill(PG_BGC);
+    const nowS = performance.now() / 1000, dom = AN.dominant;
+    // eventos: troca da nota principal (de → para) e novo ataque na mesma nota (diagonal)
+    if (dom >= 0) {
+      if (PGG.prev >= 0 && nowS - PGG.lastSeen > 4) PGG.prev = -1;
+      if (PGG.prev >= 0 && dom !== PGG.prev) {
+        const i = PGG.prev * 12 + dom; PGG.heat[i] = Math.min(3, PGG.heat[i] + 1); PGG.count[i]++; PGG.total++; PGG.last = i; PGG.lastAt = nowS;
+      } else if (dom === PGG.prev && F.hits !== PGG.hits) { const i = dom * 13; PGG.heat[i] = Math.min(3, PGG.heat[i] + 0.6); }
+      PGG.prev = dom; PGG.lastSeen = nowS;
+    }
+    PGG.hits = F.hits;
+    // autômato: o calor esfria e se espalha um pouco para as vizinhas
+    const cool = Math.exp(-dt / 6), dif = Math.min(1, dt * 0.35);
+    for (let r = 0; r < 12; r++) for (let c = 0; c < 12; c++) {
+      const i = r * 12 + c; let s = 0, n = 0;
+      if (r > 0) { s += PGG.heat[i - 12]; n++; } if (r < 11) { s += PGG.heat[i + 12]; n++; }
+      if (c > 0) { s += PGG.heat[i - 1]; n++; } if (c < 11) { s += PGG.heat[i + 1]; n++; }
+      PGG.tmp[i] = (PGG.heat[i] + dif * (s / n - PGG.heat[i])) * cool;
+    }
+    PGG.heat.set(PGG.tmp);
+    // a grade
+    const G = Math.min(sh * 0.76, sw * 0.6), cell = G / 12, gx = 92 * u, gy = (sh - G) / 2 + 12 * u, gap = Math.max(1, Math.round(1.5 * u));
+    const ch = AN.chord, chordSet = new Set(ch ? ch.tones : []);
+    for (let r = 0; r < 12; r++) for (let c = 0; c < 12; c++) {
+      const i = r * 12 + c, h = Math.min(1, PGG.heat[i]), x0 = Math.round(gx + c * cell), y0 = Math.round(gy + r * cell), x1 = Math.round(gx + (c + 1) * cell) - gap, y1 = Math.round(gy + (r + 1) * cell) - gap;
+      if (h < 0.03) { pgRect(x0, y0, x1 - x0, y1 - y0, r === c ? pgC([24, 22, 34]) : pgC([17, 15, 26])); continue; }
+      pgPolygon([[x0, y0], [x1, y0], [x0, y1]], pgDim(toneRgb(r), 0.2 + 0.8 * h));   // ◤ de
+      pgPolygon([[x1, y0], [x1, y1], [x0, y1]], pgDim(toneRgb(c), 0.2 + 0.8 * h));   // ◢ para
+    }
+    if (PGG.last >= 0 && nowS - PGG.lastAt < 1.5 && (t * 4) % 1 < 0.65) {
+      const r = Math.floor(PGG.last / 12), c = PGG.last % 12, x0 = Math.round(gx + c * cell) - 1, y0 = Math.round(gy + r * cell) - 1, s = Math.round(cell) - gap + 2;
+      pgLines([[x0, y0], [x0 + s, y0], [x0 + s, y0 + s], [x0, y0 + s]], pgC([255, 255, 255]), true, Math.max(1, Math.round(2 * u)));
+    }
+    // marcas nos cabeçalhos: Sete Naturais (ponto) e tons do acorde (barra)
+    for (let k = 0; k < 12; k++) {
+      const yc = gy + (k + 0.5) * cell, xc = gx + (k + 0.5) * cell;
+      if (NATURALS.includes(k)) { pgCircle(gx - 8 * u, yc, 2 * u, pgC(toneRgb(k))); pgCircle(xc, gy - 8 * u, 2 * u, pgC(toneRgb(k))); }
+      if (chordSet.has(k)) { pgRect(Math.round(gx - 4 * u), Math.round(yc - cell * 0.35), Math.max(1, Math.round(2 * u)), Math.round(cell * 0.7), pgC([255, 255, 255])); pgRect(Math.round(xc - cell * 0.35), Math.round(gy - 4 * u), Math.round(cell * 0.7), Math.max(1, Math.round(2 * u)), pgC([255, 255, 255])); }
+    }
+    PG.cx.putImageData(PG.img, 0, 0);
+    const fs = Math.min(13 * u, cell * 0.45);
+    for (let k = 0; k < 12; k++) {
+      pgText(TONES[k].pt, gx - 14 * u, gy + (k + 0.5) * cell, fs, TONES[k].hex, 'right', 'middle');
+      pgText(TONES[k].pt, gx + (k + 0.5) * cell, gy - 18 * u, fs, TONES[k].hex, 'center', 'middle');
+    }
+    pgText('de ↓', gx - 14 * u, gy - 18 * u, fs, '#c8c4d7', 'right', 'middle');
+    pgText('para →', gx + G, gy - 36 * u, fs, '#c8c4d7', 'right', 'middle');
+    // painel: tonalidade, Ar/Terra, transições mais frequentes e o acorde
+    const px = gx + G + 34 * u, f1 = 17 * u, f2 = 14 * u;
+    let py = gy;
+    const line = (txt, c = '#ffffff', size = f2, bold = false) => { pgText(txt, px, py, size, c, 'left', 'top', bold); py += size * 1.45; };
+    line('Gramática das cores', '#ffffff', f1, true); py += 4 * u;
+    const kr = AN.keyRoot >= 0 ? TONES[pcToTone(AN.keyRoot)] : null;
+    line('Tonalidade', '#a8a3b8'); line(kr ? `${kr.pt} ${AN.keyMode}` : '—', kr ? kr.hex : '#ffffff', f1, true);
+    line('Ar / Terra', '#a8a3b8'); line(`${F.air >= 0 ? 'Ar' : 'Terra'} ${sgn(F.air)}`, F.air >= 0 ? POLE.rosa : POLE.vermelho, f1, true);
+    line('Acorde', '#a8a3b8');
+    line(ch ? `${TONES[ch.root].pt} ${ch.quality}` : '—', ch ? TONES[ch.root].hex : '#ffffff', f1, true);
+    if (ch) line(ch.consonant ? 'consonante · Sete Naturais' : 'dissonante · tensão', ch.consonant ? '#9fe3b0' : POLE.vermelho);
+    py += 6 * u; line(`Transições: ${PGG.total}`, '#a8a3b8');
+    [...PGG.count.keys()].filter(i => PGG.count[i] > 0).sort((a, b) => PGG.count[b] - PGG.count[a]).slice(0, 3).forEach(i => {
+      const r = Math.floor(i / 12), c = i % 12;
+      pgText(TONES[r].pt, px, py, f2, TONES[r].hex, 'left', 'top', true);
+      const w1 = PG.cx.measureText(TONES[r].pt).width;
+      pgText(' → ', px + w1, py, f2, '#ffffff', 'left', 'top', true);
+      const w2 = PG.cx.measureText(' → ').width;
+      pgText(`${TONES[c].pt}  ×${PGG.count[i]}`, px + w1 + w2, py, f2, TONES[c].hex, 'left', 'top', true);
+      py += f2 * 1.45;
+    });
+    if (F.idle && !PGG.total) pgText('aguardando áudio...', px, py + 8 * u, f2, '#8c8c8c');
+    pgBlit(g, b);
+  },
+};
+
+/* Tensão e equilíbrio: bolas presas por molas a Ré; tensão Fá↔Si torce, Ré estável assenta, Ar/Terra é a gravidade */
+const PGF = { p: new Float32Array(24), v: new Float32Array(24), ok: false, hits: 0 };
+const pfRest = k => 150 + 12 * Math.min(k, 12 - k);
+const pfAnchor = [400, 300];
+function pfReset() {
+  for (let k = 1; k < 12; k++) { const a = ang2d(k); PGF.p[k * 2] = pfAnchor[0] + Math.cos(a) * pfRest(k); PGF.p[k * 2 + 1] = pfAnchor[1] + Math.sin(a) * pfRest(k); PGF.v[k * 2] = PGF.v[k * 2 + 1] = 0; }
+  PGF.ok = true;
+}
+function pfStep(h) {
+  const P = PGF.p, V = PGF.v, stab = F.stab, ten = AN.tension, air = Math.max(-1, Math.min(1, F.air));
+  const ks = 5 + 14 * stab, kr = 1.2 + 6 * stab, damp = Math.exp(-h * (1.3 + 3 * stab)), ch = AN.chord && AN.chord.consonant && F.chordS > 0.3 ? AN.chord.tones : null;
+  const fx = new Float32Array(12), fy = new Float32Array(12);
+  for (let k = 1; k < 12; k++) {
+    const x = P[k * 2], y = P[k * 2 + 1], dx = x - pfAnchor[0], dy = y - pfAnchor[1], d = Math.hypot(dx, dy) || 1;
+    const fasi = k === 3 || k === 9, L = pfRest(k) * (1 + (fasi ? 0.45 * ten : 0));
+    fx[k] += -ks * (d - L) * dx / d; fy[k] += -ks * (d - L) * dy / d;   // mola até Ré
+    const tw = fasi ? (k === 3 ? 1 : -1) * 0.6 * ten : 0, a = ang2d(k) + tw;   // a tensão torce Fá e Si em sentidos opostos
+    fx[k] += kr * (pfAnchor[0] + Math.cos(a) * L - x); fy[k] += kr * (pfAnchor[1] + Math.sin(a) * L - y);
+    fy[k] += -air * 140;   // gravidade: Ar sobe, Terra desce
+  }
+  for (let i = 1; i < 12; i++) for (let j = i + 1; j < 12; j++) {   // repulsão entre as bolas
+    const dx = P[i * 2] - P[j * 2], dy = P[i * 2 + 1] - P[j * 2 + 1], d2 = Math.max(400, dx * dx + dy * dy), d = Math.sqrt(d2), f = 2.2e5 / d2;
+    fx[i] += f * dx / d; fy[i] += f * dy / d; fx[j] -= f * dx / d; fy[j] -= f * dy / d;
+  }
+  if (ch) for (let i = 0; i < 3; i++) {   // acorde consonante: molas entre os tons do acorde
+    const a = ch[i], b2 = ch[(i + 1) % 3]; if (!a || !b2) continue;
+    const dx = P[b2 * 2] - P[a * 2], dy = P[b2 * 2 + 1] - P[a * 2 + 1], d = Math.hypot(dx, dy) || 1, Lc = 0.7 * Math.hypot(Math.cos(ang2d(a)) * pfRest(a) - Math.cos(ang2d(b2)) * pfRest(b2), Math.sin(ang2d(a)) * pfRest(a) - Math.sin(ang2d(b2)) * pfRest(b2));
+    const f = 4 * F.chordS * (d - Lc);
+    fx[a] += f * dx / d; fy[a] += f * dy / d; fx[b2] -= f * dx / d; fy[b2] -= f * dy / d;
+  }
+  for (let k = 1; k < 12; k++) {
+    V[k * 2] = (V[k * 2] + fx[k] * h) * damp; V[k * 2 + 1] = (V[k * 2 + 1] + fy[k] * h) * damp;
+    P[k * 2] += V[k * 2] * h; P[k * 2 + 1] += V[k * 2 + 1] * h;
+    for (const [i, lo, hi] of [[k * 2, 24, 776], [k * 2 + 1, 24, 576]]) {   // quica nas bordas
+      if (P[i] < lo) { P[i] = lo; V[i] = Math.abs(V[i]) * 0.6; } else if (P[i] > hi) { P[i] = hi; V[i] = -Math.abs(V[i]) * 0.6; }
+    }
+  }
+}
+const STYLE_PG_FIS = {
+  retro: true, pixel: true, name: 'Pygame · Física', bloom: [0, 0, 1], res: pyRes, mat: PY_PASS,
+  enter() { pfReset(); PGF.hits = F.hits; },
+  draw(g, W, H, dt, t) {
+    const b = pgBegin(g, W, H), { sw, sh, u } = b;
+    PG.buf.fill(PG_BGC);
+    if (!PGF.ok) pfReset();
+    if (F.hits !== PGF.hits && AN.dominant > 0) {   // um ataque empurra a bola da nota para fora
+      const k = AN.dominant, dx = PGF.p[k * 2] - pfAnchor[0], dy = PGF.p[k * 2 + 1] - pfAnchor[1], d = Math.hypot(dx, dy) || 1;
+      PGF.v[k * 2] += dx / d * 160 * F.lvl; PGF.v[k * 2 + 1] += dy / d * 160 * F.lvl;
+    }
+    PGF.hits = F.hits;
+    const n = Math.min(8, Math.max(1, Math.ceil(dt * 120)));
+    for (let i = 0; i < n; i++) pfStep(dt / n);
+    const S = (x, y) => [x * sw / 800, y * sh / 600];
+    const P = k => k === 0 ? S(...pfAnchor) : S(PGF.p[k * 2], PGF.p[k * 2 + 1]);
+    const [ax, ay] = P(0), WHITE = pgC([255, 255, 255]);
+    // molas em zigue-zague
+    for (let k = 1; k < 12; k++) {
+      const [x, y] = P(k), dx = x - ax, dy = y - ay, d = Math.hypot(dx, dy) || 1, nx = -dy / d, ny = dx / d, amp = 6 * u, pts = [[ax, ay]];
+      for (let i = 1; i < 16; i++) { const f = i / 16, s = i % 2 ? 1 : -1; pts.push([ax + dx * f + nx * amp * s, ay + dy * f + ny * amp * s]); }
+      pts.push([x, y]);
+      const fasi = k === 3 || k === 9;
+      pgLines(pts, fasi && AN.tension > 0.25 ? pgDim(toneRgb(k), 0.5 + 0.5 * AN.tension) : pgDim(toneRgb(k), 0.3 + 0.4 * F.I[k]), false, fasi && AN.tension > 0.25 ? Math.max(1, Math.round(2 * u)) : 1);
+    }
+    // tensão Fá ↔ Si
+    if (AN.tension > 0.2) { const [x1, y1] = P(3), [x2, y2] = P(9); pgLine(x1, y1, x2, y2, pgDim(hexRgb(POLE.vermelho), AN.tension), Math.max(1, Math.round((1 + 3 * AN.tension) * u))); }
+    // acorde consonante
+    const ch = AN.chord && AN.chord.consonant && F.chordS > 0.3 ? AN.chord.tones : null;
+    if (ch) pgLines(ch.map(P), WHITE, true, Math.max(1, Math.round(2 * u)));
+    // as bolas: naturais em círculo, ultravioletas em triângulo
+    for (let k = 1; k < 12; k++) {
+      const [x, y] = P(k), I = F.I[k], r = (8 + 16 * I) * u, c = pgDim(toneRgb(k), 0.45 + 0.55 * Math.min(1, I * 1.5));
+      if (TONES[k].uv) { const tri = pgTri(x, y, r, Math.atan2(y - ay, x - ax)); pgPolygon(tri, c); if (I > 0.6) pgPolygon(tri, WHITE, Math.max(1, Math.round(2 * u))); }
+      else { pgCircle(x, y, r, c); if (I > 0.6) pgCircle(x, y, r + 3 * u, WHITE, Math.max(1, Math.round(2 * u))); }
+    }
+    // Ré, a âncora
+    const g0 = Math.max(F.I[0], F.stab), ra = (18 + 10 * F.stab) * u;
+    pgCircle(ax, ay, ra, pgDim(toneRgb(0), 0.55 + 0.45 * g0));
+    if (F.stab > 0.4) pgCircle(ax, ay, ra + 5 * u, WHITE, Math.max(1, Math.round(2 * u)));
+    // seta da gravidade
+    const air = Math.max(-1, Math.min(1, F.air)), gx = sw - 40 * u, gy = sh / 2, len = 60 * u * Math.abs(air), dir = air >= 0 ? -1 : 1;
+    if (len > 3) { pgLine(gx, gy, gx, gy + dir * len, pgC(hexRgb(air >= 0 ? POLE.rosa : POLE.vermelho)), Math.max(1, Math.round(3 * u))); pgPolygon([[gx, gy + dir * (len + 10 * u)], [gx - 7 * u, gy + dir * len], [gx + 7 * u, gy + dir * len]], pgC(hexRgb(air >= 0 ? POLE.rosa : POLE.vermelho))); }
+    PG.cx.putImageData(PG.img, 0, 0);
+    for (let k = 1; k < 12; k++) { const [x, y] = P(k), r = (8 + 16 * F.I[k]) * u; pgText(TONES[k].pt, x, y - r - 9 * u, 12 * u, TONES[k].hex, 'center', 'middle', false); }
+    pgText('Ré · Verde 0', ax, ay - ra - 14 * u, 13 * u, TONES[0].hex, 'center', 'middle');
+    pgText(`Tensão Fá↔Si: ${Math.round(AN.tension * 100)}%`, 10 * u, 10 * u, 16 * u, AN.tension > 0.3 ? POLE.vermelho : '#ffffff');
+    pgText(`Estabilidade em Ré: ${Math.round(F.stab * 100)}%`, 10 * u, 32 * u, 16 * u, F.stab > 0.4 ? TONES[0].hex : '#ffffff');
+    pgText(`Gravidade: ${air >= 0 ? 'Ar ↑' : 'Terra ↓'} ${sgn(air)}`, sw - 10 * u, 10 * u, 16 * u, air >= 0 ? POLE.rosa : POLE.vermelho, 'right');
+    if (F.idle) pgText('aguardando áudio...', sw / 2, sh - 20 * u, 15 * u, '#8c8c8c', 'center', 'middle');
+    pgBlit(g, b);
   },
 };
 
@@ -4555,7 +4932,8 @@ const STYLE_MPL = {
 const FLOR_STYLES = {
   aquarela: { name: 'Aquarela', bloom: [0.3, 0.5, 0.62] },
   fliperama: STYLE_ARCADE, anos70: STYLE_70, osciloscopio: STYLE_SCOPE, rastros: STYLE_TRAILS,
-  pygame: STYLE_PYGAME, turtle: STYLE_TURTLE, matplotlib: STYLE_MPL,
+  pygame: STYLE_PYGAME, 'pg-sentirama': STYLE_PG_SENT, 'pg-ritmo': STYLE_PG_RITMO, 'pg-gramatica': STYLE_PG_GRAM, 'pg-fisica': STYLE_PG_FIS,
+  turtle: STYLE_TURTLE, matplotlib: STYLE_MPL,
 };
 const STYLE_ORDER = ['aquarela', 'fliperama', 'anos70', 'osciloscopio', 'rastros', 'pygame', 'turtle', 'matplotlib'];
 let STYLE = 'aquarela';
@@ -4583,7 +4961,8 @@ function setStyle(id, save = true) {
   });
   document.querySelectorAll('#py-menu button').forEach(b => b.classList.toggle('on', b.dataset.style === id));
   const sub = document.querySelector('#py-btn .py-sub');
-  if (sub) sub.textContent = PY_IDS.includes(id) ? ' · ' + st.name.toLowerCase() : '';
+  if (sub) sub.textContent = PY_IDS.includes(id) ? ' · ' + (PG_IDS.includes(id) ? 'pygame' : st.name.toLowerCase()) : '';
+  if (PG_IDS.includes(id)) { PG_LAST = id; try { localStorage.setItem('croma.pygame', id); } catch (e) { /* sem armazenamento */ } }
   controls.enabled = !st.retro;
   stage.dataset.style = id;
   if (st.retro) {
@@ -4887,6 +5266,7 @@ window.addEventListener('keydown', e => {
     if (!FLOR_STYLES[STYLE].retro) camTween = { from: camera.position.clone(), to: camFor(), t: 0 };
   }
   else if (k === 'f') toggleFull();
+  else if (k === '6') { closePyMenu(); const i = PG_IDS.indexOf(STYLE); setStyle(i >= 0 ? PG_IDS[(i + 1) % PG_IDS.length] : PG_LAST); }
   else if (k >= '1' && k <= '8' && k.length === 1) { closePyMenu(); setStyle(STYLE_ORDER[+k - 1]); }
   else if (k === ' ') { if (A.source === 'file') { e.preventDefault(); togglePlay(); } }
   else if (k === '?') openModal();
