@@ -8,7 +8,7 @@ Web app de arquivo único (HTML + Tailwind + Three.js via CDN) que transforma á
 - **DSP:** `AnalyserNode` com `fftSize = 4096`; cromagrama por picos espectrais (A4 = 440 Hz), nota dominante e secundárias, centroide espectral, RMS, BPM (autocorrelação do fluxo espectral), tonalidade (Krumhansl-Schmuckler), acordes.
 - **Mapa:** Ré (D) = Verde 0 → … → Dó# = Azul-UV 11; naturais = círculos, ultravioletas = triângulos.
 - **Mapa:** as ultravioletas têm a mesma cor das naturais (Yellow[1] = Yeluv[1], Violet[4] = Viluv[4], Green[6] = Gruv[6], Orange[8] = Oruv[8], Blue[11] = Bluv[11]).
-- **Visualização:** a **Flor Croma-Sônica**, mandala de 12 pétalas (Ré = Verde 0 no topo, tons em sentido horário), em cinco estilos: Aquarela, Fliperama, Anos 70, Osciloscópio e Synthwave.
+- **Visualização:** a **Flor Croma-Sônica**, mandala de 12 pétalas (Ré = Verde 0 no topo, tons em sentido horário), em seis estilos: Aquarela, Fliperama, Anos 70, Osciloscópio, Synthwave e Rastros.
 
 ### Teclado musical
 
@@ -16,7 +16,7 @@ Web app de arquivo único (HTML + Tailwind + Three.js via CDN) que transforma á
 
 ### Estilos da Flor
 
-Em todos os estilos, cada pétala acende e cresce com a energia da sua nota. As naturais têm pétala arredondada e as ultravioletas, losango. Ré (Verde 0) pulsa no centro quando a música repousa na tônica, e os acordes consonantes acendem as Sete Naturais e o triângulo do acorde. O estilo é escolhido na barra superior ou nas teclas `1`–`5` e fica salvo no navegador. Só a visualização muda; painéis, laudo e ferramentas continuam iguais.
+Nos cinco primeiros estilos, cada pétala acende e cresce com a energia da sua nota. As naturais têm pétala arredondada e as ultravioletas, losango. Ré (Verde 0) pulsa no centro quando a música repousa na tônica, e os acordes consonantes acendem as Sete Naturais e o triângulo do acorde. O sexto, Rastros, usa só as posições dos tons. O estilo é escolhido na barra superior ou nas teclas `1`–`6` e fica salvo no navegador. Só a visualização muda; painéis, laudo e ferramentas continuam iguais.
 
 - **Aquarela** — a Flor do livro em 3D, com papel de aquarela, anel de escamas, a roda do Sentirama no centro e partículas de matéria e antimatéria. Arraste para inclinar.
 - **Fliperama** — pixel art de 8 bits num tubo de TV:
@@ -37,6 +37,12 @@ Em todos os estilos, cada pétala acende e cresce com a energia da sua nota. As 
   - montanhas cuja altura segue o espectro;
   - grade que rola no ritmo, na cor do som;
   - letreiro cromado e efeito de fita VHS.
+- **Rastros** — começa vazia, com só as posições dos 12 tons:
+  - quando a nota principal muda, uma linha viaja da nota anterior até a nova, passando da cor de uma para a da outra;
+  - notas que entram junto e acordes geram linhas finas, e a nota atacada de novo solta uma onda;
+  - o nome do tom aparece ao lado quando ele começa a soar;
+  - os tons que soam brilham no lugar deles;
+  - os rastros se apagam aos poucos: abrem-se para fora e giram no Ar, fecham-se para o centro na Terra. O acúmulo é feito na GPU em meia precisão, para não deixar resíduo.
 
 Os estilos retrô desenham em Canvas 2D e passam por um shader de acabamento (Three.js). As fontes (Press Start 2P, Shrikhand, Share Tech Mono, Orbitron e Mr Dafoe) vêm do Google Fonts.
 
@@ -98,7 +104,7 @@ python3 -m http.server 8000
 # abra http://localhost:8000/cromasfera.html
 ```
 
-Atalhos: `1`–`5` estilos da Flor (com o teclado musical desligado) · `Espaço` play/pause · `H` oculta a interface · `F` tela cheia · `?` teoria.
+Atalhos: `1`–`6` estilos da Flor (com o teclado musical desligado) · `Espaço` play/pause · `H` oculta a interface · `F` tela cheia · `?` teoria.
 
 `assets/` contém as ilustrações de referência do livro exibidas no modal de teoria.
 
