@@ -8,15 +8,37 @@ Web app de arquivo único (HTML + Tailwind + Three.js via CDN) que transforma á
 - **DSP:** `AnalyserNode` com `fftSize = 4096`; cromagrama por picos espectrais (A4 = 440 Hz), nota dominante e secundárias, centroide espectral, RMS, BPM (autocorrelação do fluxo espectral), tonalidade (Krumhansl-Schmuckler), acordes.
 - **Mapa:** Ré (D) = Verde 0 → … → Dó# = Azul-UV 11; naturais = círculos, ultravioletas = triângulos.
 - **Mapa:** as ultravioletas têm a mesma cor das naturais (Yellow[1] = Yeluv[1], Violet[4] = Viluv[4], Green[6] = Gruv[6], Orange[8] = Oruv[8], Blue[11] = Bluv[11]).
-- **Modos:** Cromasfera 3D (esfera + fita de 12 tons em curva de “bola de tênis”) · Flor Croma-Sônica (mandala de 12 pétalas) · Sentirama 3D (Plano Físico azul ↔ amarelo × Plano Espiritual vermelho ↔ rosa, cruzando-se na tônica).
+- **Visualização:** a **Flor Croma-Sônica**, mandala de 12 pétalas (Ré = Verde 0 no topo, tons em sentido horário), em cinco estilos: Aquarela, Fliperama, Anos 70, Osciloscópio e Synthwave.
 
 ### Teclado musical
 
 **Teclado musical** transforma o teclado do computador num sintetizador: `Q W E R T Y U I O P` = Dó Ré Mi Fá Sol Lá Si Dó Ré Mi, `2 3 5 6 7 9 0` = sustenidos (layout de piano, lido pela posição física da tecla), `Z`/`X` = oitava. Doze instrumentos: sete clássicos (piano elétrico, órgão, cordas, pad etéreo, flauta, harpa e sino de cristal) e cinco **analógicos**, emulações de sintetizadores dos anos 70/80 feitas com Web Audio: **baixo analógico** (dois dentes-de-serra + sub-oscilador, filtro de 24 dB ressonante com ataque “pluck”), **lead analógico** (glide entre notas e vibrato), **metais sintéticos** (filtro que abre num “sopro”), **cordas de ensemble** (string machine com chorus de três LFOs) e **pad PWM** (pulso com largura modulada). O teclado da tela também toca (clique ou toque). O som entra na análise e pode ser gravado com **Gravar sessão**, que agora grava tudo o que está sendo analisado (microfone, teclado musical ou demonstração).
 
-### Auto-rotação da câmera
+### Estilos da Flor
 
-O botão ↻ na barra superior (ou a opção *Auto-rotação da câmera*) liga e desliga a órbita automática da câmera. A escolha fica salva no navegador.
+Em todos os estilos, cada pétala acende e cresce com a energia da sua nota. As naturais têm pétala arredondada e as ultravioletas, losango. Ré (Verde 0) pulsa no centro quando a música repousa na tônica, e os acordes consonantes acendem as Sete Naturais e o triângulo do acorde. O estilo é escolhido na barra superior ou nas teclas `1`–`5` e fica salvo no navegador. Só a visualização muda; painéis, laudo e ferramentas continuam iguais.
+
+- **Aquarela** — a Flor do livro em 3D, com papel de aquarela, anel de escamas, a roda do Sentirama no centro e partículas de matéria e antimatéria. Arraste para inclinar.
+- **Fliperama** — pixel art de 8 bits num tubo de TV:
+  - paleta fixa de 16 cores com pontilhado, linhas de varredura, máscara de fósforo e vidro curvo;
+  - um anel de colunas de blocos mostra a energia de cada tom;
+  - o placar conta as notas atacadas e mostra o BPM;
+  - sem som, pisca "INSIRA UMA FICHA".
+- **Anos 70** — pôster psicodélico impresso:
+  - margarida de contorno grosso;
+  - listras onduladas na cor de cada tom, com espessura que segue a energia;
+  - papel creme com retícula, cor levemente fora de registro e marcas de dobra.
+- **Osciloscópio** — só traço de fósforo, com rastro:
+  - a Flor é uma curva XY cujos lóbulos crescem com cada tom;
+  - no centro, a forma de onda real do som;
+  - em volta, retícula e leituras de nível, BPM e nota.
+- **Synthwave** — neon dos anos 80:
+  - a Flor sobre um sol listrado;
+  - montanhas cuja altura segue o espectro;
+  - grade que rola no ritmo, na cor do som;
+  - letreiro cromado e efeito de fita VHS.
+
+Os estilos retrô desenham em Canvas 2D e passam por um shader de acabamento (Three.js). As fontes (Press Start 2P, Shrikhand, Share Tech Mono, Orbitron e Mr Dafoe) vêm do Google Fonts.
 
 ### Calibração
 
@@ -76,7 +98,7 @@ python3 -m http.server 8000
 # abra http://localhost:8000/cromasfera.html
 ```
 
-Atalhos: `1` `2` `3` modos (com o teclado musical desligado) · `Espaço` play/pause · `H` oculta a interface · `F` tela cheia · `?` teoria.
+Atalhos: `1`–`5` estilos da Flor (com o teclado musical desligado) · `Espaço` play/pause · `H` oculta a interface · `F` tela cheia · `?` teoria.
 
 `assets/` contém as ilustrações de referência do livro exibidas no modal de teoria.
 

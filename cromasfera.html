@@ -7,7 +7,7 @@
 <meta name="description" content="Visualizador áudio-cromático baseado no método Croma-Sônica do livro Cromasfera: The Seed of Interdisciplinary Harmony (Vigmorã / CromaSomos).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600&family=Press+Start+2P&family=Shrikhand&family=Share+Tech+Mono&family=Orbitron:wght@600;900&family=Mr+Dafoe&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com/3.4.16"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
@@ -70,6 +70,7 @@
     transition: all .25s; white-space: nowrap;
   }
   .seg button:hover { color: var(--text); background: rgba(255,255,255,.06); }
+  #mode-seg .sm { display: none; }
   .seg button.on { color: #0b0710; background: linear-gradient(135deg, #f7dc2f, #f27bb8 55%, #b47cf0); box-shadow: 0 0 22px -6px #f27bb8; }
   .label { font-size: .68rem; text-transform: uppercase; letter-spacing: .16em; color: var(--muted); }
   input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 4px; background: rgba(255,255,255,.14); outline: none; }
@@ -127,7 +128,9 @@
   @media (max-width: 767px) {
     #topbar { flex-wrap: wrap; row-gap: 10px; top: 12px; left: 12px; right: 12px; }
     #mode-seg { order: 3; width: 100%; }
-    #mode-seg button { flex: 1; padding: .45rem .3rem; font-size: .7rem; }
+    #mode-seg button { flex: 1; padding: .45rem .2rem; font-size: .7rem; }
+    #mode-seg .lg { display: none; }
+    #mode-seg .sm { display: inline; }
     #brand .title-font { font-size: 1rem; }
     #hud { width: auto !important; left: 12px; right: 12px !important; top: 112px !important; padding: .75rem; }
     #hud-body { max-height: 32vh !important; }
@@ -361,17 +364,16 @@
       <div class="sub text-[11px] text-[color:var(--muted)] tracking-wider mt-1">Audio-Visualizer · método Croma-Sônica</div>
     </div>
   </div>
-  <div class="glass seg pointer-events-auto" id="mode-seg" role="tablist" aria-label="Modo visual">
-    <button data-mode="0" class="on" role="tab">Cromasfera 3D</button>
-    <button data-mode="1" role="tab">Flor Croma-Sônica</button>
-    <button data-mode="2" role="tab">Sentirama 3D</button>
+  <div class="glass seg pointer-events-auto" id="mode-seg" role="tablist" aria-label="Estilo da Flor Croma-Sônica">
+    <button data-style="aquarela" class="on" role="tab" title="Flor Croma-Sônica · Aquarela (1)">Aquarela</button>
+    <button data-style="fliperama" role="tab" title="Flor Croma-Sônica · Fliperama 8-bit (2)"><span class="lg">Fliperama</span><span class="sm">8-bit</span></button>
+    <button data-style="anos70" role="tab" title="Flor Croma-Sônica · Pôster psicodélico anos 70 (3)">Anos 70</button>
+    <button data-style="osciloscopio" role="tab" title="Flor Croma-Sônica · Osciloscópio vetorial (4)"><span class="lg">Osciloscópio</span><span class="sm">Oscilo</span></button>
+    <button data-style="synthwave" role="tab" title="Flor Croma-Sônica · Synthwave anos 80 (5)"><span class="lg">Synthwave</span><span class="sm">Synth</span></button>
   </div>
   <div class="pointer-events-auto flex items-center gap-2">
     <button class="btn" id="btn-tuner" title="Afinador e contorno melódico" aria-label="Afinador" aria-pressed="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v7a3 3 0 0 0 6 0V3M12 13v8M9 21h6"/></svg>
-    </button>
-    <button class="btn active" id="btn-rotate" title="Auto-rotação da câmera ligada — clique para parar" aria-label="Auto-rotação da câmera" aria-pressed="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
     </button>
     <button class="btn" id="btn-full" title="Tela cheia (F)" aria-label="Tela cheia">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
@@ -468,15 +470,13 @@
 
     <div class="mt-4 pt-3 border-t border-white/10 space-y-1">
       <div class="label mb-1">Opções visuais</div>
-      <label class="toggle">Brilho néon (bloom)<input type="checkbox" id="opt-bloom" checked></label>
-      <label class="toggle">Partículas matéria/antimatéria<input type="checkbox" id="opt-particles" checked></label>
-      <label class="toggle">Auto-rotação da câmera<input type="checkbox" id="opt-rotate" checked></label>
-      <label class="toggle">Rótulos no Sentirama<input type="checkbox" id="opt-labels" checked></label>
+      <label class="toggle">Brilho (bloom)<input type="checkbox" id="opt-bloom" checked></label>
+      <label class="toggle">Partículas (Aquarela)<input type="checkbox" id="opt-particles" checked></label>
     </div>
 
     <div class="mt-4 pt-3 border-t border-white/10 text-[11px] text-[color:var(--muted)] leading-relaxed">
       <div class="label mb-1">Atalhos</div>
-      <span class="text-white/80">1 2 3</span> modos (com o teclado musical desligado) · <span class="text-white/80">Espaço</span> play/pause · <span class="text-white/80">H</span> ocultar interface · <span class="text-white/80">F</span> tela cheia · arraste para orbitar
+      <span class="text-white/80">1–5</span> estilos da Flor (com o teclado musical desligado) · <span class="text-white/80">Espaço</span> play/pause · <span class="text-white/80">H</span> ocultar interface · <span class="text-white/80">F</span> tela cheia · na Aquarela, arraste para inclinar a Flor
     </div>
     </div>
   </div>
@@ -1605,12 +1605,16 @@ print(m.summary())
         </div>
       </div>
       <div>
-        <h3>Os três modos visuais</h3>
-        <ul class="list-disc pl-5 space-y-1">
-          <li><strong>Cromasfera 3D</strong> — esfera orgânica envolta pela fita cromática de 12 tons (Cap. 7), que corre sobre ela como a costura de uma bola de tênis: de lado forma um “S”, de cima dois arcos. Em <em>Ré (Verde 0)</em> a fita se aplaina num anel e a esfera se aquieta em simetria perfeita; a tensão entre <em>Fá (Vermelho 3)</em> e <em>Si (Rosa 9)</em> aprofunda a torção em “S”. Partículas de matéria (saindo, na cor do tom) e antimatéria (entrando, na cor complementar) pulsam com os ataques.</li>
-          <li><strong>Flor Croma-Sônica</strong> — mandala de 12 pétalas; cada pétala se ilumina com a intensidade da sua nota. Acordes consonantes acendem as conexões das <em>Sete Naturais</em>.</li>
-          <li><strong>Sentirama 3D</strong> — os dois planos em ampulheta cruzando-se na tônica; um orbe de luz orbita conforme a predominância harmônica e emocional do som. O Modo Ar o puxa para o quadrante Rosa/Amarelo; o Modo Terra para Vermelho/Azul.</li>
+        <h3>A Flor Croma-Sônica e seus estilos</h3>
+        <p>A Flor é uma mandala de 12 pétalas, uma por tom, com <em>Ré (Verde 0)</em> no topo e os tons em sentido horário. Cada pétala acende e cresce com a energia da sua nota. As naturais têm pétala arredondada e as ultravioletas, losango. No centro, Ré pulsa quando a música repousa na tônica. Acordes consonantes acendem as conexões das <em>Sete Naturais</em> e o triângulo do acorde.</p>
+        <ul class="list-disc pl-5 space-y-1 mt-2">
+          <li><strong>Aquarela</strong> — a Flor do livro, em papel de aquarela e em 3D (arraste para inclinar), com o anel de escamas, a roda do Sentirama no centro e partículas de matéria e antimatéria.</li>
+          <li><strong>Fliperama</strong> — pixel art de 8 bits num tubo de TV: 16 cores com pontilhado, linhas de varredura e vidro curvo. Um anel de colunas de blocos mostra a energia de cada tom, e o placar conta as notas e mostra o BPM.</li>
+          <li><strong>Anos 70</strong> — pôster psicodélico impresso: margarida de contorno grosso sobre listras onduladas, uma por tom, com espessura que segue a energia. O papel é creme, com retícula e dobras.</li>
+          <li><strong>Osciloscópio</strong> — só traço de fósforo. A Flor é uma curva XY cujos lóbulos crescem com cada tom, e no centro aparece a forma de onda real do som.</li>
+          <li><strong>Synthwave</strong> — neon dos anos 80. A Flor fica sobre um sol listrado, as montanhas seguem o espectro, a grade rola no ritmo, e a imagem tem chiado de fita VHS.</li>
         </ul>
+        <p class="mt-2">As teclas <strong>1</strong> a <strong>5</strong> trocam o estilo, e a escolha fica salva no navegador.</p>
         <div class="grid grid-cols-2 gap-2 mt-4">
           <img src="assets/fita-cromatica-12-tons.webp" alt="A fita cromática de 12 tons" class="ref-img w-full h-48 object-contain">
           <img src="assets/berlin-kay-ordem-das-cores.png" alt="A ordem das cores segundo Berlin e Kay" class="ref-img w-full h-48 object-contain">
@@ -1692,23 +1696,6 @@ const toneLabel = t => `${TONES[t].en} (${TONES[t].pt})`;
 // espelho em torno da tônica (Verde 0): k ↔ −k. Liga cores complementares do Sentirama:
 // Amarelo 1 ↔ Azul 11, Laranja 2 ↔ Violeta 10, Vermelho 3 ↔ Rosa 9, Violeta 4 ↔ Laranja 8, Azul 5 ↔ Amarelo 7.
 const mirrorTone = t => (12 - t) % 12;
-
-// Direções dos 12 tons na Cromasfera: os 12 vértices do icosaedro, orientados como o Sentirama.
-// Pares antipodais = pares espelho (cores complementares): Rosa 9 no topo ↔ Vermelho 3 na base,
-// amarelos à direita ↔ azuis à esquerda, violetas em cima à esquerda ↔ laranjas embaixo à direita,
-// Verde 0 à frente ↔ Verde 6 atrás.
-const ICO_DIRS = (() => {
-  const d = new Array(12), y = 1 / Math.sqrt(5), r = 2 / Math.sqrt(5);
-  d[9] = new THREE.Vector3(0, 1, 0); d[3] = new THREE.Vector3(0, -1, 0);
-  const upper = { 7: 18, 0: 90, 10: 162, 4: 234, 1: 306 };
-  const opposite = { 7: 5, 0: 6, 10: 2, 4: 8, 1: 11 };
-  for (const k in upper) {
-    const a = upper[k] * Math.PI / 180, t = +k;
-    d[t] = new THREE.Vector3(r * Math.cos(a), y, r * Math.sin(a));
-    d[opposite[t]] = new THREE.Vector3(-r * Math.cos(a), -y, -r * Math.sin(a));
-  }
-  return d;
-})();
 
 /* =====================================================================
    NÚCLEO DSP (funções puras, sem DOM nem Three.js) — usado pelo tempo
@@ -2834,8 +2821,6 @@ try {
   if (Array.isArray(w) && w.length === 3 && w.every(Number.isFinite)) AIR_W = w;
 } catch (e) { /* armazenamento indisponível: usa o padrão */ }
 CORE.configure({ ref: REF_PC, a4: A4_HZ, airWeights: AIR_W });
-// Posições no Sentirama como vetores (ver SENT_XYZ no núcleo)
-const SENT_POS = CORE.SENT_XYZ.map(p => new THREE.Vector3(p[0], p[1], p[2]));
 
 /* =====================================================================
    2. MOTOR DE ÁUDIO (Web Audio API)
@@ -3159,11 +3144,12 @@ controls.enablePan = false; controls.minDistance = 3.5; controls.maxDistance = 2
 controls.autoRotateSpeed = 0.45;
 
 // Pós-processamento (brilho néon)
-let composer = null, bloom = null;
+let composer = null, bloom = null, renderPass = null;
 try {
   if (THREE.EffectComposer && THREE.UnrealBloomPass) {
     composer = new THREE.EffectComposer(renderer);
-    composer.addPass(new THREE.RenderPass(scene, camera));
+    renderPass = new THREE.RenderPass(scene, camera);
+    composer.addPass(renderPass);
     bloom = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.7, 0.5, 0.62);
     composer.addPass(bloom);
   }
@@ -3201,11 +3187,9 @@ const U = {
   uLevel: { value: 0 },
   uAir: { value: 0 },
   uPulse: { value: 0 },
-  uTension: { value: 0 },
   uStability: { value: 0 },
   uChroma: { value: AN.vis },
   uCol: { value: TONES.map(o => new THREE.Vector3(o.color.r, o.color.g, o.color.b)) },
-  uDir: { value: ICO_DIRS },
   uTint: { value: new THREE.Color() },
 };
 
@@ -3263,40 +3247,13 @@ function makeIconTexture(type) {
     const g = x.createLinearGradient(30, 20, 100, 110); g.addColorStop(0, '#9ad8ff'); g.addColorStop(1, '#2f9fe6');
     x.fillStyle = g; x.fill(); x.stroke();
     x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 4; x.beginPath(); x.arc(56, 82, 16, Math.PI * 0.6, Math.PI * 1.2); x.stroke();
-  } else if (type === 'sun') {
-    x.fillStyle = '#f7c43a';
-    for (let i = 0; i < 12; i++) {
-      x.save(); x.translate(64, 64); x.rotate(i * TAU / 12);
-      x.beginPath(); x.moveTo(-6, -30); x.quadraticCurveTo(-12, -44, 0, -60); x.quadraticCurveTo(6, -44, 6, -30); x.closePath(); x.fill(); x.stroke(); x.restore();
-    }
-    x.beginPath(); x.arc(64, 64, 30, 0, TAU); x.fillStyle = '#f7dc2f'; x.fill(); x.stroke();
-  } else if (type === 'moon') {
-    x.beginPath(); x.arc(64, 64, 44, 0, TAU); x.fillStyle = '#2f9fe6'; x.fill(); x.stroke();
-    x.globalCompositeOperation = 'destination-out';
-    x.beginPath(); x.arc(46, 56, 40, 0, TAU); x.fill();
-    x.globalCompositeOperation = 'source-over';
   }
   const t = new THREE.CanvasTexture(c); return t;
-}
-function makeTextSprite(text, color, scale = 1) {
-  const c = document.createElement('canvas'), x = c.getContext('2d');
-  const font = '600 44px Cinzel, Georgia, serif';
-  x.font = font;
-  const w = Math.ceil(x.measureText(text).width) + 40;
-  c.width = w; c.height = 72;
-  x.font = font; x.textBaseline = 'middle'; x.textAlign = 'center';
-  x.shadowColor = color; x.shadowBlur = 16; x.fillStyle = color;
-  x.fillText(text, w / 2, 38);
-  const t = new THREE.CanvasTexture(c);
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, depthTest: false }));
-  s.scale.set(w / 72 * 0.32 * scale, 0.32 * scale, 1);
-  s.renderOrder = 10;
-  return s;
 }
 const PAPER = makePaperTexture();
 const GLOW = makeGlowTexture();
 const ICONS = {};
-['air', 'fire', 'earth', 'water', 'sun', 'moon'].forEach(k => ICONS[k] = makeIconTexture(k));
+['air', 'fire', 'earth', 'water'].forEach(k => ICONS[k] = makeIconTexture(k));
 function iconSprite(type, size) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: ICONS[type], transparent: true, depthWrite: false }));
   s.scale.set(size, size, 1); return s;
@@ -3324,171 +3281,10 @@ const bgMat = new THREE.ShaderMaterial({
 scene.add(new THREE.Mesh(new THREE.SphereGeometry(80, 48, 32), bgMat));
 
 const INK = 0x0b0710;
-scene.add(new THREE.AmbientLight(0xffffff, 0.62));
-const keyLight = new THREE.DirectionalLight(0xffffff, 0.7); keyLight.position.set(3, 5, 4); scene.add(keyLight);
 
 /* ---------------------------------------------------------------------
-   MODO 1 — A CROMASFERA 3D (onda-partícula)
+   PARTÍCULAS (matéria e antimatéria em volta da Flor)
    --------------------------------------------------------------------- */
-const M1 = new THREE.Group(); scene.add(M1);
-const sphereVS = `
-uniform float uTime,uLevel,uAir,uTension,uPulse,uStability,uOutline;
-uniform float uChroma[12]; uniform vec3 uDir[12];
-varying vec3 vN; varying vec3 vWorld;
-${NOISE_GLSL}
-float displace(vec3 n){
-  float lobes=0.0;
-  for(int k=0;k<12;k++){ float a=max(dot(n,uDir[k]),0.0); lobes+=uChroma[k]*pow(a,7.0); }
-  float sym=1.0-0.88*uStability;
-  float d=lobes*0.5*sym;
-  float speed=0.16+0.45*max(uAir,0.0);
-  float freq=1.3+1.6*max(-uAir,0.0);
-  float chaos=(0.05+0.2*uLevel+0.12*max(-uAir,0.0))*sym;
-  d+=snoise(n*freq+vec3(0.0,uTime*speed,uTime*speed*0.5))*chaos;
-  float ang=atan(n.z,n.x);
-  d+=uTension*0.2*sin(2.0*ang-uTime*2.2)*n.y*2.0;
-  d+=uPulse*0.06+uStability*0.04*sin(uTime*2.0);
-  return d;
-}
-void main(){
-  vec3 n=normalize(position);
-  float d=displace(n);
-  vec3 p=n*(1.3+d+uOutline);
-  vN=n;
-  vec4 w=modelMatrix*vec4(p,1.0); vWorld=w.xyz;
-  gl_Position=projectionMatrix*viewMatrix*w;
-}`;
-const sphereFS = `
-uniform float uTime,uLevel,uStability,uAir;
-uniform float uChroma[12]; uniform vec3 uDir[12]; uniform vec3 uCol[12];
-varying vec3 vN; varying vec3 vWorld;
-${NOISE_GLSL}
-void main(){
-#ifdef OUTLINE
-  gl_FragColor=vec4(0.03,0.02,0.05,1.0);
-#else
-  vec3 nrm=normalize(cross(dFdx(vWorld),dFdy(vWorld)));
-  vec3 n=normalize(vN);
-  vec3 col=vec3(0.0); float ws=0.0;
-  for(int k=0;k<12;k++){ float a=max(dot(n,uDir[k]),0.0); float w=pow(a,3.0)*(0.12+1.8*uChroma[k]); col+=uCol[k]*w; ws+=w; }
-  col/=max(ws,1e-4);
-  // pigmento de aquarela: granulação e manchas
-  float g1=snoise(vWorld*5.5)*0.5+0.5;
-  float g2=snoise(n*2.2+vec3(uTime*0.04))*0.5+0.5;
-  col*=0.78+0.32*g2;
-  col=mix(col,col*col*1.35,0.3*g1);
-  vec3 L=normalize(vec3(0.4,0.9,0.7));
-  float diff=0.5+0.5*max(dot(nrm,L),0.0);
-  vec3 V=normalize(cameraPosition-vWorld);
-  float fr=pow(1.0-max(dot(nrm,V),0.0),2.2);
-  vec3 c=col*diff*(0.34+0.5*uLevel)+col*fr*(0.25+0.75*uLevel)*(1.0+0.5*max(uAir,0.0));
-  c=mix(c,c+vec3(0.12,0.55,0.18)*fr,uStability*0.7);
-  gl_FragColor=vec4(c,1.0);
-#endif
-}`;
-const sphereUniforms = Object.assign({}, U, { uOutline: { value: 0 } });
-const sphereGeo = new THREE.IcosahedronGeometry(1, 30);
-const sphereMat = new THREE.ShaderMaterial({ uniforms: sphereUniforms, vertexShader: sphereVS, fragmentShader: sphereFS, extensions: { derivatives: true } });
-const outlineUniforms = Object.assign({}, U, { uOutline: { value: 0.045 } });
-const outlineMat = new THREE.ShaderMaterial({ uniforms: outlineUniforms, vertexShader: sphereVS, fragmentShader: sphereFS, side: THREE.BackSide, defines: { OUTLINE: '' } });
-const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
-const outlineMesh = new THREE.Mesh(sphereGeo, outlineMat);
-M1.add(outlineMesh, sphereMesh);
-const coreGlow = glowSprite(0xffffff, 5.5, 0.1); M1.add(coreGlow);
-
-// Fita cromática de 12 tons (Cap. 7): um tubo contínuo com 12 contas ovais. Como os ultravioletas
-// repetem as cores das naturais, o ciclo de cores dá duas voltas (verde→amarelo→laranja→vermelho→
-// violeta→azul→verde→amarelo→laranja→rosa→violeta→azul). A fita corre sobre a esfera como a costura
-// de uma bola de tênis: vista de lado forma um “S”, de cima dois arcos. Em Ré (Verde 0) ela se aplaina
-// num anel simétrico; a tensão Fá ↔ Si aprofunda a torção em S.
-const RIB_N = 480, RIB_M = 10;
-const ribbon = new THREE.Group(); ribbon.rotation.set(0.42, 0, 0.18); M1.add(ribbon);
-const ribPos = new Float32Array(RIB_N * RIB_M * 3), ribNrm = new Float32Array(RIB_N * RIB_M * 3);
-const ribCol = new Float32Array(RIB_N * RIB_M * 3), ribInk = new Float32Array(RIB_N * RIB_M * 3);
-const ribIdx = [];
-for (let i = 0; i < RIB_N; i++) for (let j = 0; j < RIB_M; j++) {
-  const i1 = (i + 1) % RIB_N, j1 = (j + 1) % RIB_M;
-  const a = i * RIB_M + j, b = i1 * RIB_M + j, c = i1 * RIB_M + j1, d = i * RIB_M + j1;
-  ribIdx.push(a, d, b, b, d, c);
-}
-const ribGeo = new THREE.BufferGeometry();
-ribGeo.setAttribute('position', new THREE.BufferAttribute(ribPos, 3));
-ribGeo.setAttribute('normal', new THREE.BufferAttribute(ribNrm, 3));
-ribGeo.setAttribute('color', new THREE.BufferAttribute(ribCol, 3));
-ribGeo.setIndex(ribIdx);
-const ribInkGeo = new THREE.BufferGeometry();
-ribInkGeo.setAttribute('position', new THREE.BufferAttribute(ribInk, 3));
-ribInkGeo.setIndex(ribIdx);
-const ribMesh = new THREE.Mesh(ribGeo, new THREE.MeshLambertMaterial({ vertexColors: true }));
-const ribInkMesh = new THREE.Mesh(ribInkGeo, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide }));
-ribMesh.frustumCulled = ribInkMesh.frustumCulled = false;
-ribbon.add(ribInkMesh, ribMesh);
-// contas ovais (todas ovais, como no desenho; as ultravioletas um pouco menores)
-const beadGeo = new THREE.SphereGeometry(1, 24, 16);
-const ribNodes = TONES.map(o => {
-  const g = new THREE.Group(), body = new THREE.Group();
-  const m = new THREE.Mesh(beadGeo, new THREE.MeshLambertMaterial({ color: o.color.clone(), emissive: o.color.clone(), emissiveIntensity: 0.15 }));
-  const ink = new THREE.Mesh(beadGeo, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide }));
-  ink.scale.setScalar(1.2);
-  body.add(ink, m);
-  const glow = glowSprite(o.color, 0.7, 0);
-  g.add(body, glow);
-  g.userData = { body, m, glow };
-  ribbon.add(g); return g;
-});
-const COS_M = [], SIN_M = [];
-for (let j = 0; j < RIB_M; j++) { COS_M.push(Math.cos(j / RIB_M * TAU)); SIN_M.push(Math.sin(j / RIB_M * TAU)); }
-const _P = new THREE.Vector3(), _Pn = new THREE.Vector3(), _Pp = new THREE.Vector3();
-const _T = new THREE.Vector3(), _Nr = new THREE.Vector3(), _B = new THREE.Vector3(), _X = new THREE.Vector3(1, 0, 0);
-let seamB = 0.16;
-// curva da bola de tênis na esfera unitária (a + b = 1): b = 0 é o equador; b → 0,5 aprofunda o “S”
-function seamPoint(t, out, a, b, R, time) {
-  const h = 2 * Math.sqrt(a * b);
-  const r = R * (1 + 0.035 * Math.sin(6 * t + time * 1.4) * (1 - AN.stability) + 0.03 * AN.pulse * Math.sin(12 * t));
-  return out.set((a * Math.cos(t) + b * Math.cos(3 * t)) * r, h * Math.sin(2 * t) * r, (a * Math.sin(t) - b * Math.sin(3 * t)) * r);
-}
-function updateRibbon(dt, time) {
-  const bT = (0.15 + 0.25 * AN.tension) * (1 - 0.92 * AN.stability);
-  seamB += (bT - seamB) * smoothK(dt, 2.5);
-  const b = seamB, a = 1 - b, R = 1.95, step = TAU / RIB_N;
-  const rad = 0.045 + 0.022 * AN.level + 0.012 * AN.pulse, ink = 0.022;
-  for (let i = 0; i < RIB_N; i++) {
-    const s = i / RIB_N, t = s * TAU;
-    seamPoint(t, _P, a, b, R, time);
-    seamPoint(t + step * 0.5, _Pn, a, b, R, time);
-    seamPoint(t - step * 0.5, _Pp, a, b, R, time);
-    _T.subVectors(_Pn, _Pp).normalize();
-    _Nr.copy(_P).normalize(); _Nr.addScaledVector(_T, -_Nr.dot(_T)).normalize();
-    _B.crossVectors(_T, _Nr);
-    const tf = s * 12, k0 = Math.floor(tf) % 12, k1 = (k0 + 1) % 12;
-    let f = tf - Math.floor(tf); f = f * f * (3 - 2 * f);
-    const c0 = TONES[k0].color, c1 = TONES[k1].color;
-    const br = 0.55 + 0.75 * (AN.vis[k0] * (1 - f) + AN.vis[k1] * f) + 0.15 * AN.stability;
-    const cr = (c0.r + (c1.r - c0.r) * f) * br, cg = (c0.g + (c1.g - c0.g) * f) * br, cb = (c0.b + (c1.b - c0.b) * f) * br;
-    for (let j = 0; j < RIB_M; j++) {
-      const ox = COS_M[j] * _Nr.x + SIN_M[j] * _B.x, oy = COS_M[j] * _Nr.y + SIN_M[j] * _B.y, oz = COS_M[j] * _Nr.z + SIN_M[j] * _B.z;
-      const v = (i * RIB_M + j) * 3;
-      ribPos[v] = _P.x + ox * rad; ribPos[v + 1] = _P.y + oy * rad; ribPos[v + 2] = _P.z + oz * rad;
-      ribInk[v] = _P.x + ox * (rad + ink); ribInk[v + 1] = _P.y + oy * (rad + ink); ribInk[v + 2] = _P.z + oz * (rad + ink);
-      ribNrm[v] = ox; ribNrm[v + 1] = oy; ribNrm[v + 2] = oz;
-      ribCol[v] = cr; ribCol[v + 1] = cg; ribCol[v + 2] = cb;
-    }
-    if (i % (RIB_N / 12) === 0) {
-      const k = i / (RIB_N / 12), node = ribNodes[k], vk = AN.vis[k];
-      node.position.copy(_P);
-      node.userData.body.quaternion.setFromUnitVectors(_X, _T);
-      const sz = (TONES[k].uv ? 0.82 : 1) * (1 + vk * 0.9 + AN.pulse * 0.15);
-      node.userData.body.scale.set(0.17 * sz, 0.105 * sz, 0.105 * sz);
-      node.userData.m.material.emissiveIntensity = 0.12 + vk * 0.8;
-      node.userData.glow.material.opacity = 0.1 + vk * 0.8;
-    }
-  }
-  ribGeo.attributes.position.needsUpdate = true;
-  ribGeo.attributes.normal.needsUpdate = true;
-  ribGeo.attributes.color.needsUpdate = true;
-  ribInkGeo.attributes.position.needsUpdate = true;
-}
-
 // Partículas: matéria (espirala para fora, cor do tom) × antimatéria (espirala para dentro, cor do tom espelho)
 const PART_N = 5200;
 function makeParticles(rMin, rMax, flat) {
@@ -3537,10 +3333,9 @@ function makeParticles(rMin, rMax, flat) {
   pts.frustumCulled = false;
   return pts;
 }
-const particles1 = makeParticles(1.7, 5.2, 0.6); M1.add(particles1);
 
 /* ---------------------------------------------------------------------
-   MODO 2 — A FLOR CROMA-SÔNICA (mandala de 12 pétalas)
+   A FLOR CROMA-SÔNICA · estilo Aquarela (mandala de 12 pétalas em 3D)
    --------------------------------------------------------------------- */
 const M2 = new THREE.Group(); scene.add(M2);
 const inkMat = new THREE.LineBasicMaterial({ color: INK });
@@ -3717,209 +3512,670 @@ function updateFlower(dt, time) {
   M2.scale.setScalar(1 + AN.pulse * 0.015);
 }
 
-/* ---------------------------------------------------------------------
-   MODO 3 — O SENTIRAMA 3D (eixos de polaridade)
-   --------------------------------------------------------------------- */
-const M3 = new THREE.Group(); scene.add(M3);
-const AX_L = 3.2;
-// Cruz astrológica = interseção de dois planos (ampulhetas de cones que se estreitam até o centro):
-//  Plano Físico (horizontal): Azul (−, frio) ↔ Amarelo (+, quente), mediados pelo verde.
-//  Plano Espiritual (vertical): Vermelho (denso, peso) ↔ Rosa (sutil, leveza).
-// O ponto de interseção é a tônica (Verde 0). Seguindo Kandinsky, o eixo físico é levemente
-// inclinado: o amarelo avança em direção ao observador e o azul recua.
-const PHYS_TILT = Math.atan2(0.42, 1);
-const crossG = new THREE.Group(); crossG.rotation.y = -PHYS_TILT; M3.add(crossG);
-function coneMaterial(opacity) {
-  return new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, side: THREE.DoubleSide, vertexColors: true,
-    uniforms: { uOpacity: { value: opacity }, uGlow: { value: 0 }, uPaper: { value: PAPER } },
-    vertexShader: `varying vec3 vC; varying vec3 vN; varying vec3 vV; varying vec2 vUv;
-      void main(){ vC=color; vUv=uv; vec4 mv=modelViewMatrix*vec4(position,1.0);
-        vN=normalize(normalMatrix*normal); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }`,
-    fragmentShader: `uniform float uOpacity,uGlow; uniform sampler2D uPaper; varying vec3 vC; varying vec3 vN; varying vec3 vV; varying vec2 vUv;
-      void main(){ float e=abs(dot(normalize(vN),normalize(vV))); float ink=smoothstep(0.2,0.05,e);
-        float paper=texture2D(uPaper,vUv*vec2(2.0,1.0)).r;
-        vec3 c=vC*(0.72+0.32*paper)*(1.0+0.6*uGlow);
-        gl_FragColor=vec4(mix(c,vec3(0.03,0.02,0.05),ink),mix(uOpacity*(0.75+0.25*paper)*(1.0+uGlow),0.95,ink)); }`,
-  });
-}
-function planeCone(dir, colTip, colEnd) {
-  const geo = new THREE.CylinderGeometry(0.44, 0.0, AX_L, 48, 16, true);
-  geo.translate(0, AX_L / 2, 0);
-  const pos = geo.attributes.position, cols = new Float32Array(pos.count * 3);
-  const c0 = new THREE.Color(colTip), c1 = new THREE.Color(colEnd), tmp = new THREE.Color();
-  for (let i = 0; i < pos.count; i++) {
-    tmp.copy(c0).lerp(c1, Math.pow(pos.getY(i) / AX_L, 1.4));
-    cols[i * 3] = tmp.r; cols[i * 3 + 1] = tmp.g; cols[i * 3 + 2] = tmp.b;
-  }
-  geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-  const m = new THREE.Mesh(geo, coneMaterial(0.42));
-  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
-  crossG.add(m); return m;
-}
-function inkSphere(color, r, pos) {
-  const g = new THREE.Group();
-  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 40, 28), new THREE.MeshLambertMaterial({ color, map: PAPER, emissive: new THREE.Color(color), emissiveIntensity: 0.12 }));
-  const ink = new THREE.Mesh(m.geometry, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide }));
-  ink.scale.setScalar(1.07);
-  g.add(ink, m); g.position.set(...pos); g.userData.m = m;
-  crossG.add(g); return g;
-}
-// pólos na ordem: Rosa (cima), Vermelho (baixo), Amarelo (direita), Azul (esquerda)
-const POLES = [
-  { dir: [0, 1, 0], tip: '#f6a9cf', col: '#f27bb8', icon: 'air', label: 'ROSA · SUTIL', ip: [0, AX_L + 0.85, 0], lp: [0, AX_L + 1.42, 0] },
-  { dir: [0, -1, 0], tip: '#ee7a5e', col: '#e8402c', icon: 'earth', label: 'VERMELHO · DENSO', ip: [0, -AX_L - 0.85, 0], lp: [0, -AX_L - 1.42, 0] },
-  { dir: [1, 0, 0], tip: '#7fcf4a', col: '#f7dc2f', icon: 'fire', label: '+ AMARELO · QUENTE', ip: [AX_L + 0.9, 0, 0], lp: [AX_L + 0.9, -0.72, 0] },
-  { dir: [-1, 0, 0], tip: '#3fb58a', col: '#2f9fe6', icon: 'water', label: '− AZUL · FRIO', ip: [-AX_L - 0.9, 0, 0], lp: [-AX_L - 0.9, -0.72, 0] },
-];
-const poleObjs = POLES.map(p => {
-  const d = new THREE.Vector3(...p.dir);
-  const cone = planeCone(d, p.tip, p.col);
-  const sphere = inkSphere(p.col, 0.46, d.clone().multiplyScalar(AX_L).toArray());
-  const glow = glowSprite(new THREE.Color(p.col), 2.0, 0.2); glow.position.copy(sphere.position); crossG.add(glow);
-  const icon = iconSprite(p.icon, 0.6); icon.position.set(...p.ip); crossG.add(icon);
-  return { cone, sphere, glow, icon };
-});
-// círculos intermediários do Plano Físico: azul-esverdeado e verde-amarelado
-inkSphere('#45b39a', 0.3, [-(AX_L - 0.66), 0, 0]);
-inkSphere('#a8d43a', 0.3, [AX_L - 0.66, 0, 0]);
-// interseção = tônica
-const tonicMark = new THREE.Group(); crossG.add(tonicMark);
-const tonicCore = inkSphere('#43c24a', 0.13, [0, 0, 0]); crossG.remove(tonicCore); tonicMark.add(tonicCore);
-const tonicGlow = glowSprite(TONES[0].color, 1.2, 0.3); tonicMark.add(tonicGlow);
-// a cruz dentro do círculo (símbolo astrológico da Terra)
-function ring(r, color, opacity, rotX = 0, rotY = 0) {
-  const pts = []; for (let i = 0; i <= 160; i++) pts.push(new THREE.Vector3(Math.cos(i / 160 * TAU) * r, Math.sin(i / 160 * TAU) * r, 0));
-  const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color, transparent: true, opacity }));
-  l.rotation.set(rotX, rotY, 0); return l;
-}
-const sentRing = new THREE.Mesh(new THREE.TorusGeometry(AX_L, 0.018, 8, 160), new THREE.MeshBasicMaterial({ color: 0xd9c98a, transparent: true, opacity: 0.5 }));
-crossG.add(sentRing, ring(AX_L, 0xffffff, 0.1, Math.PI / 2), ring(AX_L, 0xffffff, 0.1, 0, Math.PI / 2));
-const sunS = iconSprite('sun', 0.5); sunS.position.set(AX_L + 0.9, 0.72, 0); crossG.add(sunS);
-const moonS = iconSprite('moon', 0.45); moonS.position.set(-AX_L - 0.9, 0.72, 0); crossG.add(moonS);
-const labelSprites = [];
-function buildLabels() {
-  labelSprites.forEach(s => s.parent && s.parent.remove(s)); labelSprites.length = 0;
-  const add = (text, col, sc, pos) => { const s = makeTextSprite(text, col, sc); s.position.set(...pos); crossG.add(s); labelSprites.push(s); };
-  POLES.forEach(p => add(p.label, p.col, 0.9, p.lp));
-  add('PLANO FÍSICO', '#9fd8a8', 0.6, [AX_L * 0.5, 0.42, 0]);
-  add('PLANO ESPIRITUAL', '#f0a0bf', 0.6, [1.25, AX_L * 0.55, 0]);
-  add('TÔNICA · VERDE 0', '#43c24a', 0.6, [0, -0.42, 0]);
-  labelSprites.forEach(s => s.visible = document.getElementById('opt-labels').checked);
-}
-// nós dos tons
-const sentNodes = TONES.map(o => {
-  const g = new THREE.Group();
-  const geo = o.uv ? new THREE.TetrahedronGeometry(0.13) : new THREE.SphereGeometry(0.1, 20, 14);
-  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: o.color.clone() }));
-  const ink = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })); ink.scale.setScalar(1.25);
-  const glow = glowSprite(o.color, 0.8, 0.1);
-  g.add(ink, m, glow);
-  g.position.copy(SENT_POS[o.t]).multiplyScalar(AX_L * 0.78);
-  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), g.position.clone()]),
-    new THREE.LineBasicMaterial({ color: o.color, transparent: true, opacity: 0.08, blending: THREE.AdditiveBlending, depthWrite: false }));
-  M3.add(line, g);
-  g.userData = { glow, line, m };
-  return g;
-});
-// orbe de luz + rastro
-const orb = new THREE.Group(); M3.add(orb);
-const orbCore = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 20), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-const orbGlow = glowSprite(0xffffff, 2.0, 0.65);
-const orbHalo = glowSprite(0xffffff, 4.2, 0.12);
-orb.add(orbHalo, orbGlow, orbCore);
-const TRAIL_N = 260;
-const trailPos = new Float32Array(TRAIL_N * 3), trailCol = new Float32Array(TRAIL_N * 3);
-const trailGeo = new THREE.BufferGeometry();
-trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPos, 3));
-trailGeo.setAttribute('color', new THREE.BufferAttribute(trailCol, 3));
-const trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-trail.frustumCulled = false; M3.add(trail);
-const orbTarget = new THREE.Vector3(), orbPos = new THREE.Vector3();
-const particles3 = makeParticles(2.0, 6.5, 1.0); M3.add(particles3);
-
-function updateSentirama(dt, time) {
-  const R = AX_L * 0.85;
-  const px = clamp(AN.polarity, -1, 1), py = clamp(AN.vertical, -1, 1), pz = clamp(AN.depth, -1, 1);
-  // Modo Ar (Rosa/Amarelo) puxa o orbe para o quadrante sutil-quente; Modo Terra (Vermelho/Azul) para o denso-frio
-  const air = AN.air * 0.32;
-  orbTarget.set((px + air * 0.9) * R, (py + air) * R, (pz + air * 0.38) * R);
-  // órbita: o orbe circula ao redor do seu ponto de atração; raio cresce com a energia
-  const orbitR = 0.2 + 0.55 * AN.level, sp = 1.1 + 1.6 * Math.max(AN.air, 0);
-  orbTarget.x += Math.cos(time * sp) * orbitR; orbTarget.z += Math.sin(time * sp) * orbitR;
-  orbTarget.y += Math.sin(time * sp * 0.5) * orbitR * 0.4;
-  orbPos.lerp(orbTarget, smoothK(dt, 3));
-  orb.position.copy(orbPos);
-  const c = AN.color;
-  orbCore.material.color.copy(c).lerp(new THREE.Color(1, 1, 1), 0.35);
-  orbGlow.material.color.copy(c); orbHalo.material.color.copy(c);
-  const s = 1 + AN.level * 0.9 + AN.pulse * 0.5;
-  orbCore.scale.setScalar(s); orbGlow.scale.setScalar(2.0 * s); orbHalo.scale.setScalar(4.2 * s);
-  // rastro
-  trailPos.copyWithin(3, 0, (TRAIL_N - 1) * 3);
-  trailPos[0] = orbPos.x; trailPos[1] = orbPos.y; trailPos[2] = orbPos.z;
-  trailCol.copyWithin(3, 0, (TRAIL_N - 1) * 3);
-  const a = 0.4 + 0.6 * AN.level;
-  trailCol[0] = c.r * a; trailCol[1] = c.g * a; trailCol[2] = c.b * a;
-  for (let i = 1; i < TRAIL_N; i++) { const f = 0.985; trailCol[i * 3] *= f; trailCol[i * 3 + 1] *= f; trailCol[i * 3 + 2] *= f; }
-  trailGeo.attributes.position.needsUpdate = true; trailGeo.attributes.color.needsUpdate = true;
-  sentNodes.forEach((g, k) => {
-    const v = AN.vis[k];
-    g.scale.setScalar(1 + v * 2.2);
-    g.userData.glow.material.opacity = 0.08 + v * 0.9;
-    g.userData.line.material.opacity = 0.06 + v * 0.6;
-    g.rotation.y = time * 0.7;
-  });
-  // pólos acendem conforme a posição nos dois planos
-  const pw = [Math.max(py, 0), Math.max(-py, 0), Math.max(px, 0), Math.max(-px, 0)];
-  poleObjs.forEach((p, i) => {
-    p.glow.material.opacity = 0.08 + pw[i] * 0.5;
-    p.sphere.userData.m.material.emissiveIntensity = 0.08 + pw[i] * 0.45;
-    p.cone.material.uniforms.uGlow.value = pw[i] * 0.5;
-    p.icon.scale.setScalar(0.6 + pw[i] * 0.2);
-  });
-  const t0 = Math.max(AN.vis[0], AN.stability);
-  tonicGlow.material.opacity = 0.15 + 0.4 * t0;
-  tonicMark.scale.setScalar(1 + 0.8 * t0 + 0.2 * AN.pulse);
-  sunS.material.rotation = time * 0.2;
-  M3.rotation.y = Math.sin(time * 0.08) * 0.25;
-}
-
 /* =====================================================================
-   5. MODOS, CÂMERA E LOOP
+   5. ESTILOS DA FLOR, CÂMERA E LOOP
+   A Flor tem cinco estilos. A Aquarela é a cena 3D acima. Os estilos
+   retrô desenham em Canvas 2D num canvas fora da tela; esse canvas vira
+   a textura de um quadro de tela inteira, com o acabamento (shader) de
+   cada estilo: tubo CRT, papel impresso, fósforo, fita VHS.
    ===================================================================== */
-const MODES = [
-  { group: M1, cam: new THREE.Vector3(0, 1.4, 8.6), bloom: 0.75, rotate: true },
-  { group: M2, cam: new THREE.Vector3(0, -0.6, 11.2), bloom: 0.3, rotate: false },
-  { group: M3, cam: new THREE.Vector3(6.4, 3.3, 11.6), bloom: 0.5, rotate: true },
-];
-let mode = 0, camTween = null;
-// em telas em pé (celular) a câmera recua para a cena caber na largura
-const camFor = m => MODES[m].cam.clone().multiplyScalar(camera.aspect < 1 ? Math.min(1.9, 1 / Math.pow(camera.aspect, 0.55)) : 1);
-function setMode(m) {
-  mode = m;
-  MODES.forEach((o, i) => o.group.visible = i === m);
-  document.querySelectorAll('#mode-seg button').forEach(b => b.classList.toggle('on', +b.dataset.mode === m));
-  camTween = { from: camera.position.clone(), to: camFor(m), t: 0 };
-  controls.target.set(0, 0, 0);
-  if (bloom) bloom.strength = MODES[m].bloom;
-  applyRotate();
+const FLOR_CAM = new THREE.Vector3(0, -0.6, 11.2);
+// distância da câmera: em telas deitadas a Flor inteira (raio 4,5) cabe na faixa livre entre as barras;
+// em telas em pé (celular) a câmera recua para a Flor caber na largura
+function camFor() {
+  let d = FLOR_CAM.length() * (camera.aspect < 1 ? Math.min(1.9, 1 / Math.pow(camera.aspect, 0.55)) : 1);
+  if (camera.aspect >= 1) {
+    const fr = florFrame(window.innerWidth, window.innerHeight);
+    d = Math.max(d, 4.6 * window.innerHeight / (Math.max(240, fr.avail) * Math.tan(camera.fov * Math.PI / 360)));
+  }
+  return FLOR_CAM.clone().setLength(Math.min(d, controls.maxDistance));
 }
-// auto-rotação da câmera (órbita automática ao redor da cena)
-let AUTO_ROT = true;
-try { if (localStorage.getItem('croma.rotate') === '0') AUTO_ROT = false; } catch (e) { /* sem armazenamento */ }
-function applyRotate() { controls.autoRotate = AUTO_ROT && MODES[mode].rotate; }
-function setAutoRotate(on, save = true) {
-  AUTO_ROT = on;
-  $('opt-rotate').checked = on;
-  const b = $('btn-rotate');
-  b.classList.toggle('active', on); b.setAttribute('aria-pressed', on);
-  b.title = on ? 'Auto-rotação da câmera ligada — clique para parar' : 'Auto-rotação da câmera desligada — clique para ligar';
-  applyRotate();
-  if (save) { try { localStorage.setItem('croma.rotate', on ? '1' : '0'); } catch (e) { /* sem armazenamento */ } }
+let camTween = null, viewOff = 0;
+
+// ---------- o que todos os estilos mostram ----------
+const ang2d = t => -Math.PI / 2 + t * Math.PI / 6;   // tom 0 no topo, sentido horário (canvas: y para baixo)
+const CHORD_SUF = { maior: '', menor: 'm', diminuto: '°', aumentado: '+' };
+const plain = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+const F = { I: new Float32Array(12), peak: new Float32Array(12), lvl: 0, pulse: 0, air: 0, stab: 0, chordS: 0, beat: 0, hits: 0, lastOn: 0, idle: true };
+function florState(dt) {
+  for (let k = 0; k < 12; k++) {
+    F.I[k] += (AN.vis[k] - F.I[k]) * smoothK(dt, 10);
+    F.peak[k] = Math.max(F.peak[k] - dt * 0.6, F.I[k]);
+  }
+  F.lvl = AN.level; F.pulse = AN.pulse; F.air = AN.air; F.stab = AN.stability; F.chordS = AN.chordStrength;
+  if (lastOnset !== F.lastOn) { if (AN.pulse > 0.5) F.hits++; F.lastOn = lastOnset; }
+  F.beat += dt * (AN.bpm || 96) / 60;
+  F.idle = A.source === 'none' && !KEYS.on && AN.level < 0.02;
+}
+// nota, cor e acorde em texto
+function florText() {
+  const o = AN.dominant >= 0 ? TONES[AN.dominant] : null, ch = AN.chord;
+  return {
+    o, note: o ? o.pt : '', color: o ? `${o.name} ${o.t}` : '',
+    chord: ch ? TONES[ch.root].pt + CHORD_SUF[ch.quality] : '', chordLong: ch ? `${TONES[ch.root].pt} ${ch.quality}` : '',
+    bpm: AN.bpm ? Math.round(AN.bpm) : 0,
+  };
+}
+// as pétalas da Aquarela em 2D (mesmas curvas), apontando para cima, em unidades da Flor (ponta em r = 4,05)
+function pathNatural(g) {
+  g.moveTo(-0.3, -1.55);
+  g.bezierCurveTo(-1.0, -2.0, -1.05, -3.05, -0.45, -3.6);
+  g.bezierCurveTo(-0.15, -3.85, 0.1, -3.95, 0.36, -4.05);
+  g.bezierCurveTo(0.2, -3.85, 0.45, -3.65, 0.62, -3.35);
+  g.bezierCurveTo(1.0, -2.8, 0.95, -1.95, 0.3, -1.55);
+  g.quadraticCurveTo(0, -1.45, -0.3, -1.55);
+  g.closePath();
+}
+function pathDiamond(g, sc = 1, cy = 2.45) {
+  const P = (x, y) => [x * sc, -(cy + (y - 2.45) * sc)];
+  g.moveTo(...P(0, 1.6));
+  g.quadraticCurveTo(...P(0.44, 2.1), ...P(0.37, 2.42));
+  g.quadraticCurveTo(...P(0.26, 2.9), ...P(0, 3.38));
+  g.quadraticCurveTo(...P(-0.26, 2.9), ...P(-0.37, 2.42));
+  g.quadraticCurveTo(...P(-0.44, 2.1), ...P(0, 1.6));
+  g.closePath();
+}
+const florPetal = (g, uv) => uv ? pathDiamond(g) : pathNatural(g);
+// pontos fixos (estrelas, picos de montanha) para não piscarem a cada quadro
+const SEEDS = Array.from({ length: 220 }, () => [Math.random(), Math.random(), Math.random(), Math.random()]);
+const hexRgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const rgbHex = c => '#' + c.map(v => Math.round(Math.min(255, Math.max(0, v))).toString(16).padStart(2, '0')).join('');
+const mixHex = (a, b, t) => { const x = hexRgb(a), y = hexRgb(b); return rgbHex(x.map((v, i) => v + (y[i] - v) * t)); };
+// faixa livre da tela, entre a barra superior e a barra de baixo (medida em px CSS; ver measureSafe)
+const SAFE = { top: 76, bottom: 130 };
+function measureSafe() {
+  const tb = document.getElementById('topbar'), bt = document.getElementById('bottom');
+  if (tb) SAFE.top = tb.getBoundingClientRect().bottom + 10;
+  if (bt) SAFE.bottom = window.innerHeight - bt.getBoundingClientRect().top + 14;
+}
+// a mesma faixa em px do canvas do estilo; com a interface oculta (H), a tela toda
+function florFrame(W, H) {
+  const sc = H / window.innerHeight, hide = document.body.classList.contains('hidden-ui');
+  const top = (hide ? 14 : SAFE.top) * sc, bottom = H - (hide ? 14 : SAFE.bottom) * sc;
+  return { sc, top, bottom, cy: (top + bottom) / 2, avail: bottom - top };
+}
+// fontes dos estilos retrô: carregadas na primeira vez que o estilo aparece
+const FONT_OK = {};
+function needFont(spec) {
+  if (FONT_OK[spec] !== undefined || !document.fonts) return;
+  FONT_OK[spec] = false;
+  document.fonts.load(spec).then(() => { FONT_OK[spec] = true; }, () => { /* fica a fonte reserva */ });
+}
+
+// ---------- o quadro de tela inteira dos estilos retrô ----------
+const postScene = new THREE.Scene();
+const postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const RC = document.createElement('canvas'), RX = RC.getContext('2d');
+RC.width = RC.height = 2;
+const rTex = new THREE.CanvasTexture(RC);
+rTex.generateMipmaps = false; rTex.minFilter = rTex.magFilter = THREE.LinearFilter;
+const postQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2));
+postQuad.frustumCulled = false; postScene.add(postQuad);
+const texRes = new THREE.Vector2(2, 2), viewPx = new THREE.Vector2(1, 1);
+const POST_VS = 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.0,1.0); }';
+const GLSL_HASH = `float h21(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
+  float vnoise(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.0-2.0*f);
+    return mix(mix(h21(i),h21(i+vec2(1.0,0.0)),f.x),mix(h21(i+vec2(0.0,1.0)),h21(i+vec2(1.0,1.0)),f.x),f.y); }`;
+function postMaterial(frag, extra = {}) {
+  return new THREE.ShaderMaterial({
+    uniforms: Object.assign({ uTex: { value: rTex }, uRes: { value: texRes }, uView: { value: viewPx }, uTime: U.uTime, uLevel: U.uLevel, uPulse: U.uPulse }, extra),
+    vertexShader: POST_VS, fragmentShader: frag, depthTest: false, depthWrite: false,
+  });
+}
+// resolução interna dos estilos não pixelados: até DPR 1,25 e ~1,6 milhão de pixels
+function hiRes(w, h, maxDpr = 1.25) {
+  let s = Math.min(DPR, maxDpr);
+  const px = w * h * s * s;
+  if (px > 1.6e6) s *= Math.sqrt(1.6e6 / px);
+  return [Math.max(2, Math.round(w * s)), Math.max(2, Math.round(h * s))];
+}
+
+/* ---------- Fliperama 8-bit: pixel art num tubo CRT ---------- */
+const ARC_HUES = ['#43c24a', '#f7dc2f', '#f7902f', '#e8402c', '#8f4fd0', '#2f9fe6', '#f27bb8'];
+const ARC_DARK = ARC_HUES.map(h => rgbHex(hexRgb(h).map(v => v * 0.4)));
+const ARC_PAL = ['#000000', '#ffffff', ...ARC_HUES, ...ARC_DARK];   // 16 cores
+const arcDark = hex => ARC_DARK[ARC_HUES.indexOf(hex)];
+const ARC_FONT = '8px "Press Start 2P"';
+const STYLE_ARCADE = {
+  retro: true, pixel: true, name: 'Fliperama', bloom: [0.55, 0.35, 0.45],
+  res(w, h) {   // o lado menor tem entre 140 e 240 pixels, como as placas de fliperama
+    const short = Math.min(w, h), n = Math.max(140, Math.min(240, Math.round(short / 3.6)));
+    return w >= h ? [Math.round(n * w / h), n] : [n, Math.round(n * h / w)];
+  },
+  enter() { needFont(ARC_FONT); },
+  mat: postMaterial(`uniform sampler2D uTex; uniform vec2 uRes,uView; uniform float uTime; uniform vec3 uPal[16]; varying vec2 vUv;
+    float bayer2(vec2 a){ a=floor(a); return fract(dot(a,vec2(0.5,a.y*0.75))); }
+    float bayer4(vec2 a){ return bayer2(0.5*a)*0.25+bayer2(a); }
+    vec2 curve(vec2 uv){ uv=uv*2.0-1.0; vec2 o=abs(uv.yx)/vec2(5.5,4.5); uv=uv+uv*o*o; return uv*0.5+0.5; }
+    void main(){
+      vec2 uv=curve(vUv);
+      float edge=min(min(uv.x,uv.y),min(1.0-uv.x,1.0-uv.y));
+      if(edge<0.0){ gl_FragColor=vec4(0.0,0.0,0.0,1.0); return; }
+      vec2 px=uv*uRes, cell=floor(px);
+      vec3 c=texture2D(uTex,(cell+0.5)/uRes).rgb;
+      c+=(bayer4(cell)-0.5)*0.18;                     // pontilhado ordenado 4×4
+      float bd=1e9; vec3 q=vec3(0.0);
+      for(int i=0;i<16;i++){ vec3 d=c-uPal[i]; float e=dot(d*d,vec3(0.3,0.59,0.11)); if(e<bd){ bd=e; q=uPal[i]; } }
+      float rowPx=uView.y/uRes.y, k=clamp((rowPx-1.6)/2.0,0.0,1.0);
+      float fy=fract(px.y)-0.5;
+      float scan=mix(1.0,mix(0.5,1.0,exp(-fy*fy*12.0)),k);   // linhas de varredura
+      float m=mod(gl_FragCoord.x,3.0);
+      vec3 mask=m<1.0?vec3(1.0,0.72,0.72):(m<2.0?vec3(0.72,1.0,0.72):vec3(0.72,0.72,1.0));   // máscara de fósforo
+      q*=scan*mix(vec3(1.0),mask,0.45*k)*1.22;
+      float v=16.0*uv.x*uv.y*(1.0-uv.x)*(1.0-uv.y);
+      q*=pow(v,0.22)*smoothstep(0.0,0.006,edge);
+      q*=0.985+0.015*sin(uTime*110.0);
+      q+=vec3(0.012,0.014,0.02)*(1.0-v);            // reflexo fraco do vidro
+      gl_FragColor=vec4(q,1.0);
+    }`, { uPal: { value: ARC_PAL.map(h => { const c = hexRgb(h); return new THREE.Vector3(c[0] / 255, c[1] / 255, c[2] / 255); }) } }),
+  draw(g, W, H, dt, t) {
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.setLineDash([]);
+    g.globalAlpha = 1; g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+    const fr = florFrame(W, H), cx = Math.round(W / 2);
+    const Ro = Math.round(Math.max(28, Math.min((fr.avail - 44) / 2, W * 0.46)));   // raio externo do anel de blocos
+    const yTop = Math.round(fr.top) + 1, cy = yTop + 25 + Ro, yBot = cy + Ro + 6;
+    // estrelas que piscam
+    for (let i = 0; i < 70; i++) {
+      const s = SEEDS[i], tw = Math.sin(t * (1 + s[2] * 3) + s[3] * 9);
+      if (tw < 0.1) continue;
+      g.fillStyle = tw > 0.9 ? '#ffffff' : ARC_DARK[5];
+      g.fillRect(Math.floor(s[0] * W), Math.floor(s[1] * H), 1, 1);
+    }
+    // anel de colunas de blocos (equalizador): energia de cada tom, com o pico que cai devagar
+    const n = 5, step = Ro * 0.32 / n, bs = Math.max(2, Math.floor(step) - 1);
+    for (let k = 0; k < 12; k++) {
+      const a = ang2d(k), hue = TONES[k].hex, lit = Math.round(F.I[k] * n), pk = Math.min(n - 1, Math.round(F.peak[k] * n) - 1);
+      for (let j = 0; j < n; j++) {
+        const r = Ro * 0.68 + (j + 0.5) * step;
+        g.fillStyle = j < lit ? hue : (j === pk && pk >= lit ? '#ffffff' : arcDark(hue));
+        g.fillRect(Math.round(cx + Math.cos(a) * r - bs / 2), Math.round(cy + Math.sin(a) * r - bs / 2), bs, bs);
+      }
+    }
+    // pétalas: escuras quando o tom está quieto; a cor clara sobe da base com a energia (sombreado em pontilhado)
+    const u = Ro * 0.62 / 4.05;
+    for (const uvPass of [true, false]) for (let k = 0; k < 12; k++) {
+      const o = TONES[k]; if (o.uv !== uvPass) continue;
+      const I = F.I[k], dark = arcDark(o.hex);
+      g.save();
+      g.translate(cx, cy); g.rotate(k * Math.PI / 6); g.translate(0, -Math.round(I * Ro * 0.05));
+      g.scale(u, u);
+      g.beginPath(); florPetal(g, o.uv);
+      if (I < 0.04) g.fillStyle = dark;
+      else {
+        const s1 = Math.min(0.97, I * 1.1), gr = g.createLinearGradient(0, -1.5, 0, -4.05);
+        gr.addColorStop(0, o.hex); gr.addColorStop(s1, o.hex); gr.addColorStop(Math.min(1, s1 + 0.3), dark); gr.addColorStop(1, dark);
+        g.fillStyle = gr;
+      }
+      g.fill();
+      g.lineWidth = 1 / u; g.strokeStyle = I > 0.7 ? '#ffffff' : o.hex; g.stroke();
+      g.restore();
+    }
+    // Sete Naturais (pontilhado) e o triângulo do acorde, piscando
+    const at = (k, r) => [Math.round(cx + Math.cos(ang2d(k)) * r) + 0.5, Math.round(cy + Math.sin(ang2d(k)) * r) + 0.5];
+    const rj = Ro * 0.4;
+    if (F.chordS > 0.3 && (t * 3) % 1 < 0.75) {
+      g.setLineDash([2, 2]); g.lineWidth = 1; g.strokeStyle = '#ffffff';
+      g.beginPath();
+      for (let i = 0; i < 7; i++) { g.moveTo(...at(NATURALS[i], rj)); g.lineTo(...at(NATURALS[(i + 3) % 7], rj)); }
+      g.stroke(); g.setLineDash([]);
+    }
+    const ch = AN.lastChord;
+    if (ch && F.chordS > 0.15) {
+      g.lineWidth = 1; g.strokeStyle = '#ffffff';
+      g.beginPath(); ch.tones.forEach((k, i) => (i ? g.lineTo : g.moveTo).call(g, ...at(k, rj))); g.closePath(); g.stroke();
+      ch.tones.forEach(k => { const [x, y] = at(k, rj); g.fillStyle = TONES[k].hex; g.fillRect(x - 2.5, y - 2.5, 5, 5); });
+    }
+    // núcleo de Ré (Verde 0): acende com a nota e pulsa com a estabilidade
+    const rc = Math.max(4, Math.round(Ro * 0.14)), on = Math.max(F.I[0], F.stab);
+    g.fillStyle = ARC_DARK[0]; g.beginPath(); g.arc(cx, cy, rc, 0, TAU); g.fill();
+    g.fillStyle = ARC_HUES[0]; g.beginPath(); g.arc(cx, cy, rc * (0.35 + 0.65 * on), 0, TAU); g.fill();
+    if (F.stab > 0.5 && (t * 4) % 1 < 0.5) { g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.beginPath(); g.arc(cx, cy, rc + 2, 0, TAU); g.stroke(); }
+    // placar
+    const T = florText();
+    g.font = ARC_FONT; g.textBaseline = 'top'; g.textAlign = 'left';
+    const line = (str, y, colorAt) => {
+      const x0 = Math.round(cx - str.length * 4);
+      for (let i = 0; i < str.length; i++) { g.fillStyle = colorAt(i); g.fillText(str[i], x0 + i * 8, y); }
+    };
+    const score = `NOTAS ${String(F.hits % 1e6).padStart(6, '0')}  BPM ${T.bpm ? String(T.bpm).padStart(3, ' ') : '---'}`;
+    line(score, yTop, i => i < 5 || (i > 13 && i < 17) ? '#e8402c' : '#ffffff');
+    const title = 'CROMA-SONICA', sh = Math.floor(t * 6);
+    line(title, yTop + 11, i => title[i] === '-' ? '#ffffff' : ARC_HUES[(i + sh) % 7]);
+    if (F.idle) { if ((t * 1.6) % 1 < 0.6) line('INSIRA UMA FICHA', yBot, () => '#f7dc2f'); }
+    else if (T.o) {
+      const a = `${plain(T.note)} ${plain(T.color)}`;
+      const b = T.chord ? '  ' + plain(TONES[AN.chord.root].pt) + CHORD_SUF[AN.chord.quality].replace('°', 'o') : '';
+      line(a + b, yBot, i => i < a.length ? T.o.hex : '#ffffff');
+    }
+  },
+};
+
+/* ---------- Anos 70: pôster psicodélico impresso ---------- */
+const P70 = { paper: '#f1e3c4', ink: '#3a2216', cream: '#fbf1da', mustard: '#e0a526' };
+const TONE70 = TONES.map(o => mixHex(mixHex(o.hex, P70.paper, 0.12), '#000000', 0.06));
+const F70_FONT = 'Shrikhand';
+const S70 = { rot: 0 };
+function arcText(g, str, cx, cy, r, mid, top) {
+  const chars = [...str], ws = chars.map(c => g.measureText(c).width), total = ws.reduce((a, b) => a + b, 0);
+  const dir = top ? 1 : -1;
+  let a = mid - dir * total / r / 2;
+  chars.forEach((c, i) => {
+    const ac = a + dir * ws[i] / r / 2;
+    g.save(); g.translate(cx + r * Math.cos(ac), cy + r * Math.sin(ac)); g.rotate(ac + dir * Math.PI / 2);
+    g.strokeText(c, 0, 0); g.fillText(c, 0, 0); g.restore();
+    a += dir * ws[i] / r;
+  });
+}
+const STYLE_70 = {
+  retro: true, name: 'Anos 70', bloom: [0, 0, 1],
+  res: (w, h) => hiRes(w, h, 1),
+  enter() { needFont(`60px "${F70_FONT}"`); },
+  mat: postMaterial(`uniform sampler2D uTex; uniform vec2 uRes,uView; varying vec2 vUv; ${GLSL_HASH}
+    void main(){
+      float sc=max(uView.y/uRes.y,1.0);
+      vec2 px=vUv*uView;
+      vec3 c=texture2D(uTex,vUv).rgb;
+      c.g=mix(c.g,texture2D(uTex,vUv+vec2(1.4,-1.0)/uRes).g,0.75);   // magenta fora de registro
+      float lum=dot(c,vec3(0.299,0.587,0.114));
+      vec2 q=mat2(0.7071,-0.7071,0.7071,0.7071)*px/(4.2*sc);        // retícula a 45°
+      float d=length(fract(q)-0.5), rr=sqrt(clamp(1.0-lum,0.0,1.0))*0.62;
+      c=mix(c,c*0.72,(1.0-smoothstep(rr-0.1,rr+0.1,d))*0.45);
+      c+=(h21(floor(px/sc))-0.5)*0.06;                                 // grão do papel
+      c*=0.95+0.05*vnoise(px/sc*vec2(0.012,0.12));                     // fibras
+      vec2 f=(vUv-0.5)*uView/sc;                                       // dobras do pôster
+      c*=1.0-0.05*exp(-f.x*f.x/18.0)+0.03*exp(-(f.x-4.0)*(f.x-4.0)/10.0);
+      c*=1.0-0.05*exp(-f.y*f.y/18.0)+0.03*exp(-(f.y+4.0)*(f.y+4.0)/10.0);
+      float e=length((vUv-0.5)*vec2(uView.x/uView.y,1.0));             // bordas amareladas
+      c=mix(c,c*vec3(0.92,0.82,0.62),smoothstep(0.4,0.95,e)*0.7);
+      c=mix(c,c*vec3(1.03,0.98,0.88),0.5);
+      gl_FragColor=vec4(c,1.0);
+    }`),
+  draw(g, W, H, dt, t) {
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.lineCap = 'butt';
+    g.fillStyle = P70.paper; g.fillRect(0, 0, W, H);
+    const fr = florFrame(W, H), cx = W / 2, cy = fr.cy, R = Math.min(fr.avail * 0.37, W * 0.3), S = R / 0.31;
+    S70.rot += dt * (0.06 + 0.16 * Math.max(F.air, 0));
+    // listras concêntricas onduladas: uma por tom, a espessura segue a energia
+    const r0 = R * 1.08, maxR = Math.hypot(W, Math.max(cy, H - cy) * 2) / 2 + S * 0.1;
+    const wts = Array.from({ length: 12 }, (_, k) => 0.55 + 0.9 * F.I[k]), sw = wts.reduce((a, b) => a + b, 0);
+    const edges = [r0]; wts.forEach(w => edges.push(edges[edges.length - 1] + (maxR - r0) * w / sw));
+    const base = (maxR - r0) / 12, amp = Math.min(base * (0.16 + 0.3 * F.lvl + 0.25 * F.pulse), R * 0.09);
+    const wavy = (r, ph) => {
+      g.beginPath();
+      for (let i = 0; i <= 160; i++) {
+        const th = i / 160 * TAU, rr = r + amp * Math.sin(6 * th + ph);
+        i ? g.lineTo(cx + Math.cos(th) * rr, cy + Math.sin(th) * rr) : g.moveTo(cx + Math.cos(th) * rr, cy + Math.sin(th) * rr);
+      }
+      g.closePath();
+    };
+    g.lineWidth = Math.max(2, S * 0.006); g.strokeStyle = P70.cream; g.lineJoin = 'round';
+    for (let k = 11; k >= 0; k--) { wavy(edges[k + 1], S70.rot * 3 + k * 0.55); g.fillStyle = TONE70[k]; g.fill(); g.stroke(); }
+    // sol de raios atrás da Flor
+    wavy(r0, S70.rot * 3 - 0.55); g.fillStyle = P70.cream; g.fill(); g.stroke();
+    g.save(); g.clip(); g.translate(cx, cy); g.rotate(-S70.rot);
+    g.fillStyle = mixHex(P70.mustard, P70.cream, 0.55);
+    for (let i = 0; i < 24; i += 2) { g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, r0 + amp + 4, i * TAU / 24, (i + 1) * TAU / 24); g.closePath(); g.fill(); }
+    g.restore();
+    // margarida: pétalas gordas (naturais redondas, ultravioletas pontudas) com contorno grosso
+    const sway = 0.035 * Math.sin(t * 0.8), rb = R * 0.2, ink = Math.max(2, S * 0.008);
+    g.save(); g.translate(cx, cy); g.rotate(sway);
+    for (const uvPass of [true, false]) for (let k = 0; k < 12; k++) {
+      const o = TONES[k]; if (o.uv !== uvPass) continue;
+      const I = F.I[k], L = R * ((o.uv ? 0.74 : 0.8) + 0.24 * I + 0.03 * F.pulse), w = R * (o.uv ? 0.24 : 0.3);
+      g.save(); g.rotate(k * Math.PI / 6);
+      g.beginPath(); g.moveTo(0, -rb);
+      if (o.uv) { g.bezierCurveTo(w * 0.95, -rb - L * 0.2, w * 0.45, -L * 0.78, 0, -L); g.bezierCurveTo(-w * 0.45, -L * 0.78, -w * 0.95, -rb - L * 0.2, 0, -rb); }
+      else { g.bezierCurveTo(w * 1.05, -rb - L * 0.12, w * 0.8, -L * 1.02, 0, -L); g.bezierCurveTo(-w * 0.8, -L * 1.02, -w * 1.05, -rb - L * 0.12, 0, -rb); }
+      g.closePath();
+      g.fillStyle = mixHex(TONE70[k], P70.paper, 0.45 * (1 - Math.min(1, I * 1.4))); g.fill();
+      g.lineWidth = ink; g.strokeStyle = P70.ink; g.stroke();
+      // brilho de tinta clara no meio da pétala
+      g.beginPath(); g.moveTo(-w * 0.12, -rb - L * 0.18);
+      g.quadraticCurveTo(-w * 0.32, -L * 0.6, -w * 0.08, -L * 0.82);
+      g.lineWidth = ink * (0.9 + 1.2 * I); g.lineCap = 'round'; g.strokeStyle = 'rgba(251,241,218,' + (0.25 + 0.6 * I) + ')'; g.stroke();
+      g.lineCap = 'butt';
+      g.restore();
+    }
+    // miolo: Ré (Verde 0) em anéis e a estrela das Sete Naturais, que se enche com o acorde
+    const ringR = R * 0.26, g0 = Math.max(F.I[0], F.stab);
+    [[ringR, P70.ink], [ringR - ink, mixHex(TONE70[0], '#ffffff', 0.25 * g0)], [ringR * 0.72, P70.cream], [ringR * 0.6, mixHex(TONE70[0], P70.ink, 0.25 - 0.25 * g0)]]
+      .forEach(([r, c]) => { g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fillStyle = c; g.fill(); });
+    g.beginPath();
+    for (let i = 0; i < 7; i++) { const a = ang2d(NATURALS[(i * 3) % 7]), r = ringR * 0.56; i ? g.lineTo(Math.cos(a) * r, Math.sin(a) * r) : g.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
+    g.closePath(); g.fillStyle = `rgba(224,165,38,${0.15 + 0.85 * F.chordS})`; g.fill();
+    g.lineWidth = Math.max(1.5, ink * 0.5); g.strokeStyle = P70.ink; g.stroke();
+    // triângulo do acorde, em fita creme com contorno
+    const ch = AN.lastChord;
+    if (ch && F.chordS > 0.05) {
+      g.globalAlpha = Math.min(1, F.chordS * 1.3);
+      g.beginPath(); ch.tones.forEach((k, i) => { const a = ang2d(k), r = R * 0.52; i ? g.lineTo(Math.cos(a) * r, Math.sin(a) * r) : g.moveTo(Math.cos(a) * r, Math.sin(a) * r); }); g.closePath();
+      g.lineJoin = 'round'; g.lineWidth = ink * 3.2; g.strokeStyle = P70.ink; g.stroke();
+      g.lineWidth = ink * 1.6; g.strokeStyle = P70.cream; g.stroke();
+      g.globalAlpha = 1;
+    }
+    g.restore();
+    // letreiros em arco: o título em cima, a nota e o acorde embaixo
+    const fs = Math.round(R * 0.2), rT = R * 1.15 + fs * 0.3;
+    g.font = `${fs}px "${F70_FONT}", Georgia, serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineJoin = 'round'; g.lineWidth = fs * 0.28; g.strokeStyle = P70.cream; g.fillStyle = P70.ink;
+    arcText(g, 'Croma-Sônica', cx, cy, rT, -Math.PI / 2, true);
+    const T = florText();
+    const low = F.idle ? 'solta o som!' : T.o ? `${T.note} · ${T.color}${T.chord ? ' · ' + T.chord : ''}` : '· · ·';
+    g.font = `${Math.round(fs * 0.74)}px "${F70_FONT}", Georgia, serif`; g.lineWidth = fs * 0.24;
+    if (T.o && !F.idle) g.fillStyle = mixHex(T.o.hex, P70.ink, 0.4);
+    arcText(g, low, cx, cy, rT, Math.PI / 2, false);
+  },
+};
+
+/* ---------- Osciloscópio vetorial: só traço de fósforo ---------- */
+const SCOPE_FONT = 'Share Tech Mono';
+const SCOPE = { rect: [0, 0, 1, 1] };
+const STYLE_SCOPE = {
+  retro: true, name: 'Osciloscópio', bloom: [1.25, 0.55, 0.12],
+  res: (w, h) => hiRes(w, h, 1.25),
+  enter() { needFont(`14px "${SCOPE_FONT}"`); RX.fillStyle = '#000'; RX.fillRect(0, 0, RC.width, RC.height); },
+  reset() { RX.fillStyle = '#000'; RX.fillRect(0, 0, RC.width, RC.height); },
+  mat: postMaterial(`uniform sampler2D uTex; uniform vec2 uRes,uView; uniform float uTime; uniform vec4 uScreen; varying vec2 vUv; ${GLSL_HASH}
+    float rbox(vec2 p,vec2 b,float r){ vec2 q=abs(p)-b+r; return length(max(q,0.0))+min(max(q.x,q.y),0.0)-r; }
+    void main(){
+      vec2 cc=vUv-0.5, uv=0.5+cc*(1.0+0.03*dot(cc,cc));
+      vec2 tp=1.6/uRes;
+      vec3 c=texture2D(uTex,uv).rgb;
+      vec3 b=texture2D(uTex,uv+vec2(tp.x,0.0)).rgb+texture2D(uTex,uv-vec2(tp.x,0.0)).rgb+texture2D(uTex,uv+vec2(0.0,tp.y)).rgb+texture2D(uTex,uv-vec2(0.0,tp.y)).rgb;
+      c+=b*0.07;
+      c+=vec3(0.006,0.02,0.016);                                         // vidro esverdeado
+      c+=(h21(gl_FragCoord.xy+fract(uTime*7.3)*97.0)-0.5)*0.02;
+      vec2 mid=(uScreen.xy+uScreen.zw)*0.5, hs=(uScreen.zw-uScreen.xy)*0.5*uView;
+      float d=rbox((uv-mid)*uView,hs,0.05*uView.y);
+      vec3 bezel=vec3(0.035,0.037,0.04)*(0.75+0.35*vUv.y)+0.025*smoothstep(-30.0,0.0,-abs(d+6.0));
+      float inside=1.0-smoothstep(-1.5,1.5,d);
+      c*=1.0-0.35*smoothstep(-0.18*uView.y,0.0,d);                       // borda da tela mais escura
+      gl_FragColor=vec4(mix(bezel,c,inside),1.0);
+    }`, { uScreen: { value: new THREE.Vector4(0, 0, 1, 1) } }),
+  draw(g, W, H, dt, t) {
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;
+    g.globalCompositeOperation = 'source-over';
+    g.fillStyle = `rgba(0,0,0,${(1 - Math.exp(-dt * 13)).toFixed(3)})`; g.fillRect(0, 0, W, H);   // o fósforo esmaece
+    const fr = florFrame(W, H), sc = fr.sc, cx = W / 2, cy = fr.cy;
+    const div = Math.min(W / 10.6, fr.avail / 8.3), gw = div * 10, gh = div * 8, gx = cx - gw / 2, gy = cy - gh / 2;
+    const R = div * 3.55;
+    const m = div * 0.3;
+    this.mat.uniforms.uScreen.value.set((gx - m) / W, 1 - (gy + gh + m) / H, (gx + gw + m) / W, 1 - (gy - m) / H);
+    // retícula de 10 × 8 divisões, com marcas nos eixos centrais
+    g.lineWidth = Math.max(1, sc); g.strokeStyle = 'rgba(120,190,160,0.2)';
+    g.beginPath();
+    for (let i = 0; i <= 10; i++) { g.moveTo(gx + i * div, gy); g.lineTo(gx + i * div, gy + gh); }
+    for (let j = 0; j <= 8; j++) { g.moveTo(gx, gy + j * div); g.lineTo(gx + gw, gy + j * div); }
+    for (let i = 0; i <= 50; i++) { const x = gx + i * div / 5; g.moveTo(x, cy - div * 0.08); g.lineTo(x, cy + div * 0.08); }
+    for (let j = 0; j <= 40; j++) { const y = gy + j * div / 5; g.moveTo(cx - div * 0.08, y); g.lineTo(cx + div * 0.08, y); }
+    g.stroke();
+    const jit = () => (Math.random() - 0.5) * 0.7 * sc;
+    // contornos vetoriais das pétalas (naturais) e losangos (ultravioletas)
+    const u = R / 4.05;
+    for (let k = 0; k < 12; k++) {
+      const o = TONES[k], I = F.I[k];
+      g.save(); g.translate(cx, cy); g.rotate(k * Math.PI / 6); g.scale(u, u);
+      g.beginPath(); florPetal(g, o.uv);
+      g.lineWidth = 1.1 * sc / u; g.strokeStyle = o.hex; g.globalAlpha = 0.12 + 0.55 * Math.min(1, I * 1.5); g.stroke();
+      g.restore();
+    }
+    g.globalAlpha = 1;
+    // a Flor em modo XY: uma curva fechada cujos lóbulos crescem com a energia de cada tom
+    const N = 540, idleLobe = 0.05 * (1 - Math.min(1, F.lvl * 3));
+    const pts = new Array(N + 1);
+    for (let i = 0; i <= N; i++) {
+      const th = -Math.PI / 2 + i / N * TAU;
+      let e = 0;
+      for (let k = 0; k < 12; k++) { let d = th - ang2d(k); d = Math.atan2(Math.sin(d), Math.cos(d)); e += F.I[k] * Math.exp(-(d / 0.19) * (d / 0.19)); }
+      const r = R * (0.3 + idleLobe * Math.cos(12 * (th + Math.PI / 2)) + 0.66 * Math.min(1.1, e));
+      pts[i] = [cx + Math.cos(th) * r + jit(), cy + Math.sin(th) * r + jit()];
+    }
+    g.lineWidth = 1.5 * sc; g.lineJoin = 'round';
+    for (let k = 0; k < 12; k++) {
+      const i0 = Math.round((k - 0.5) / 12 * N), i1 = Math.round((k + 0.5) / 12 * N);
+      g.beginPath();
+      for (let i = i0; i <= i1; i++) { const p = pts[(i + N) % N]; i === i0 ? g.moveTo(p[0], p[1]) : g.lineTo(p[0], p[1]); }
+      g.strokeStyle = TONES[k].hex; g.globalAlpha = 0.35 + 0.65 * Math.min(1, F.I[k] * 2 + F.lvl); g.stroke();
+    }
+    g.globalAlpha = 1;
+    // Sete Naturais e acorde
+    const at = (k, r) => [cx + Math.cos(ang2d(k)) * r, cy + Math.sin(ang2d(k)) * r];
+    if (F.chordS > 0.03) {
+      g.lineWidth = sc; g.strokeStyle = `rgba(200,255,220,${0.03 + 0.22 * F.chordS})`;
+      g.beginPath(); for (let i = 0; i < 7; i++) { g.moveTo(...at(NATURALS[i], R * 0.62)); g.lineTo(...at(NATURALS[(i + 3) % 7], R * 0.62)); } g.stroke();
+    }
+    const ch = AN.lastChord;
+    if (ch && F.chordS > 0.05) {
+      g.lineWidth = 1.5 * sc;
+      ch.tones.forEach((k, i) => {
+        const k2 = ch.tones[(i + 1) % 3], [x0, y0] = at(k, R * 0.62), [x1, y1] = at(k2, R * 0.62);
+        const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, TONES[k].hex); gr.addColorStop(1, TONES[k2].hex);
+        g.strokeStyle = gr; g.globalAlpha = 0.85 * F.chordS; g.beginPath(); g.moveTo(x0 + jit(), y0 + jit()); g.lineTo(x1 + jit(), y1 + jit()); g.stroke();
+      });
+      g.globalAlpha = 1;
+    }
+    // no centro, a forma de onda real do som enrolada num círculo (verde: Ré = Verde 0), com disparo na subida
+    const rw = R * 0.17, amp = Math.min(1, F.lvl * 3);
+    let i0 = 0;
+    if (timeBuf) for (let i = 1; i < 2048; i++) if (timeBuf[i - 1] < 0 && timeBuf[i] >= 0) { i0 = i; break; }
+    g.beginPath();
+    for (let i = 0; i <= 256; i++) {
+      const th = -Math.PI / 2 + i / 256 * TAU, v = timeBuf ? timeBuf[i0 + (i % 256) * 4] || 0 : 0;
+      const r = rw * (1 + Math.max(-0.45, Math.min(0.45, v * 2.2 * amp)));
+      i ? g.lineTo(cx + Math.cos(th) * r, cy + Math.sin(th) * r) : g.moveTo(cx + Math.cos(th) * r, cy + Math.sin(th) * r);
+    }
+    g.lineWidth = 1.3 * sc; g.strokeStyle = TONES[0].hex; g.globalAlpha = 0.45 + 0.55 * Math.max(F.I[0], F.stab, amp * 0.6); g.stroke();
+    g.globalAlpha = 1;
+    // leituras, como no painel de um osciloscópio
+    const T = florText(), fs = Math.round(Math.max(11, Math.min(16, div / sc * 0.17)) * sc);
+    g.font = `${fs}px "${SCOPE_FONT}", ui-monospace, monospace`; g.textBaseline = 'middle'; g.textAlign = 'center';
+    g.fillStyle = '#8fe3b6';
+    const db = isFinite(AN.rmsDb) && AN.level > 0.01 ? AN.rmsDb.toFixed(1) : '---';
+    g.fillText(`CH1 ${db} dB    XY · 12 TONS    ${T.bpm ? T.bpm + ' BPM' : '--- BPM'}    A4 ${A4_HZ} Hz`, cx, gy + div * 0.32);
+    const low = F.idle ? 'SEM SINAL — ENTRADA EM ESPERA' : T.o ? `${plain(T.note)} = ${plain(T.color)}${T.o.uv ? ' ▲' : ''}${T.chord ? '    ACORDE ' + plain(T.chordLong) : ''}` : 'SINAL FRACO';
+    g.fillText(low, cx, gy + gh - div * 0.32);
+  },
+};
+
+/* ---------- Synthwave anos 80: neon, sol listrado, grade e fita VHS ---------- */
+const SYN_FONT = 'Orbitron', SYN_SCRIPT = 'Mr Dafoe';
+const SYN = { mt: new Float32Array(10) };
+const STYLE_SYNTH = {
+  retro: true, name: 'Synthwave', bloom: [0.7, 0.5, 0.42],
+  res: (w, h) => hiRes(w, h, 1.25),
+  enter() { needFont(`900 40px "${SYN_FONT}"`); needFont(`40px "${SYN_SCRIPT}"`); },
+  mat: postMaterial(`uniform sampler2D uTex; uniform vec2 uRes,uView; uniform float uTime,uPulse; varying vec2 vUv; ${GLSL_HASH}
+    void main(){
+      vec2 uv=vUv;
+      float band=1.0-fract(uTime*0.06), dy=uv.y-band, inB=exp(-dy*dy*1400.0);          // faixa de tracking
+      uv.x+=(h21(vec2(floor(uv.y*uView.y*0.5),floor(uTime*30.0)))-0.5)*0.006*inB;
+      uv.x+=(h21(vec2(floor(uTime*20.0),3.0))-0.5)*0.0007;
+      float ab=0.0013+0.002*uPulse;
+      vec3 c=vec3(texture2D(uTex,uv+vec2(ab,0.0)).r,texture2D(uTex,uv).g,texture2D(uTex,uv-vec2(ab,0.0)).b);
+      vec2 tx=vec2(2.0/uRes.x,0.0);
+      c=c*0.72+0.14*(texture2D(uTex,uv+tx).rgb+texture2D(uTex,uv-tx).rgb);                // cor que escorre na horizontal
+      c+=inB*step(0.982,h21(floor(gl_FragCoord.xy*0.5)+floor(uTime*40.0)))*0.5;
+      c*=0.94+0.06*sin(gl_FragCoord.y*3.14159);
+      vec2 q=vUv-0.5; c*=1.0-dot(q,q)*0.7;
+      gl_FragColor=vec4(c,1.0);
+    }`),
+  draw(g, W, H, dt, t) {
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    const fr = florFrame(W, H), sc = fr.sc, cx = W / 2, hor = fr.top + fr.avail * 0.66;
+    const R = Math.min(W * 0.27, (hor - fr.top - 34 * sc) / 1.5), cy = hor - R * 0.5;
+    // céu
+    const sky = g.createLinearGradient(0, 0, 0, hor);
+    sky.addColorStop(0, '#07021a'); sky.addColorStop(0.5, '#240f4c'); sky.addColorStop(0.86, '#7b1e6b'); sky.addColorStop(1, '#e8456b');
+    g.fillStyle = sky; g.fillRect(0, 0, W, hor);
+    for (let i = 0; i < 120; i++) {
+      const s = SEEDS[i], x = s[0] * W, y = s[1] * hor * 0.8;
+      if (Math.hypot(x - cx, y - cy) < R * 1.05) continue;
+      g.globalAlpha = 0.35 + 0.65 * Math.abs(Math.sin(t * (0.5 + s[2] * 2) + s[3] * 9));
+      g.fillStyle = '#ffffff'; g.fillRect(x, y, (s[2] > 0.85 ? 2 : 1) * sc, (s[2] > 0.85 ? 2 : 1) * sc);
+    }
+    g.globalAlpha = 1;
+    // montanhas em arame: a altura dos picos segue o espectro
+    const nb = SYN.mt.length;
+    for (let i = 0; i < nb; i++) {
+      let v = 0;
+      if (freqDb && A.ctx && AN.active) {
+        const f0 = 60 * Math.pow(120, i / nb), f1 = 60 * Math.pow(120, (i + 1) / nb), bw = A.ctx.sampleRate / FFT_SIZE;
+        let mx = -140; for (let b = Math.floor(f0 / bw); b <= Math.ceil(f1 / bw) && b < freqDb.length; b++) mx = Math.max(mx, freqDb[b]);
+        v = Math.max(0, Math.min(1, (mx + 95) / 65));
+      }
+      SYN.mt[i] += (v - SYN.mt[i]) * smoothK(dt, v > SYN.mt[i] ? 12 : 3);
+    }
+    const mtn = side => {
+      const pts = [[0, hor]], np = nb, span = W * 0.42, hm = fr.avail * 0.12;
+      for (let i = 0; i < np; i++) {
+        const s = SEEDS[150 + i], x = (i + 0.3 + 0.4 * s[2]) / np * span;
+        const peak = (0.15 + 0.85 * s[0] * s[0]) * (1 - i / np * 0.55) + 0.55 * SYN.mt[np - 1 - i];
+        pts.push([x, hor - peak * hm]);
+        pts.push([x + span / np * (0.3 + 0.2 * s[3]), hor - peak * hm * (0.35 + 0.35 * s[1])]);
+      }
+      pts.push([W * 0.44, hor]);
+      const P = pts.map(([x, y]) => [side < 0 ? x : W - x, y]);
+      g.beginPath(); P.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
+      g.fillStyle = '#16062c'; g.fill();
+      g.lineJoin = 'round'; g.lineWidth = 1.6 * sc; g.strokeStyle = '#ff3fd8'; g.stroke();
+      g.lineWidth = sc; g.strokeStyle = 'rgba(90,220,255,0.45)';
+      g.beginPath();
+      for (let i = 1; i < P.length - 2; i += 2) { g.moveTo(P[i][0], P[i][1]); g.lineTo(P[i][0], hor); g.moveTo(P[i][0], P[i][1]); g.lineTo(P[i + 1][0], hor); }
+      g.stroke();
+    };
+    mtn(-1); mtn(1);
+    // chão com grade em perspectiva, na cor do som; uma linha passa a cada batida
+    const ground = g.createLinearGradient(0, hor, 0, H);
+    ground.addColorStop(0, '#1d0633'); ground.addColorStop(1, '#05010d');
+    g.fillStyle = ground; g.fillRect(0, hor, W, H - hor);
+    const c = AN.color, mixT = Math.min(1, F.lvl * 2.2);
+    const gc = rgbHex([255 * (1 - mixT) + Math.min(255, c.r * 300) * mixT, 63 * (1 - mixT) + Math.min(255, c.g * 300) * mixT, 216 * (1 - mixT) + Math.min(255, c.b * 300) * mixT]);
+    const f = H - hor, fb = F.beat % 1;
+    g.strokeStyle = gc;
+    for (let i = 0; i < 26; i++) {
+      const z = 1 + (i + 1 - fb) * 0.9, y = hor + f / z;
+      g.globalAlpha = Math.min(1, 1.6 / z); g.lineWidth = Math.max(1, 2.2 * sc / Math.sqrt(z));
+      g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+    }
+    g.globalAlpha = 0.85; g.lineWidth = 1.5 * sc;
+    g.beginPath();
+    for (let j = -24; j <= 24; j++) { g.moveTo(cx + f * j * 0.9, hor + f); g.lineTo(cx, hor); }
+    g.stroke();
+    g.globalAlpha = 1;
+    const fog = g.createLinearGradient(0, hor, 0, hor + f * 0.2);
+    fog.addColorStop(0, 'rgba(29,6,51,1)'); fog.addColorStop(1, 'rgba(29,6,51,0)');
+    g.fillStyle = fog; g.fillRect(0, hor, W, f * 0.2);
+    g.fillStyle = '#ff5fa8'; g.fillRect(0, hor - sc, W, 2 * sc);
+    // o sol listrado é o miolo da Flor (as faixas descem no ritmo)
+    const sunR = R * 0.4;
+    const halo = g.createRadialGradient(cx, cy, sunR * 0.5, cx, cy, sunR * 2.8);
+    halo.addColorStop(0, 'rgba(255,70,150,0.5)'); halo.addColorStop(1, 'rgba(255,70,150,0)');
+    g.fillStyle = halo; g.fillRect(cx - sunR * 3, cy - sunR * 3, sunR * 6, sunR * 6);
+    g.save();
+    g.beginPath(); g.rect(cx - sunR, cy - sunR, sunR * 2, sunR * 2);
+    const ph = (F.beat * 0.5) % 1;
+    for (let i = 0; i < 7; i++) {
+      const y0 = cy + sunR * ((i + ph) * 0.15), gap = sunR * (0.012 + 0.022 * (i + ph));
+      if (y0 < cy + sunR) g.rect(cx - sunR, y0, sunR * 2, Math.min(gap, cy + sunR - y0));
+    }
+    g.clip('evenodd');
+    const sun = g.createLinearGradient(0, cy - sunR, 0, cy + sunR);
+    sun.addColorStop(0, '#ffd84a'); sun.addColorStop(0.45, '#ff8a2f'); sun.addColorStop(0.78, '#ff2f7e'); sun.addColorStop(1, '#9b2bd8');
+    g.fillStyle = sun; g.beginPath(); g.arc(cx, cy, sunR, 0, TAU); g.fill();
+    g.restore();
+    // pétalas em neon
+    const u = R / 4.05;
+    for (const uvPass of [true, false]) for (let k = 0; k < 12; k++) {
+      const o = TONES[k]; if (o.uv !== uvPass) continue;
+      const I = F.I[k];
+      g.save(); g.translate(cx, cy); g.rotate(k * Math.PI / 6); g.translate(0, -I * R * 0.05); g.scale(u, u);
+      g.beginPath(); florPetal(g, o.uv);
+      g.globalAlpha = 0.06 + 0.3 * I; g.fillStyle = o.hex; g.fill();
+      g.globalAlpha = 0.45 + 0.55 * Math.min(1, I * 1.6);
+      g.lineWidth = (1.3 + 2 * I) * sc / u; g.strokeStyle = o.hex; g.stroke();
+      g.restore();
+    }
+    g.globalAlpha = 1;
+    const at = (k, r) => [cx + Math.cos(ang2d(k)) * r, cy + Math.sin(ang2d(k)) * r];
+    if (F.chordS > 0.03) {
+      g.lineWidth = sc; g.strokeStyle = `rgba(120,240,255,${0.05 + 0.3 * F.chordS})`;
+      g.beginPath(); for (let i = 0; i < 7; i++) { g.moveTo(...at(NATURALS[i], R * 0.62)); g.lineTo(...at(NATURALS[(i + 3) % 7], R * 0.62)); } g.stroke();
+    }
+    const ch = AN.lastChord;
+    if (ch && F.chordS > 0.05) {
+      g.lineWidth = 2 * sc; g.strokeStyle = '#e9fbff'; g.globalAlpha = 0.9 * F.chordS;
+      g.beginPath(); ch.tones.forEach((k, i) => (i ? g.lineTo : g.moveTo).call(g, ...at(k, R * 0.62))); g.closePath(); g.stroke();
+      g.globalAlpha = 1;
+    }
+    const g0 = Math.max(F.I[0], F.stab);
+    g.lineWidth = (1.5 + 3 * g0) * sc; g.strokeStyle = TONES[0].hex; g.beginPath(); g.arc(cx, cy, sunR * 1.06, 0, TAU); g.stroke();
+    // letreiro cromado + assinatura em neon; a leitura do som logo acima da Flor
+    const T = florText();
+    const floor = fr.bottom - hor, fs = Math.round(Math.max(18 * sc, Math.min(W * 0.1, floor * 0.5))), ly = hor + floor * 0.52;
+    g.font = `900 ${fs}px "${SYN_FONT}", Impact, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.save(); g.translate(cx, ly); g.transform(1, 0, -0.18, 1, 0, 0);
+    const chrome = g.createLinearGradient(0, -fs * 0.42, 0, fs * 0.42);
+    chrome.addColorStop(0, '#a9dcff'); chrome.addColorStop(0.44, '#2f6fd0'); chrome.addColorStop(0.5, '#10051f'); chrome.addColorStop(0.56, '#c2508f'); chrome.addColorStop(1, '#ff9a3d');
+    g.lineJoin = 'round'; g.lineWidth = fs * 0.12; g.strokeStyle = '#b01c9a'; g.strokeText('CROMA', 0, 0);
+    g.fillStyle = chrome; g.fillText('CROMA', 0, 0);
+    g.lineWidth = Math.max(1, fs * 0.018); g.strokeStyle = 'rgba(255,255,255,0.75)'; g.strokeText('CROMA', 0, 0);
+    g.restore();
+    g.save(); g.translate(cx + fs * 1.2, ly + fs * 0.42); g.rotate(-0.12);
+    g.font = `${Math.round(fs * 0.8)}px "${SYN_SCRIPT}", cursive`;
+    g.lineWidth = fs * 0.08; g.strokeStyle = '#ff3fd8'; g.strokeText('Sônica', 0, 0);
+    g.fillStyle = '#ffd6f4'; g.fillText('Sônica', 0, 0);
+    g.restore();
+    g.font = `600 ${Math.round(Math.max(11 * sc, R * 0.07))}px "${SYN_FONT}", sans-serif`;
+    g.fillStyle = '#7ff3ff';
+    const info = F.idle ? 'INSIRA A FITA  ▶  PLAY' : T.o ? `${plain(T.note)} · ${plain(T.color)}${T.chord ? '   ·   ' + plain(T.chordLong) : ''}${T.bpm ? '   ·   ' + T.bpm + ' BPM' : ''}` : '· · ·';
+    g.fillText(info, cx, cy - R - Math.max(12 * sc, R * 0.08));
+  },
+};
+
+const FLOR_STYLES = {
+  aquarela: { name: 'Aquarela', bloom: [0.3, 0.5, 0.62] },
+  fliperama: STYLE_ARCADE, anos70: STYLE_70, osciloscopio: STYLE_SCOPE, synthwave: STYLE_SYNTH,
+};
+const STYLE_ORDER = ['aquarela', 'fliperama', 'anos70', 'osciloscopio', 'synthwave'];
+let STYLE = 'aquarela';
+try { const s = localStorage.getItem('croma.style'); if (FLOR_STYLES[s]) STYLE = s; } catch (e) { /* sem armazenamento */ }
+
+function sizeRetro() {
+  renderer.getDrawingBufferSize(viewPx);
+  const st = FLOR_STYLES[STYLE];
+  if (!st.retro) return;
+  const [w, h] = st.res(window.innerWidth, window.innerHeight);
+  if (RC.width !== w || RC.height !== h) {
+    RC.width = w; RC.height = h;
+    rTex.dispose();   // nova dimensão: a textura é recriada no próximo envio
+    if (st.reset) st.reset();
+  }
+  texRes.set(w, h);
+}
+function setStyle(id, save = true) {
+  if (!FLOR_STYLES[id]) id = 'aquarela';
+  const prev = STYLE; STYLE = id;
+  const st = FLOR_STYLES[id];
+  document.querySelectorAll('#mode-seg button').forEach(b => { const on = b.dataset.style === id; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  controls.enabled = !st.retro;
+  stage.dataset.style = id;
+  if (st.retro) {
+    rTex.minFilter = rTex.magFilter = st.pixel ? THREE.NearestFilter : THREE.LinearFilter;
+    rTex.dispose();
+    postQuad.material = st.mat;
+    sizeRetro();
+    if (st.enter) st.enter();
+    if (renderPass) { renderPass.scene = postScene; renderPass.camera = postCam; }
+  } else {
+    if (renderPass) { renderPass.scene = scene; renderPass.camera = camera; }
+    if (prev !== id) { camTween = { from: camera.position.clone(), to: camFor(), t: 0 }; controls.target.set(0, 0, 0); }
+  }
+  if (bloom) { [bloom.strength, bloom.radius, bloom.threshold] = st.bloom; }
+  if (save) { try { localStorage.setItem('croma.style', id); } catch (e) { /* sem armazenamento */ } }
 }
 
 const clock = new THREE.Clock();
+const optBloom = document.getElementById('opt-bloom');
 let hudTimer = 0, kbTimer = 0, elapsed = 0;
 function frame() {
   requestAnimationFrame(frame);
@@ -3932,26 +4188,31 @@ function frame() {
   U.uLevel.value = AN.level;
   U.uAir.value = AN.air;
   U.uPulse.value = AN.pulse;
-  U.uTension.value = AN.tension;
   U.uStability.value = AN.stability;
   U.uTint.value.copy(AN.color);
+  florState(dt);
 
-  if (camTween) {
-    camTween.t = Math.min(1, camTween.t + dt / 1.2);
-    const e = 1 - Math.pow(1 - camTween.t, 3);
-    camera.position.lerpVectors(camTween.from, camTween.to, e);
-    if (camTween.t >= 1) camTween = null;
+  const st = FLOR_STYLES[STYLE];
+  if (st.retro) {
+    st.draw(RX, RC.width, RC.height, dt, elapsed);
+    rTex.needsUpdate = true;
+  } else {
+    if (camTween) {
+      camTween.t = Math.min(1, camTween.t + dt / 1.2);
+      const e = 1 - Math.pow(1 - camTween.t, 3);
+      camera.position.lerpVectors(camTween.from, camTween.to, e);
+      if (camTween.t >= 1) camTween = null;
+    }
+    // centro da Flor no meio da faixa livre (deslocamento da imagem, sem mexer na câmera)
+    const fr = florFrame(window.innerWidth, window.innerHeight);
+    viewOff += (window.innerHeight / 2 - fr.cy - viewOff) * smoothK(dt, 6);
+    camera.setViewOffset(window.innerWidth, window.innerHeight, 0, viewOff, window.innerWidth, window.innerHeight);
+    updateFlower(dt, elapsed);
+    controls.update();
   }
-  if (mode === 0) {
-    M1.rotation.y += dt * (0.05 + 0.25 * Math.max(AN.air, 0)) * (1 - 0.7 * AN.stability);
-    updateRibbon(dt, elapsed);
-    coreGlow.material.color.copy(AN.color);
-    coreGlow.material.opacity = 0.05 + 0.15 * AN.level + 0.2 * AN.stability;
-  } else if (mode === 1) updateFlower(dt, elapsed);
-  else updateSentirama(dt, elapsed);
-
-  controls.update();
-  if (composer && document.getElementById('opt-bloom').checked) composer.render(); else renderer.render(scene, camera);
+  if (composer && optBloom.checked && st.bloom[0] > 0) composer.render();
+  else if (st.retro) renderer.render(postScene, postCam);
+  else renderer.render(scene, camera);
 
   kbTimer += dt; if (kbTimer > 1 / 30) { kbTimer = 0; updateKeyboard(); }
   if (TUNER.on) updateTuner(now);
@@ -4101,13 +4362,9 @@ window.addEventListener('drop', e => {
   const f = e.dataTransfer?.files?.[0]; if (f) loadFile(f);
 });
 
-// modos e opções
-document.querySelectorAll('#mode-seg button').forEach(b => b.addEventListener('click', () => setMode(+b.dataset.mode)));
-$('opt-rotate').addEventListener('change', e => setAutoRotate(e.target.checked));
-$('btn-rotate').addEventListener('click', () => { setAutoRotate(!AUTO_ROT); toast(AUTO_ROT ? 'Auto-rotação da câmera ligada' : 'Auto-rotação da câmera desligada'); });
-setAutoRotate(AUTO_ROT, false);
-$('opt-particles').addEventListener('change', e => { [particles1, particles2, particles3].forEach(p => p.visible = e.target.checked); });
-$('opt-labels').addEventListener('change', e => labelSprites.forEach(s => s.visible = e.target.checked));
+// estilos da Flor e opções
+document.querySelectorAll('#mode-seg button').forEach(b => b.addEventListener('click', () => setStyle(b.dataset.style)));
+$('opt-particles').addEventListener('change', e => { particles2.visible = e.target.checked; });
 $('hud-collapse').addEventListener('click', () => { const b = $('hud-body'); b.classList.toggle('collapsed'); $('hud-collapse').textContent = b.classList.contains('collapsed') ? '+' : '–'; });
 $('panel-collapse').addEventListener('click', () => { const p = $('panel-left'); p.classList.toggle('collapsed'); $('panel-collapse').textContent = p.classList.contains('collapsed') ? 'mais opções' : 'recolher'; });
 function toggleFull() {
@@ -4181,9 +4438,12 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (k === 'escape') closeModal();
-  else if (k === 'h') document.body.classList.toggle('hidden-ui');
+  else if (k === 'h') {
+    document.body.classList.toggle('hidden-ui');
+    if (!FLOR_STYLES[STYLE].retro) camTween = { from: camera.position.clone(), to: camFor(), t: 0 };
+  }
   else if (k === 'f') toggleFull();
-  else if (k === '1' || k === '2' || k === '3') setMode(+k - 1);
+  else if (k >= '1' && k <= '5' && k.length === 1) setStyle(STYLE_ORDER[+k - 1]);
   else if (k === ' ') { if (A.source === 'file') { e.preventDefault(); togglePlay(); } }
   else if (k === '?') openModal();
 });
@@ -4193,6 +4453,7 @@ window.addEventListener('resize', () => {
   camera.aspect = w / h; camera.updateProjectionMatrix();
   renderer.setSize(w, h);
   if (composer) composer.setSize(w, h);
+  measureSafe(); sizeRetro();
 });
 window.addEventListener('beforeunload', () => stopMic());
 
@@ -7163,12 +7424,13 @@ if (window.matchMedia('(max-width: 767px)').matches) {
 }
 if (window.ResizeObserver) {
   new ResizeObserver(() => document.documentElement.style.setProperty('--bottom-h', $('bottom').offsetHeight + 'px')).observe($('bottom'));
+  const ro = new ResizeObserver(measureSafe); ro.observe($('bottom')); ro.observe($('topbar'));
 }
 
 // iniciar
-(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(buildLabels);
-setMode(0);
-camera.position.copy(camFor(0)); camTween = null;
+measureSafe();
+setStyle(STYLE, false);
+camera.position.copy(camFor()); camTween = null;
 updateSourceUI();
 frame();
 </script>
