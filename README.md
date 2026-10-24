@@ -38,13 +38,29 @@ Nos quatro primeiros estilos, cada pétala acende e cresce com a energia da sua 
   - o nome do tom aparece ao lado quando ele começa a soar;
   - os tons que soam brilham no lugar deles;
   - os rastros se apagam aos poucos: abrem-se para fora e giram no Ar, fecham-se para o centro na Terra. O acúmulo é feito na GPU em meia precisão, para não deixar resíduo.
-- **Python** (botão Python, que abre um menu, ou teclas `6`, `7` e `8`) — três visualizações que imitam o que um programa em Python desenharia, no mesmo fundo escuro das outras:
-  - **Pygame**:
-    - `pygame.draw` sem suavização, desenhado pixel a pixel: `line` com espessura, `lines`, `circle` cheio ou vazado, `rect` e `polygon`;
-    - um anel com os 12 tons ligados ao centro: naturais em círculo, ultravioletas em triângulo, maiores com a energia;
-    - o polígono do acorde, Ré no centro e ondas a cada ataque;
-    - a forma de onda e um espectro em barras, cada barra na cor do tom da sua frequência;
-    - texto na fonte padrão, com o contador de FPS.
+- **Python** (botão Python, que abre um menu, ou teclas `6`, `7` e `8`) — visualizações que imitam o que um programa em Python desenharia, no mesmo fundo escuro das outras:
+  - **Pygame** — `pygame.draw` sem suavização, desenhado pixel a pixel (`line` com espessura, `lines`, `circle` cheio ou vazado, `rect`, `polygon`), com texto na fonte padrão. São cinco variações, cada uma destacando outro aspecto do estudo. A tecla `6` abre a última usada e, apertada de novo, passa para a próxima.
+    - **Anel dos tons:** os 12 tons ligados ao centro (naturais em círculo, ultravioletas em triângulo), o polígono do acorde, Ré no centro, ondas a cada ataque, a forma de onda e um espectro em barras na cor do tom de cada frequência.
+    - **Sentirama em partículas** (sistema de partículas):
+      - o plano frio ↔ quente × denso ↔ sutil, com a tônica no centro;
+      - cada tom que soa solta partículas na sua cor, a partir da sua posição no Sentirama, e elas são puxadas para a posição atual da música;
+      - no Ar sobem e se espalham, na Terra caem e se juntam;
+      - a tela não é limpa, só escurece, e isso deixa o rastro;
+      - embaixo, a barra Terra ↔ Ar e o quadrante.
+    - **Ritmo** (jogo de ritmo):
+      - doze pistas, uma por tom, com blocos que nascem quando o tom começa a soar, crescem enquanto ele soa e caem na velocidade do BPM;
+      - as ultravioletas têm ▲;
+      - ao chegar, o bloco acende a linha de acerto;
+      - linhas de tempo e de compasso descem junto, e há um metrônomo de quatro casas.
+    - **Gramática das cores** (grade de tiles e autômato celular):
+      - uma grade 12 × 12 de transições (de qual cor para qual cor a música vai), em que cada célula mostra a cor de origem e a de destino;
+      - o calor de cada célula esfria e se espalha para as vizinhas;
+      - ao lado, a tonalidade, o Ar/Terra, o acorde e as transições mais frequentes.
+    - **Tensão e equilíbrio** (simulação física):
+      - os tons são bolas presas por molas a Ré, a âncora no centro;
+      - a tensão Fá ↔ Si estica e torce o conjunto, e a estabilidade em Ré endurece as molas até ele assentar num anel;
+      - os acordes consonantes aproximam seus tons;
+      - o Ar/Terra é a gravidade.
   - **Turtle**:
     - a tartaruga desenha ao vivo, indo até cada nota tocada;
     - lá ela traça um `circle()` (natural) ou um triângulo com `forward`/`left(120)` (ultravioleta) e escreve o nome do tom com `write()`;
